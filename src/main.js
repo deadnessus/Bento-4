@@ -51,7 +51,7 @@
   function vidaMonstro(n) { return 20 * Math.pow(1.22, n - 1); }
   function danoMonstro(n) { return 3.5 * Math.pow(1.19, n - 1); }
   function moedasMonstro(n) { return Math.round((3 + n) * Math.pow(1.15, n - 1)); }
-  function xpMonstro(n) { return 2 + 2 * n; }
+  function xpMonstro(n) { return 1 + n; } // metade da experiência de antes
   function xpParaSubir(n) { return Math.round(10 * n * Math.pow(1.08, n - 1)); }
   function vidaBase(n) { return Math.round(70 * Math.pow(1.13, n - 1)); }
   function maxMonstros() { return Math.min(30, 2 + Math.floor(save.nivel * 1.3)); }
