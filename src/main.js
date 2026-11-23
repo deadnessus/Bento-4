@@ -1,56 +1,60 @@
-// Caçador de Monstros: derrote monstros, ganhe moedas e compre armas e armaduras melhores.
-// Os monstros aparecem no nível do jogador; monstro de nível maior dá mais moedas.
+// Caçador de Monstros 3D (primeira pessoa): derrote monstros, ganhe moedas e compre armas e armaduras melhores.
+// Os monstros aparecem no nível do jogador; monstro de nível maior dá mais moedas. Quanto maior o nível, mais monstros.
 (function () {
   'use strict';
   var $ = function (id) { return document.getElementById(id); };
-  var canvas = $('campo'), ctx = canvas.getContext('2d');
 
   // Aviso anônimo para a medição do queres.games (nunca dá erro; fora do site, não faz nada).
   function evento(nome, dados) { try { if (window.QG && window.QG.evento) window.QG.evento(nome, dados); } catch (e) { /* nunca atrapalha */ } }
 
+  var T = window.THREE;
+  if (!T) { $('tela-inicio').hidden = true; $('tela-erro').hidden = false; return; }
+
   // ---------- Itens da loja ----------
-  // dano por golpe, espera entre golpes (segundos), alcance (pixels), distancia = atira de longe
+  // dano por golpe, espera entre golpes (segundos), alcance (metros), distancia = atira de longe
   var ARMAS = [
-    { id: 'graveto', nome: 'Graveto', icone: '🪵', preco: 0, dano: 6, espera: 0.55, alcance: 48, cor: '#8b5a2b' },
-    { id: 'espada-madeira', nome: 'Espada de madeira', icone: '🗡️', preco: 30, dano: 9, espera: 0.55, alcance: 52, cor: '#c08a4a' },
-    { id: 'espada-ferro', nome: 'Espada de ferro', icone: '⚔️', preco: 150, dano: 18, espera: 0.5, alcance: 56, cor: '#cfd8dc' },
-    { id: 'machado', nome: 'Machado', icone: '🪓', preco: 450, dano: 36, espera: 0.75, alcance: 58, cor: '#90a4ae' },
-    { id: 'arco', nome: 'Arco e flecha', icone: '🏹', preco: 1000, dano: 40, espera: 0.6, alcance: 260, distancia: true, cor: '#a1662f' },
-    { id: 'lanca', nome: 'Lança de prata', icone: '🔱', preco: 2200, dano: 90, espera: 0.6, alcance: 90, cor: '#e0f2fe' },
-    { id: 'varinha-gelo', nome: 'Varinha de gelo', icone: '❄️', preco: 5000, dano: 120, espera: 0.55, alcance: 290, distancia: true, gelo: true, cor: '#7dd3fc' },
-    { id: 'espada-fogo', nome: 'Espada de fogo', icone: '🔥', preco: 11000, dano: 300, espera: 0.5, alcance: 66, cor: '#ff7a1a' },
-    { id: 'martelo-trovao', nome: 'Martelo do trovão', icone: '⚡', preco: 25000, dano: 600, espera: 0.65, alcance: 72, cor: '#facc15' },
-    { id: 'lamina-estelar', nome: 'Lâmina estelar', icone: '🌟', preco: 60000, dano: 1100, espera: 0.45, alcance: 320, distancia: true, cor: '#e879f9' }
+    { id: 'graveto', nome: 'Graveto', icone: '🪵', preco: 0, dano: 5, espera: 0.55, alcance: 1.8, cor: 0x8b5a2b, modelo: 'pau' },
+    { id: 'espada-madeira', nome: 'Espada de madeira', icone: '🗡️', preco: 40, dano: 8, espera: 0.55, alcance: 2.0, cor: 0xc08a4a, modelo: 'espada' },
+    { id: 'espada-ferro', nome: 'Espada de ferro', icone: '⚔️', preco: 180, dano: 17, espera: 0.5, alcance: 2.1, cor: 0xcfd8dc, modelo: 'espada' },
+    { id: 'machado', nome: 'Machado', icone: '🪓', preco: 500, dano: 34, espera: 0.75, alcance: 2.2, cor: 0x90a4ae, modelo: 'machado' },
+    { id: 'arco', nome: 'Arco e flecha', icone: '🏹', preco: 1100, dano: 38, espera: 0.6, alcance: 22, distancia: true, cor: 0xa1662f, modelo: 'arco', tiro: 0xfff1c1 },
+    { id: 'lanca', nome: 'Lança de prata', icone: '🔱', preco: 2400, dano: 85, espera: 0.6, alcance: 3.2, cor: 0xe0f2fe, modelo: 'lanca' },
+    { id: 'varinha-gelo', nome: 'Varinha de gelo', icone: '❄️', preco: 5500, dano: 115, espera: 0.55, alcance: 24, distancia: true, gelo: true, cor: 0x7dd3fc, modelo: 'varinha', tiro: 0x7dd3fc },
+    { id: 'espada-fogo', nome: 'Espada de fogo', icone: '🔥', preco: 12000, dano: 290, espera: 0.5, alcance: 2.4, cor: 0xff7a1a, modelo: 'espada', brilha: true },
+    { id: 'martelo-trovao', nome: 'Martelo do trovão', icone: '⚡', preco: 27000, dano: 580, espera: 0.65, alcance: 2.6, cor: 0xfacc15, modelo: 'martelo', brilha: true },
+    { id: 'lamina-estelar', nome: 'Lâmina estelar', icone: '🌟', preco: 65000, dano: 1050, espera: 0.45, alcance: 26, distancia: true, cor: 0xe879f9, modelo: 'espada', brilha: true, tiro: 0xf5d0fe }
   ];
   // defesa = parte do dano que a armadura segura; vida = vida extra
   var ARMADURAS = [
-    { id: 'roupa', nome: 'Roupa comum', icone: '👕', preco: 0, defesa: 0, vida: 0, cor: '#3b82f6' },
-    { id: 'couro', nome: 'Armadura de couro', icone: '🦺', preco: 60, defesa: 0.10, vida: 20, cor: '#92400e' },
-    { id: 'malha', nome: 'Cota de malha', icone: '⛓️', preco: 300, defesa: 0.20, vida: 50, cor: '#9ca3af' },
-    { id: 'ferro', nome: 'Armadura de ferro', icone: '🛡️', preco: 1100, defesa: 0.30, vida: 130, cor: '#64748b' },
-    { id: 'ouro', nome: 'Armadura de ouro', icone: '👑', preco: 4000, defesa: 0.40, vida: 320, cor: '#eab308' },
-    { id: 'cristal', nome: 'Armadura de cristal', icone: '💎', preco: 13000, defesa: 0.50, vida: 750, cor: '#22d3ee' },
-    { id: 'dragao', nome: 'Armadura de dragão', icone: '🐉', preco: 40000, defesa: 0.60, vida: 1600, cor: '#dc2626' }
+    { id: 'roupa', nome: 'Roupa comum', icone: '👕', preco: 0, defesa: 0, vida: 0 },
+    { id: 'couro', nome: 'Armadura de couro', icone: '🦺', preco: 70, defesa: 0.10, vida: 15 },
+    { id: 'malha', nome: 'Cota de malha', icone: '⛓️', preco: 350, defesa: 0.20, vida: 40 },
+    { id: 'ferro', nome: 'Armadura de ferro', icone: '🛡️', preco: 1200, defesa: 0.30, vida: 110 },
+    { id: 'ouro', nome: 'Armadura de ouro', icone: '👑', preco: 4300, defesa: 0.40, vida: 280 },
+    { id: 'cristal', nome: 'Armadura de cristal', icone: '💎', preco: 14000, defesa: 0.50, vida: 650 },
+    { id: 'dragao', nome: 'Armadura de dragão', icone: '🐉', preco: 42000, defesa: 0.60, vida: 1400 }
   ];
+  // vel em metros por segundo, r = tamanho
   var TIPOS = [
-    { nome: 'Geleca', cor: '#5fd35f', vel: 65, r: 18, hp: 1, dano: 1, forma: 'geleca' },
-    { nome: 'Morcego', cor: '#8b5cf6', vel: 115, r: 14, hp: 0.7, dano: 0.8, forma: 'morcego' },
-    { nome: 'Esqueleto', cor: '#e5e7eb', vel: 80, r: 18, hp: 1.1, dano: 1.1, forma: 'normal' },
-    { nome: 'Orc', cor: '#65a30d', vel: 75, r: 22, hp: 1.5, dano: 1.3, forma: 'normal' },
-    { nome: 'Fantasma', cor: '#bae6fd', vel: 95, r: 18, hp: 0.9, dano: 1.1, forma: 'fantasma' },
-    { nome: 'Golem', cor: '#78716c', vel: 48, r: 28, hp: 2.4, dano: 1.6, forma: 'normal' },
-    { nome: 'Dragãozinho', cor: '#ef4444', vel: 90, r: 24, hp: 1.8, dano: 1.5, forma: 'morcego' },
-    { nome: 'Demônio', cor: '#9f1239', vel: 100, r: 24, hp: 2, dano: 1.8, forma: 'normal' }
+    { nome: 'Geleca', cor: 0x5fd35f, vel: 1.7, r: 0.7, hp: 1, dano: 1, forma: 'geleca' },
+    { nome: 'Morcego', cor: 0x8b5cf6, vel: 3.0, r: 0.45, hp: 0.7, dano: 0.8, forma: 'morcego' },
+    { nome: 'Esqueleto', cor: 0xe5e7eb, vel: 2.1, r: 0.5, hp: 1.1, dano: 1.1, forma: 'humano' },
+    { nome: 'Orc', cor: 0x65a30d, vel: 2.0, r: 0.65, hp: 1.5, dano: 1.3, forma: 'humano', dentes: true },
+    { nome: 'Fantasma', cor: 0xe0f2fe, vel: 2.4, r: 0.6, hp: 0.9, dano: 1.1, forma: 'fantasma' },
+    { nome: 'Golem', cor: 0x78716c, vel: 1.3, r: 1.0, hp: 2.4, dano: 1.6, forma: 'golem' },
+    { nome: 'Dragãozinho', cor: 0xef4444, vel: 2.4, r: 0.75, hp: 1.8, dano: 1.5, forma: 'dragao' },
+    { nome: 'Demônio', cor: 0x9f1239, vel: 2.6, r: 0.7, hp: 2, dano: 1.8, forma: 'humano', chifres: true }
   ];
-  var MUNDO = 2400; // tamanho do campo (quadrado)
+  var LIM = 44; // o campo vai de -44 a 44 metros
 
   // ---------- Contas do jogo ----------
-  function vidaMonstro(n) { return 15 * Math.pow(1.22, n - 1); }
-  function danoMonstro(n) { return 3 * Math.pow(1.19, n - 1); }
+  function vidaMonstro(n) { return 20 * Math.pow(1.22, n - 1); }
+  function danoMonstro(n) { return 3.5 * Math.pow(1.19, n - 1); }
   function moedasMonstro(n) { return Math.round((3 + n) * Math.pow(1.15, n - 1)); }
   function xpMonstro(n) { return 2 + 2 * n; }
   function xpParaSubir(n) { return Math.round(10 * n * Math.pow(1.08, n - 1)); }
-  function vidaBase(n) { return Math.round(100 * Math.pow(1.13, n - 1)); }
+  function vidaBase(n) { return Math.round(70 * Math.pow(1.13, n - 1)); }
+  function maxMonstros() { return Math.min(30, 2 + Math.floor(save.nivel * 1.3)); }
 
   // ---------- Progresso salvo (só neste aparelho; nada de dado pessoal) ----------
   var CHAVE = 'cacador-monstros-v1';
@@ -77,65 +81,298 @@
     } catch (e) { /* sem som */ }
   }
 
+  // ---------- Cena 3D ----------
+  var canvas = $('mundo'), hud = $('hud2d'), h2 = hud.getContext('2d');
+  var renderer;
+  try { renderer = new T.WebGLRenderer({ canvas: canvas, antialias: (window.devicePixelRatio || 1) < 2 }); }
+  catch (e) { $('tela-inicio').hidden = true; $('tela-erro').hidden = false; return; }
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.5));
+  var CEU = 0x9fd6ff;
+  var scene = new T.Scene();
+  scene.background = new T.Color(CEU);
+  scene.fog = new T.Fog(CEU, 14, 52);
+  var camera = new T.PerspectiveCamera(70, 1, 0.05, 140);
+  camera.rotation.order = 'YXZ';
+  scene.add(camera);
+  scene.add(new T.HemisphereLight(0xffffff, 0x3a6b35, 0.85));
+  var sol = new T.DirectionalLight(0xffffff, 0.75); sol.position.set(30, 50, 20); scene.add(sol);
+
+  // peças básicas que todos os modelos reaproveitam
+  var G = {
+    esfera: new T.SphereGeometry(1, 16, 12), caixa: new T.BoxGeometry(1, 1, 1),
+    cone: new T.ConeGeometry(1, 1, 10), cilindro: new T.CylinderGeometry(1, 1, 1, 10)
+  };
+  var M = {
+    branco: new T.MeshLambertMaterial({ color: 0xffffff }), preto: new T.MeshBasicMaterial({ color: 0x111111 }),
+    amarelo: new T.MeshBasicMaterial({ color: 0xffd23f }), osso: new T.MeshLambertMaterial({ color: 0xfff7e0 }),
+    madeira: new T.MeshLambertMaterial({ color: 0x5b3a1e }), escuro: new T.MeshLambertMaterial({ color: 0x333333 })
+  };
+  function peca(geo, mat, sx, sy, sz, x, y, z, pai) {
+    var m = new T.Mesh(geo, mat); m.scale.set(sx, sy, sz); m.position.set(x, y, z); if (pai) pai.add(m); return m;
+  }
+
+  // números aleatórios sempre iguais para o cenário
+  var semente = 7;
+  function rnd() { semente = (semente * 16807) % 2147483647; return (semente - 1) / 2147483646; }
+
+  // chão de grama
+  (function chao() {
+    var c = document.createElement('canvas'); c.width = c.height = 128; var g = c.getContext('2d');
+    g.fillStyle = '#4a8c3f'; g.fillRect(0, 0, 128, 128);
+    for (var i = 0; i < 900; i++) { g.fillStyle = ['#3f7d35', '#56a048', '#447f3a', '#5fae50'][i % 4]; g.fillRect(rnd() * 128, rnd() * 128, 2, 3 + rnd() * 3); }
+    var tex = new T.CanvasTexture(c); tex.wrapS = tex.wrapT = T.RepeatWrapping; tex.repeat.set(60, 60);
+    var chao = new T.Mesh(new T.PlaneGeometry(240, 240), new T.MeshLambertMaterial({ map: tex }));
+    chao.rotation.x = -Math.PI / 2; scene.add(chao);
+  })();
+
+  // árvores, pedras e cerca
+  var obstaculos = [];
+  (function cenario() {
+    var arvores = [], pedras = [];
+    for (var i = 0; i < 260 && arvores.length < 75; i++) {
+      var x = (rnd() * 2 - 1) * (LIM - 3), z = (rnd() * 2 - 1) * (LIM - 3);
+      if (Math.hypot(x, z) < 8) continue;
+      arvores.push({ x: x, z: z, s: 0.8 + rnd() * 0.6 });
+      obstaculos.push({ x: x, z: z, r: 0.6 });
+    }
+    for (var k = 0; k < 140; k++) { // floresta do lado de fora da cerca
+      var a = rnd() * Math.PI * 2, d = LIM + 4 + rnd() * 40;
+      arvores.push({ x: Math.cos(a) * d, z: Math.sin(a) * d, s: 1 + rnd() * 0.8 });
+    }
+    for (var p = 0; p < 30; p++) {
+      var px = (rnd() * 2 - 1) * (LIM - 2), pz = (rnd() * 2 - 1) * (LIM - 2);
+      if (Math.hypot(px, pz) < 6) continue;
+      var ps = 0.4 + rnd() * 0.8; pedras.push({ x: px, z: pz, s: ps, r: rnd() * 6 });
+      obstaculos.push({ x: px, z: pz, r: ps * 0.9 });
+    }
+    var dummy = new T.Object3D();
+    var tronco = new T.InstancedMesh(G.cilindro, M.madeira, arvores.length);
+    var folhas = new T.InstancedMesh(G.cone, new T.MeshLambertMaterial({ color: 0x2f7d32 }), arvores.length);
+    arvores.forEach(function (a, i) {
+      dummy.rotation.set(0, 0, 0);
+      dummy.position.set(a.x, a.s, a.z); dummy.scale.set(0.3 * a.s, 2 * a.s, 0.3 * a.s); dummy.updateMatrix(); tronco.setMatrixAt(i, dummy.matrix);
+      dummy.position.set(a.x, a.s * 3.6, a.z); dummy.scale.set(1.6 * a.s, 3.6 * a.s, 1.6 * a.s); dummy.updateMatrix(); folhas.setMatrixAt(i, dummy.matrix);
+    });
+    scene.add(tronco); scene.add(folhas);
+    var rochas = new T.InstancedMesh(new T.DodecahedronGeometry(1), new T.MeshLambertMaterial({ color: 0x8a8f96 }), pedras.length);
+    pedras.forEach(function (r, i) { dummy.position.set(r.x, r.s * 0.4, r.z); dummy.rotation.set(r.r, r.r * 2, 0); dummy.scale.set(r.s, r.s * 0.75, r.s); dummy.updateMatrix(); rochas.setMatrixAt(i, dummy.matrix); });
+    scene.add(rochas);
+    // cerca
+    var lado = LIM + 1, postes = [], passo = 3;
+    for (var v = -lado; v <= lado; v += passo) { postes.push([v, -lado], [v, lado], [-lado, v], [lado, v]); }
+    var mPoste = new T.InstancedMesh(G.caixa, M.madeira, postes.length);
+    postes.forEach(function (p, i) { dummy.rotation.set(0, 0, 0); dummy.position.set(p[0], 0.6, p[1]); dummy.scale.set(0.2, 1.2, 0.2); dummy.updateMatrix(); mPoste.setMatrixAt(i, dummy.matrix); });
+    scene.add(mPoste);
+    var mTabua = new T.MeshLambertMaterial({ color: 0x8b5a2b });
+    [0.45, 0.95].forEach(function (y) {
+      peca(G.caixa, mTabua, lado * 2, 0.12, 0.08, 0, y, -lado, scene); peca(G.caixa, mTabua, lado * 2, 0.12, 0.08, 0, y, lado, scene);
+      peca(G.caixa, mTabua, 0.08, 0.12, lado * 2, -lado, y, 0, scene); peca(G.caixa, mTabua, 0.08, 0.12, lado * 2, lado, y, 0, scene);
+    });
+  })();
+
+  // ---------- Modelos dos monstros ----------
+  function olhos(g, y, z, r, pupila) {
+    [-1, 1].forEach(function (lado) {
+      peca(G.esfera, M.branco, r * 0.24, r * 0.24, r * 0.24, lado * r * 0.33, y, z, g);
+      peca(G.esfera, pupila || M.preto, r * 0.12, r * 0.12, r * 0.12, lado * r * 0.33, y, z + r * 0.18, g);
+    });
+  }
+  function fazerMonstro(tipo, dourado) {
+    var r = tipo.r * (dourado ? 1.15 : 1);
+    var mat = new T.MeshLambertMaterial({ color: dourado ? 0xffd23f : tipo.cor, emissive: dourado ? 0x553300 : 0x000000 });
+    if (tipo.forma === 'fantasma') { mat.transparent = true; mat.opacity = 0.8; }
+    var g = new T.Group(), p = {}, alt = r * 2;
+    var olhoBrilho = (tipo.nome === 'Demônio' || tipo.nome === 'Dragãozinho') ? M.amarelo : M.preto;
+    if (tipo.forma === 'geleca') {
+      p.corpo = peca(G.esfera, mat, r, r * 0.75, r, 0, r * 0.7, 0, g);
+      olhos(g, r * 0.9, r * 0.82, r); alt = r * 1.5;
+    } else if (tipo.forma === 'morcego' || tipo.forma === 'dragao') {
+      var voo = new T.Group(); voo.position.y = tipo.forma === 'dragao' ? 2.1 : 1.6; g.add(voo); p.voo = voo; p.vooY = voo.position.y;
+      if (tipo.forma === 'dragao') {
+        peca(G.esfera, mat, r * 0.8, r * 0.7, r * 1.2, 0, 0, 0, voo);
+        peca(G.esfera, mat, r * 0.55, r * 0.5, r * 0.6, 0, r * 0.45, r * 1.0, voo);
+        peca(G.cone, M.osso, r * 0.12, r * 0.4, r * 0.12, -r * 0.25, r * 0.95, r * 0.9, voo);
+        peca(G.cone, M.osso, r * 0.12, r * 0.4, r * 0.12, r * 0.25, r * 0.95, r * 0.9, voo);
+        var olhosD = new T.Group(); olhosD.position.set(0, r * 0.55, r * 1.25); voo.add(olhosD); olhos(olhosD, 0, 0, r * 0.8, olhoBrilho);
+      } else {
+        peca(G.esfera, mat, r, r, r, 0, 0, 0, voo);
+        peca(G.cone, mat, r * 0.25, r * 0.5, r * 0.25, -r * 0.5, r * 0.95, 0, voo);
+        peca(G.cone, mat, r * 0.25, r * 0.5, r * 0.25, r * 0.5, r * 0.95, 0, voo);
+        olhos(voo, r * 0.15, r * 0.82, r, olhoBrilho);
+      }
+      p.asas = [-1, 1].map(function (lado) {
+        var piv = new T.Group(); piv.position.set(lado * r * 0.6, 0, 0); voo.add(piv);
+        peca(G.caixa, mat, r * 1.6, 0.05, r * 0.9, lado * r * 0.8, 0, 0, piv);
+        piv.userData.lado = lado; return piv;
+      });
+      alt = voo.position.y + r;
+    } else if (tipo.forma === 'fantasma') {
+      var flut = new T.Group(); flut.position.y = 1.0; g.add(flut); p.voo = flut; p.vooY = 1.0;
+      peca(G.esfera, mat, r, r, r, 0, r * 0.5, 0, flut);
+      var saia = peca(G.cone, mat, r, r * 1.4, r, 0, -r * 0.2, 0, flut); saia.rotation.x = Math.PI;
+      olhos(flut, r * 0.6, r * 0.85, r); alt = 1 + r * 1.5;
+    } else if (tipo.forma === 'golem') {
+      p.corpo = peca(G.caixa, mat, r * 1.6, r * 1.4, r * 1.0, 0, r * 1.5, 0, g);
+      peca(G.caixa, mat, r * 0.8, r * 0.7, r * 0.8, 0, r * 2.55, 0, g);
+      olhos(g, r * 2.6, r * 0.41, r * 0.9, M.amarelo);
+      p.bracos = [-1, 1].map(function (lado) { var b = new T.Group(); b.position.set(lado * r * 1.05, r * 2.0, 0); g.add(b); peca(G.caixa, mat, r * 0.5, r * 1.4, r * 0.5, 0, -r * 0.6, 0, b); return b; });
+      p.pernas = [-1, 1].map(function (lado) { var b = new T.Group(); b.position.set(lado * r * 0.45, r * 0.8, 0); g.add(b); peca(G.caixa, mat, r * 0.55, r * 0.8, r * 0.55, 0, -r * 0.4, 0, b); return b; });
+      alt = r * 3;
+    } else { // humano: esqueleto, orc, demônio
+      peca(G.caixa, mat, r * 1.3, r * 1.5, r * 0.8, 0, r * 2.0, 0, g);
+      peca(G.esfera, mat, r * 0.62, r * 0.62, r * 0.62, 0, r * 3.2, 0, g);
+      olhos(g, r * 3.3, r * 0.5, r * 0.9, olhoBrilho);
+      if (tipo.dentes) { peca(G.cone, M.osso, r * 0.08, r * 0.25, r * 0.08, -r * 0.2, r * 3.0, r * 0.55, g); peca(G.cone, M.osso, r * 0.08, r * 0.25, r * 0.08, r * 0.2, r * 3.0, r * 0.55, g); }
+      if (tipo.chifres) { peca(G.cone, M.escuro, r * 0.14, r * 0.5, r * 0.14, -r * 0.35, r * 3.85, 0, g); peca(G.cone, M.escuro, r * 0.14, r * 0.5, r * 0.14, r * 0.35, r * 3.85, 0, g); }
+      p.bracos = [-1, 1].map(function (lado) { var b = new T.Group(); b.position.set(lado * r * 0.85, r * 2.6, 0); g.add(b); peca(G.caixa, mat, r * 0.32, r * 1.3, r * 0.32, 0, -r * 0.6, 0, b); return b; });
+      p.pernas = [-1, 1].map(function (lado) { var b = new T.Group(); b.position.set(lado * r * 0.35, r * 1.25, 0); g.add(b); peca(G.caixa, mat, r * 0.38, r * 1.25, r * 0.38, 0, -r * 0.62, 0, b); return b; });
+      alt = r * 3.9;
+    }
+    // sombra
+    var sombra = new T.Mesh(G.esfera, matSombra); sombra.scale.set(r * 0.9, 0.01, r * 0.9); sombra.position.y = 0.02; g.add(sombra);
+    return { grupo: g, partes: p, mat: mat, alt: alt, r: r };
+  }
+  var matSombra = new T.MeshBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.25, depthWrite: false });
+  function animarMonstro(m, t) {
+    var p = m.modelo.partes, f = Math.sin(t * 7 + m.fase);
+    if (m.tipo.forma === 'geleca') { p.corpo.scale.y = m.r * (0.75 + f * 0.1); p.corpo.scale.x = p.corpo.scale.z = m.r * (1 - f * 0.06); }
+    if (p.asas) p.asas.forEach(function (a) { a.rotation.z = a.userData.lado * Math.sin(t * 14 + m.fase) * 0.6; });
+    if (p.voo) p.voo.position.y = p.vooY + Math.sin(t * 3 + m.fase) * 0.2;
+    if (p.pernas) { p.pernas[0].rotation.x = f * 0.6; p.pernas[1].rotation.x = -f * 0.6; }
+    if (p.bracos) { p.bracos[0].rotation.x = -f * 0.5 - (m.ataque > 0 ? 1.5 : 0); p.bracos[1].rotation.x = f * 0.5 - (m.ataque > 0 ? 1.5 : 0); }
+  }
+
+  // ---------- Arma na mão ----------
+  var mao = new T.Group(); mao.scale.setScalar(0.7); camera.add(mao);
+  var maoBase = new T.Vector3(0.3, -0.36, -0.55);
+  function montarArmaNaMao() {
+    while (mao.children.length) mao.remove(mao.children[0]);
+    var a = arma(), cor = a.brilha ? new T.MeshBasicMaterial({ color: a.cor }) : new T.MeshLambertMaterial({ color: a.cor });
+    var g = new T.Group(); mao.add(g);
+    if (a.modelo === 'pau') { peca(G.cilindro, cor, 0.025, 0.55, 0.025, 0, 0.22, 0, g); }
+    else if (a.modelo === 'espada') {
+      peca(G.cilindro, M.madeira, 0.025, 0.18, 0.025, 0, 0, 0, g);
+      peca(G.caixa, M.escuro, 0.2, 0.03, 0.05, 0, 0.1, 0, g);
+      peca(G.caixa, cor, 0.055, 0.6, 0.015, 0, 0.41, 0, g);
+    } else if (a.modelo === 'machado') {
+      peca(G.cilindro, M.madeira, 0.028, 0.7, 0.028, 0, 0.25, 0, g);
+      peca(G.caixa, cor, 0.26, 0.2, 0.03, 0.1, 0.52, 0, g);
+    } else if (a.modelo === 'arco') {
+      var arco = new T.Mesh(new T.TorusGeometry(0.32, 0.018, 6, 18, Math.PI), cor); arco.rotation.z = -Math.PI / 2; arco.position.y = 0.2; g.add(arco);
+      peca(G.cilindro, M.branco, 0.003, 0.64, 0.003, 0, 0.2, 0, g);
+    } else if (a.modelo === 'lanca') {
+      peca(G.cilindro, M.madeira, 0.022, 1.2, 0.022, 0, 0.35, 0, g);
+      peca(G.cone, cor, 0.05, 0.2, 0.05, 0, 1.05, 0, g);
+    } else if (a.modelo === 'varinha') {
+      peca(G.cilindro, M.madeira, 0.015, 0.45, 0.015, 0, 0.15, 0, g);
+      peca(G.esfera, new T.MeshBasicMaterial({ color: a.cor }), 0.05, 0.05, 0.05, 0, 0.4, 0, g);
+    } else if (a.modelo === 'martelo') {
+      peca(G.cilindro, M.madeira, 0.03, 0.7, 0.03, 0, 0.25, 0, g);
+      peca(G.caixa, cor, 0.32, 0.2, 0.2, 0, 0.6, 0, g);
+    }
+    mao.userData.distancia = !!a.distancia;
+  }
+
   // ---------- Estado ----------
   var estado = 'inicio';
-  var jog, monstros, tiros, textos, particulas, cam = { x: 0, y: 0 }, ultimo = 0, relogio = 0, proxMonstro = 0;
-  var teclas = {}, toque = null;
-  var W = innerWidth, H = innerHeight, dpr = 1;
+  var jog = null, monstros = [], tiros = [], textos = [], particulas = [];
+  var ultimo = 0, relogio = 0, proxMonstro = 0, vermelho = 0;
+  var teclas = {}, toques = {}, atacando = false, travado = false, olharMouse = null;
+  var W = innerWidth, H = innerHeight, dpr2 = 1;
+  var toqueAparelho = !!(window.matchMedia && window.matchMedia('(pointer: coarse)').matches);
+  $('dica-controles').innerHTML = toqueAparelho
+    ? 'Lado esquerdo da tela: arraste para andar.<br>Lado direito: arraste para olhar. Botão vermelho: atacar.'
+    : 'W A S D para andar, mouse para olhar (clique na tela).<br>Clique ou Espaço: atacar · E: poção · L: loja · Esc: pausa';
 
   function ajustar() {
-    W = innerWidth; H = innerHeight; dpr = Math.min(window.devicePixelRatio || 1, 2);
-    canvas.width = Math.round(W * dpr); canvas.height = Math.round(H * dpr);
-    if (estado !== 'jogando') desenhar();
+    W = innerWidth; H = innerHeight; dpr2 = Math.min(window.devicePixelRatio || 1, 2);
+    renderer.setSize(W, H, false);
+    camera.aspect = W / H; camera.fov = W < H ? 80 : 70; camera.updateProjectionMatrix();
+    // a arma fica sempre dentro da tela, mesmo no celular em pé
+    var meiaLargura = 0.55 * Math.tan(camera.fov * Math.PI / 360) * camera.aspect;
+    maoBase.x = Math.min(0.3, meiaLargura * 0.55);
+    hud.width = Math.round(W * dpr2); hud.height = Math.round(H * dpr2);
   }
   addEventListener('resize', ajustar);
 
   function mostrar(qual) {
     ['tela-inicio', 'tela-pausa', 'tela-morte', 'tela-loja', 'tela-confirmar'].forEach(function (t) { $(t).hidden = t !== qual; });
-    $('hud').hidden = qual === 'tela-inicio' || qual === 'tela-confirmar' || qual === 'tela-loja';
+    var emJogo = !qual;
+    $('hud').hidden = !(emJogo || qual === 'tela-pausa' || qual === 'tela-morte');
+    $('btn-atacar').hidden = !emJogo;
   }
 
-  function novoJogador() { jog = { x: MUNDO / 2, y: MUNDO / 2, vida: vidaMax(), dir: 0, espera: 0, golpe: 0, golpeDir: 0, semDano: 0, piscar: 0 }; }
-  function limparCampo() { monstros = []; tiros = []; textos = []; particulas = []; }
+  function novoJogador() { jog = { x: 0, z: 0, yaw: 0, pitch: 0, vida: vidaMax(), espera: 0, golpe: 0, semDano: 0, passo: 0, andando: false }; }
+  function tirarMonstro(m) { scene.remove(m.modelo.grupo); m.modelo.mat.dispose(); }
+  function limparCampo() {
+    monstros.forEach(tirarMonstro);
+    tiros.forEach(function (t) { scene.remove(t.mesh); t.mesh.material.dispose(); });
+    particulas.forEach(function (p) { scene.remove(p.mesh); });
+    monstros = []; tiros = []; textos = []; particulas = [];
+    vermelho = 0; $('dano').style.opacity = 0;
+  }
 
   // ---------- Monstros ----------
+  function soltarDeObstaculos(o, r) {
+    for (var i = 0; i < obstaculos.length; i++) {
+      var b = obstaculos[i], dx = o.x - b.x, dz = o.z - b.z, d = Math.hypot(dx, dz) || 1, min = b.r + r;
+      if (d < min) { o.x = b.x + dx / d * min; o.z = b.z + dz / d * min; }
+    }
+    o.x = Math.max(-LIM, Math.min(LIM, o.x)); o.z = Math.max(-LIM, Math.min(LIM, o.z));
+  }
   function criarMonstro() {
     var n = Math.max(1, save.nivel + Math.floor(Math.random() * 3) - 1); // nível do jogador -1, igual ou +1
     var disp = Math.min(TIPOS.length, 1 + Math.floor((save.nivel - 1) / 3));
     var tipo = TIPOS[Math.max(0, disp - 1 - Math.floor(Math.random() * Math.min(3, disp)))];
     var dourado = Math.random() < 0.05;
-    var ang = Math.random() * Math.PI * 2, dist = Math.max(W, H) * 0.6 + 60;
-    var x = Math.min(MUNDO - 30, Math.max(30, jog.x + Math.cos(ang) * dist));
-    var y = Math.min(MUNDO - 30, Math.max(30, jog.y + Math.sin(ang) * dist));
+    var ang = Math.random() * Math.PI * 2, dist = 10 + Math.random() * 8;
+    var pos = { x: jog.x + Math.cos(ang) * dist, z: jog.z + Math.sin(ang) * dist };
+    soltarDeObstaculos(pos, tipo.r);
+    var modelo = fazerMonstro(tipo, dourado);
     var vida = vidaMonstro(n) * tipo.hp * (dourado ? 2 : 1);
-    monstros.push({ x: x, y: y, n: n, tipo: tipo, vida: vida, max: vida, dano: danoMonstro(n) * tipo.dano, r: tipo.r * (dourado ? 1.15 : 1),
-      vel: tipo.vel * (0.9 + Math.random() * 0.2), espera: 0, lento: 0, bate: 0, dourado: dourado, fase: Math.random() * 6 });
+    var m = { x: pos.x, z: pos.z, n: n, tipo: tipo, vida: vida, max: vida, dano: danoMonstro(n) * tipo.dano, r: modelo.r,
+      vel: tipo.vel * (0.9 + Math.random() * 0.2), espera: 0.5, lento: 0, bate: 0, ataque: 0, dourado: dourado, fase: Math.random() * 6, nasce: 0, modelo: modelo };
+    modelo.grupo.position.set(m.x, 0, m.z); modelo.grupo.scale.setScalar(0.01);
+    scene.add(modelo.grupo);
+    monstros.push(m);
   }
-  function maxMonstros() { return Math.min(14, 5 + Math.floor(save.nivel / 3)); }
+  function horda() {
+    var qtd = 5 + Math.floor(save.nivel / 2);
+    for (var i = 0; i < qtd; i++) criarMonstro();
+    avisar('Uma horda de ' + qtd + ' monstros está chegando!');
+    bip(180, 0.6, 'sawtooth', 0.07);
+  }
 
-  function texto(x, y, t, cor, tam) { textos.push({ x: x, y: y, t: t, cor: cor, tam: tam || 18, vida: 1 }); }
-  function estourar(x, y, cor, qtd) {
+  function texto(x, y, z, t, cor, tam) { textos.push({ x: x, y: y, z: z, t: t, cor: cor, tam: tam || 20, vida: 1 }); }
+  var geoParticula = new T.BoxGeometry(0.12, 0.12, 0.12);
+  function estourar(x, y, z, cor, qtd) {
+    var mat = new T.MeshBasicMaterial({ color: cor });
     for (var i = 0; i < qtd; i++) {
-      var a = Math.random() * 6.28, v = 60 + Math.random() * 160;
-      particulas.push({ x: x, y: y, vx: Math.cos(a) * v, vy: Math.sin(a) * v, cor: cor, vida: 0.5 + Math.random() * 0.3 });
+      var mesh = new T.Mesh(geoParticula, mat); mesh.position.set(x, y, z); scene.add(mesh);
+      var a = Math.random() * 6.28;
+      particulas.push({ mesh: mesh, vx: Math.cos(a) * (1 + Math.random() * 3), vy: 2 + Math.random() * 3, vz: Math.sin(a) * (1 + Math.random() * 3), vida: 0.6 + Math.random() * 0.3 });
     }
   }
   function curto(v) { v = Math.round(v); return v >= 100000 ? Math.round(v / 1000) + 'mil' : String(v); }
 
   function ferir(m, dano) {
     m.vida -= dano; m.bate = 0.12;
-    texto(m.x, m.y - m.r, curto(dano), '#fff', 16);
+    texto(m.x, m.modelo.alt + 0.2, m.z, curto(dano), '#ffffff', 22);
     if (arma().gelo) m.lento = 1.5;
+    if (!arma().distancia) { // empurrão para trás
+      var dx = m.x - jog.x, dz = m.z - jog.z, d = Math.hypot(dx, dz) || 1;
+      m.x += dx / d * 0.5; m.z += dz / d * 0.5;
+    }
     if (m.vida <= 0) matar(m);
   }
   function matar(m) {
     var i = monstros.indexOf(m); if (i < 0) return;
-    monstros.splice(i, 1);
+    monstros.splice(i, 1); tirarMonstro(m);
     var ganho = moedasMonstro(m.n) * (m.dourado ? 5 : 1);
     ganho = Math.max(1, Math.round(ganho * (0.85 + Math.random() * 0.3)));
     save.moedas += ganho;
-    texto(m.x, m.y - 10, '+' + curto(ganho), '#ffd23f', m.dourado ? 26 : 20);
-    estourar(m.x, m.y, m.dourado ? '#ffd23f' : m.tipo.cor, 14);
+    texto(m.x, m.modelo.alt * 0.6, m.z, '+' + curto(ganho), '#ffd23f', m.dourado ? 30 : 24);
+    estourar(m.x, m.modelo.alt * 0.5, m.z, m.dourado ? 0xffd23f : m.tipo.cor, 12);
     bip(m.dourado ? 1200 : 880, 0.12, 'triangle', 0.07);
     ganharXp(xpMonstro(m.n));
     guardar(); atualizarHud();
@@ -147,26 +384,33 @@
       jog.vida = vidaMax();
       avisar('Subiu para o nível ' + save.nivel + '!');
       bip(523, 0.15, 'triangle', 0.08); setTimeout(function () { bip(784, 0.25, 'triangle', 0.08); }, 120);
+      if (save.nivel % 5 === 0) setTimeout(function () { if (estado === 'jogando') horda(); }, 2200);
     }
   }
 
   // ---------- Avisos na tela ----------
   var avisoTimer = 0;
-  function avisar(t) { var a = $('aviso'); a.textContent = t; a.hidden = false; clearTimeout(avisoTimer); avisoTimer = setTimeout(function () { a.hidden = true; }, 1800); }
+  function avisar(t) { var a = $('aviso'); a.textContent = t; a.hidden = false; clearTimeout(avisoTimer); avisoTimer = setTimeout(function () { a.hidden = true; }, 2200); }
 
   // ---------- Partida ----------
+  function travar() {
+    if (toqueAparelho || !canvas.requestPointerLock) return;
+    try { var r = canvas.requestPointerLock(); if (r && r.catch) r.catch(function () { /* sem trava */ }); } catch (e) { /* sem trava */ }
+  }
+  function destravar() { try { if (document.pointerLockElement) document.exitPointerLock(); } catch (e) { /* ok */ } }
+
+  function entrar() { estado = 'jogando'; ultimo = 0; teclas = {}; toques = {}; atacando = false; mostrar(null); atualizarHud(); travar(); }
   function comecar() {
     somLigar();
-    novoJogador(); limparCampo(); relogio = 0; proxMonstro = 0;
+    novoJogador(); limparCampo(); montarArmaNaMao(); proxMonstro = 0;
     for (var i = 0; i < 3; i++) criarMonstro();
-    estado = 'jogando'; ultimo = 0; mostrar(null); atualizarHud();
+    entrar();
     evento('partida_iniciada');
-    requestAnimationFrame(quadro);
   }
-  function pausar() { if (estado !== 'jogando') return; estado = 'pausa'; mostrar('tela-pausa'); }
-  function continuar() { if (estado !== 'pausa' && estado !== 'loja') return; estado = 'jogando'; ultimo = 0; teclas = {}; toque = null; mostrar(null); requestAnimationFrame(quadro); }
+  function pausar() { if (estado !== 'jogando') return; estado = 'pausa'; atacando = false; mostrar('tela-pausa'); destravar(); }
+  function continuar() { if (estado !== 'pausa' && estado !== 'loja') return; entrar(); }
   function morrer() {
-    estado = 'morto';
+    estado = 'morto'; atacando = false; destravar(); vermelho = 0; $('dano').style.opacity = 0;
     var perdeu = Math.floor(save.moedas * 0.25);
     save.moedas -= perdeu; guardar();
     $('morte-texto').textContent = perdeu > 0 ? 'Você deixou cair ' + perdeu + ' moedas. Suas armas e armaduras continuam com você.' : 'Suas armas e armaduras continuam com você.';
@@ -174,242 +418,232 @@
     atualizarHud(); mostrar('tela-morte');
     evento('partida_terminada', { nivel: save.nivel });
   }
-  function reviver() { somLigar(); novoJogador(); limparCampo(); for (var i = 0; i < 3; i++) criarMonstro(); estado = 'jogando'; ultimo = 0; mostrar(null); atualizarHud(); requestAnimationFrame(quadro); }
+  function reviver() { somLigar(); novoJogador(); limparCampo(); montarArmaNaMao(); for (var i = 0; i < 3; i++) criarMonstro(); entrar(); }
 
   function tomarPocao() {
     if (estado !== 'jogando' || save.pocoes <= 0) return;
     if (jog.vida >= vidaMax()) { avisar('Sua vida já está cheia'); return; }
     save.pocoes--; jog.vida = Math.min(vidaMax(), jog.vida + vidaMax() * 0.6);
-    texto(jog.x, jog.y - 30, '+vida', '#ff6b6b', 20); bip(660, 0.2, 'sine', 0.08);
+    avisar('+ vida!'); bip(660, 0.2, 'sine', 0.08);
     guardar(); atualizarHud();
   }
 
-  // ---------- Atualizar ----------
+  // ---------- Atacar ----------
+  var frente = new T.Vector3();
+  function atacar() {
+    var a = arma();
+    jog.espera = a.espera; jog.golpe = 1;
+    var fx = -Math.sin(jog.yaw), fz = -Math.cos(jog.yaw);
+    if (a.distancia) {
+      // ajuda a mirar: escolhe o monstro mais perto do centro da tela
+      var alvo = null, melhor = 0.3;
+      monstros.forEach(function (m) {
+        var dx = m.x - jog.x, dz = m.z - jog.z, d = Math.hypot(dx, dz);
+        if (d > a.alcance || m.nasce < 1) return;
+        var ang = Math.acos(Math.max(-1, Math.min(1, (dx * fx + dz * fz) / (d || 1))));
+        if (ang < melhor) { melhor = ang; alvo = m; }
+      });
+      var origem = new T.Vector3(jog.x, 1.45, jog.z), dir;
+      if (alvo) dir = new T.Vector3(alvo.x, alvo.modelo.alt * 0.55, alvo.z).sub(origem).normalize();
+      else { camera.getWorldDirection(frente); dir = frente.clone(); }
+      var mesh = new T.Mesh(G.esfera, new T.MeshBasicMaterial({ color: a.tiro })); mesh.scale.setScalar(0.12); mesh.position.copy(origem);
+      scene.add(mesh);
+      tiros.push({ mesh: mesh, vel: dir.multiplyScalar(32), vida: 1.2, dano: danoArma() });
+      bip(a.gelo ? 1000 : 700, 0.07, 'triangle', 0.04);
+    } else {
+      var acertou = false;
+      monstros.slice().forEach(function (m) {
+        var dx = m.x - jog.x, dz = m.z - jog.z, d = Math.hypot(dx, dz);
+        if (d - m.r > a.alcance) return;
+        var ang = Math.acos(Math.max(-1, Math.min(1, (dx * fx + dz * fz) / (d || 1))));
+        if (ang < 0.75 || d < m.r + 0.3) { ferir(m, danoArma()); acertou = true; }
+      });
+      bip(acertou ? 320 : 220, 0.06, 'square', 0.04);
+    }
+  }
+
+  // ---------- Cada quadro ----------
   function quadro(t) {
-    if (estado !== 'jogando') return;
+    requestAnimationFrame(quadro);
     var dt = ultimo ? Math.min(0.05, (t - ultimo) / 1000) : 0;
     ultimo = t; relogio += dt;
-    passo(dt);
-    if (estado !== 'jogando') return;
-    desenhar();
-    requestAnimationFrame(quadro);
+    if (estado === 'jogando') passo(dt);
+    else if (estado === 'inicio' || estado === 'confirmar') { // a câmera gira devagar na tela de início
+      camera.position.set(Math.sin(relogio * 0.05) * 6, 2.2, Math.cos(relogio * 0.05) * 6);
+      camera.rotation.set(-0.08, relogio * 0.05, 0);
+      mao.visible = false;
+    }
+    renderer.render(scene, camera);
+    desenharHud();
   }
 
   function passo(dt) {
+    mao.visible = true;
+    // Olhar com o teclado (setas)
+    if (teclas.ArrowLeft) jog.yaw += 2.2 * dt;
+    if (teclas.ArrowRight) jog.yaw -= 2.2 * dt;
     // Andar
-    var mx = 0, my = 0;
-    if (teclas.ArrowLeft || teclas.KeyA) mx -= 1;
-    if (teclas.ArrowRight || teclas.KeyD) mx += 1;
-    if (teclas.ArrowUp || teclas.KeyW) my -= 1;
-    if (teclas.ArrowDown || teclas.KeyS) my += 1;
-    if (toque && toque.ativo) {
-      var dx = toque.x - toque.ox, dy = toque.y - toque.oy, d = Math.hypot(dx, dy);
-      if (d > 8) { var f = Math.min(1, d / 60); mx = dx / d * f; my = dy / d * f; }
+    var fw = 0, st = 0;
+    if (teclas.KeyW || teclas.ArrowUp) fw += 1;
+    if (teclas.KeyS || teclas.ArrowDown) fw -= 1;
+    if (teclas.KeyA) st -= 1;
+    if (teclas.KeyD) st += 1;
+    for (var id in toques) {
+      var tq = toques[id];
+      if (tq.tipo !== 'mover') continue;
+      var dx = tq.x - tq.ox, dy = tq.y - tq.oy, d = Math.hypot(dx, dy);
+      if (d > 8) { var f = Math.min(1, d / 60); st = dx / d * f; fw = -dy / d * f; }
     }
-    var ml = Math.hypot(mx, my);
-    if (ml > 1) { mx /= ml; my /= ml; }
-    var vel = 190;
-    jog.x = Math.min(MUNDO - 20, Math.max(20, jog.x + mx * vel * dt));
-    jog.y = Math.min(MUNDO - 20, Math.max(20, jog.y + my * vel * dt));
-    if (ml > 0.1) jog.dir = Math.atan2(my, mx);
+    var ml = Math.hypot(fw, st); if (ml > 1) { fw /= ml; st /= ml; }
+    var vel = 5, sy = Math.sin(jog.yaw), cy = Math.cos(jog.yaw);
+    jog.x += (-sy * fw + cy * st) * vel * dt;
+    jog.z += (-cy * fw - sy * st) * vel * dt;
+    soltarDeObstaculos(jog, 0.4);
     jog.andando = ml > 0.1;
+    if (jog.andando) jog.passo += dt * 9;
 
     // Recupera vida devagar quando fica um tempo sem levar golpe
     jog.semDano += dt;
-    if (jog.semDano > 3) jog.vida = Math.min(vidaMax(), jog.vida + vidaMax() * 0.04 * dt);
-    if (jog.piscar > 0) jog.piscar -= dt;
+    if (jog.semDano > 4) jog.vida = Math.min(vidaMax(), jog.vida + vidaMax() * 0.03 * dt);
+    if (vermelho > 0) { vermelho = Math.max(0, vermelho - dt * 2.5); $('dano').style.opacity = vermelho; }
 
-    // Novos monstros
+    // Câmera
+    camera.position.set(jog.x, 1.6 + (jog.andando ? Math.sin(jog.passo) * 0.05 : 0), jog.z);
+    camera.rotation.set(jog.pitch, jog.yaw, 0);
+
+    // Arma na mão
+    jog.espera -= dt;
+    if (atacando && jog.espera <= 0) atacar();
+    if (jog.golpe > 0) jog.golpe = Math.max(0, jog.golpe - dt / 0.22);
+    var s = Math.sin(jog.golpe * Math.PI);
+    mao.position.set(maoBase.x - s * 0.15, maoBase.y + (jog.andando ? Math.abs(Math.sin(jog.passo)) * 0.02 : 0) + s * 0.05, maoBase.z - s * 0.15);
+    if (mao.userData.distancia) mao.rotation.set(-0.2 + s * 0.2, 0.15, -0.1);
+    else mao.rotation.set(-0.85 - s * 1.1, 0.3 * s, -0.35 + s * 0.7);
+
+    // Novos monstros (quanto maior o nível, mais monstros)
     proxMonstro -= dt;
-    if (proxMonstro <= 0 && monstros.length < maxMonstros()) { criarMonstro(); proxMonstro = 1.1; }
-
-    // Ataque automático no monstro mais perto
-    jog.espera -= dt; if (jog.golpe > 0) jog.golpe -= dt;
-    var a = arma();
-    if (jog.espera <= 0) {
-      var alvo = null, melhor = Infinity;
-      for (var i = 0; i < monstros.length; i++) {
-        var m = monstros[i], dd = Math.hypot(m.x - jog.x, m.y - jog.y) - m.r;
-        if (dd < a.alcance && dd < melhor) { melhor = dd; alvo = m; }
-      }
-      if (alvo) {
-        jog.espera = a.espera;
-        var ang = Math.atan2(alvo.y - jog.y, alvo.x - jog.x);
-        jog.dir = ang;
-        if (a.distancia) {
-          tiros.push({ x: jog.x, y: jog.y, vx: Math.cos(ang) * 620, vy: Math.sin(ang) * 620, vida: 0.8, cor: a.cor, dano: danoArma() });
-          bip(a.gelo ? 1000 : 700, 0.07, 'triangle', 0.04);
-        } else {
-          jog.golpe = 0.18; jog.golpeDir = ang;
-          // golpe de perto acerta todos que estão na frente
-          var atingidos = monstros.filter(function (m) {
-            var dx2 = m.x - jog.x, dy2 = m.y - jog.y;
-            if (Math.hypot(dx2, dy2) - m.r > a.alcance) return false;
-            var dif = Math.abs(((Math.atan2(dy2, dx2) - ang + Math.PI * 3) % (Math.PI * 2)) - Math.PI);
-            return dif < 0.9;
-          });
-          atingidos.forEach(function (m) { ferir(m, danoArma()); });
-          bip(320, 0.06, 'square', 0.04);
-        }
-      }
-    }
+    if (proxMonstro <= 0 && monstros.length < maxMonstros()) { criarMonstro(); proxMonstro = Math.max(0.4, 1.4 - save.nivel * 0.03); }
 
     // Tiros
     for (var k = tiros.length - 1; k >= 0; k--) {
       var tr = tiros[k];
-      tr.x += tr.vx * dt; tr.y += tr.vy * dt; tr.vida -= dt;
-      var acertou = false;
+      tr.mesh.position.addScaledVector(tr.vel, dt); tr.vida -= dt;
+      var acertou = false, tp = tr.mesh.position;
       for (var j = 0; j < monstros.length; j++) {
-        var mm = monstros[j];
-        if (Math.hypot(mm.x - tr.x, mm.y - tr.y) < mm.r + 6) { ferir(mm, tr.dano); acertou = true; break; }
+        var mm = monstros[j], cy2 = mm.modelo.alt * 0.55;
+        if (Math.hypot(mm.x - tp.x, mm.z - tp.z) < mm.r + 0.35 && Math.abs(tp.y - cy2) < mm.modelo.alt * 0.6 + 0.3) { ferir(mm, tr.dano); acertou = true; break; }
       }
-      if (acertou || tr.vida <= 0) tiros.splice(k, 1);
+      if (acertou || tr.vida <= 0 || tp.y < 0) { scene.remove(tr.mesh); tr.mesh.material.dispose(); tiros.splice(k, 1); }
     }
 
-    // Monstros andam até você e mordem
+    // Monstros andam até você e atacam
     for (var q = 0; q < monstros.length; q++) {
       var mo = monstros[q];
-      var ex = jog.x - mo.x, ey = jog.y - mo.y, dist = Math.hypot(ex, ey) || 1;
+      if (mo.nasce < 1) { mo.nasce = Math.min(1, mo.nasce + dt * 2); mo.modelo.grupo.scale.setScalar(Math.max(0.01, mo.nasce)); }
+      var ex = jog.x - mo.x, ez = jog.z - mo.z, dist = Math.hypot(ex, ez) || 1;
       var v = mo.vel * (mo.lento > 0 ? 0.45 : 1);
       if (mo.lento > 0) mo.lento -= dt;
-      if (mo.bate > 0) mo.bate -= dt;
-      if (dist > mo.r + 16) { mo.x += ex / dist * v * dt; mo.y += ey / dist * v * dt; }
-      // não deixa monstros ficarem um em cima do outro
+      if (mo.ataque > 0) mo.ataque -= dt;
+      if (dist > mo.r + 0.7) { mo.x += ex / dist * v * dt; mo.z += ez / dist * v * dt; }
       for (var o = q + 1; o < monstros.length; o++) {
-        var ou = monstros[o], sx = ou.x - mo.x, sy = ou.y - mo.y, sd = Math.hypot(sx, sy) || 1, min = mo.r + ou.r;
-        if (sd < min) { var emp = (min - sd) / 2; mo.x -= sx / sd * emp; mo.y -= sy / sd * emp; ou.x += sx / sd * emp; ou.y += sy / sd * emp; }
+        var ou = monstros[o], sx = ou.x - mo.x, sz = ou.z - mo.z, sd = Math.hypot(sx, sz) || 1, min = mo.r + ou.r;
+        if (sd < min) { var emp = (min - sd) / 2; mo.x -= sx / sd * emp; mo.z -= sz / sd * emp; ou.x += sx / sd * emp; ou.z += sz / sd * emp; }
       }
+      if (mo.tipo.forma !== 'fantasma' && mo.tipo.forma !== 'morcego' && mo.tipo.forma !== 'dragao') soltarDeObstaculos(mo, mo.r * 0.8);
+      mo.modelo.grupo.position.set(mo.x, 0, mo.z);
+      mo.modelo.grupo.rotation.y = Math.atan2(ex, ez);
+      // pisca de branco quando apanha
+      if (mo.bate > 0) { mo.bate -= dt; mo.modelo.mat.emissive.setHex(0xffffff); }
+      else mo.modelo.mat.emissive.setHex(mo.dourado ? 0x553300 : (mo.lento > 0 ? 0x1e4d6b : 0x000000));
+      animarMonstro(mo, relogio);
       mo.espera -= dt;
-      if (dist < mo.r + 22 && mo.espera <= 0) {
-        mo.espera = 1.2;
+      if (dist < mo.r + 1.0 && mo.espera <= 0 && mo.nasce >= 1) {
+        mo.espera = 1.2; mo.ataque = 0.25;
         var dano = mo.dano * (1 - armadura().defesa);
-        jog.vida -= dano; jog.semDano = 0; jog.piscar = 0.25;
-        texto(jog.x, jog.y - 26, '-' + curto(Math.max(1, dano)), '#ff6b6b', 18);
+        jog.vida -= dano; jog.semDano = 0; vermelho = Math.min(0.9, vermelho + 0.55); $('dano').style.opacity = vermelho;
         bip(140, 0.1, 'sawtooth', 0.05);
         if (jog.vida <= 0) { jog.vida = 0; atualizarHud(); morrer(); return; }
       }
-      // monstro que ficou muito longe some (e outro aparece perto)
-      if (dist > Math.max(W, H) * 1.6 + 400) { monstros.splice(q, 1); q--; }
+      // monstro que ficou muito longe some (e outro aparece mais perto)
+      if (dist > 48) { tirarMonstro(mo); monstros.splice(q, 1); q--; }
     }
 
     // Efeitos
     for (var p = particulas.length - 1; p >= 0; p--) {
-      var pa = particulas[p]; pa.x += pa.vx * dt; pa.y += pa.vy * dt; pa.vx *= 0.92; pa.vy *= 0.92; pa.vida -= dt;
-      if (pa.vida <= 0) particulas.splice(p, 1);
+      var pa = particulas[p];
+      pa.vy -= 9 * dt; pa.mesh.position.x += pa.vx * dt; pa.mesh.position.y = Math.max(0.06, pa.mesh.position.y + pa.vy * dt); pa.mesh.position.z += pa.vz * dt;
+      pa.vida -= dt; if (pa.vida <= 0) { scene.remove(pa.mesh); particulas.splice(p, 1); }
     }
-    for (var s = textos.length - 1; s >= 0; s--) { textos[s].y -= 40 * dt; textos[s].vida -= dt; if (textos[s].vida <= 0) textos.splice(s, 1); }
-
-    cam.x = jog.x - W / 2; cam.y = jog.y - H / 2;
+    for (var s2 = textos.length - 1; s2 >= 0; s2--) { textos[s2].y += 1.2 * dt; textos[s2].vida -= dt; if (textos[s2].vida <= 0) textos.splice(s2, 1); }
     atualizarVida();
   }
 
-  // ---------- Desenho ----------
-  function desenhar() {
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0); ctx.lineJoin = 'round';
-    ctx.fillStyle = '#3f7d3a'; ctx.fillRect(0, 0, W, H);
-    if (!jog) return;
-    ctx.save(); ctx.translate(-Math.round(cam.x), -Math.round(cam.y));
-    // chão quadriculado com tufos de grama
-    var T = 80, x0 = Math.floor(cam.x / T) * T, y0 = Math.floor(cam.y / T) * T;
-    for (var gx = x0; gx < cam.x + W + T; gx += T) {
-      for (var gy = y0; gy < cam.y + H + T; gy += T) {
-        if (gx < 0 || gy < 0 || gx >= MUNDO || gy >= MUNDO) continue;
-        if (((gx / T) + (gy / T)) % 2 === 0) { ctx.fillStyle = '#448a3e'; ctx.fillRect(gx, gy, T, T); }
-        var h = (gx * 73856093 ^ gy * 19349663) >>> 0;
-        if (h % 5 === 0) { ctx.fillStyle = '#2f6a2b'; ctx.fillRect(gx + h % 60, gy + (h >> 3) % 60, 4, 10); ctx.fillRect(gx + h % 60 + 6, gy + (h >> 3) % 60 + 3, 4, 7); }
-        if (h % 23 === 0) { ctx.fillStyle = '#ffe14d'; ctx.beginPath(); ctx.arc(gx + (h >> 5) % 70, gy + (h >> 7) % 70, 4, 0, 7); ctx.fill(); }
-      }
-    }
-    // borda do campo
-    ctx.strokeStyle = '#1e3b1b'; ctx.lineWidth = 16; ctx.strokeRect(-8, -8, MUNDO + 16, MUNDO + 16);
-
-    particulas.forEach(function (p) { ctx.globalAlpha = Math.max(0, p.vida * 1.6); ctx.fillStyle = p.cor; ctx.fillRect(p.x - 3, p.y - 3, 6, 6); });
-    ctx.globalAlpha = 1;
-    monstros.forEach(desenharMonstro);
-    desenharJogador();
-    tiros.forEach(function (tr) {
-      ctx.fillStyle = tr.cor; ctx.beginPath(); ctx.arc(tr.x, tr.y, 6, 0, 7); ctx.fill();
-      ctx.strokeStyle = tr.cor; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(tr.x, tr.y); ctx.lineTo(tr.x - tr.vx * 0.03, tr.y - tr.vy * 0.03); ctx.stroke();
+  // ---------- Desenho por cima (vida dos monstros, números, radar, mira) ----------
+  var v3 = new T.Vector3();
+  function naTela(x, y, z) {
+    v3.set(x, y, z).project(camera);
+    if (v3.z > 1 || v3.z < -1) return null;
+    return { x: (v3.x + 1) / 2 * W, y: (1 - v3.y) / 2 * H };
+  }
+  function desenharHud() {
+    h2.setTransform(dpr2, 0, 0, dpr2, 0, 0);
+    h2.clearRect(0, 0, W, H);
+    if (!jog || (estado !== 'jogando' && estado !== 'pausa' && estado !== 'morto')) return;
+    h2.lineJoin = 'round'; h2.textAlign = 'center';
+    var fx = -Math.sin(jog.yaw), fz = -Math.cos(jog.yaw);
+    // barras de vida dos monstros (perto e na frente)
+    var lista = monstros.map(function (m) { return { m: m, d: Math.hypot(m.x - jog.x, m.z - jog.z) }; })
+      .filter(function (o) { return o.d < 28 && ((o.m.x - jog.x) * fx + (o.m.z - jog.z) * fz) > 0; })
+      .sort(function (a, b) { return b.d - a.d; });
+    lista.forEach(function (o) {
+      var m = o.m, pt = naTela(m.x, m.modelo.alt + 0.35, m.z); if (!pt) return;
+      var esc = Math.max(0.55, Math.min(1.3, 8 / o.d)), bw = 54 * esc, bh = 7 * esc;
+      h2.fillStyle = 'rgba(0,0,0,.6)'; h2.fillRect(pt.x - bw / 2, pt.y, bw, bh);
+      h2.fillStyle = m.n > save.nivel ? '#f97316' : (m.n < save.nivel ? '#84cc16' : '#ef4444');
+      h2.fillRect(pt.x - bw / 2, pt.y, bw * Math.max(0, m.vida / m.max), bh);
+      h2.font = '800 ' + Math.round(13 * esc) + 'px system-ui, sans-serif';
+      h2.strokeStyle = '#000'; h2.lineWidth = 3; h2.strokeText('Nv ' + m.n, pt.x, pt.y - 3);
+      h2.fillStyle = m.dourado ? '#ffd23f' : '#fff'; h2.fillText('Nv ' + m.n, pt.x, pt.y - 3);
     });
-    ctx.textAlign = 'center'; ctx.lineJoin = 'round';
+    // números que sobem
     textos.forEach(function (t) {
-      ctx.globalAlpha = Math.min(1, t.vida * 2); ctx.font = '800 ' + t.tam + 'px system-ui, sans-serif';
-      ctx.strokeStyle = '#000'; ctx.lineWidth = 4; ctx.strokeText(t.t, t.x, t.y); ctx.fillStyle = t.cor; ctx.fillText(t.t, t.x, t.y);
+      if (((t.x - jog.x) * fx + (t.z - jog.z) * fz) <= 0) return;
+      var pt = naTela(t.x, t.y, t.z); if (!pt) return;
+      h2.globalAlpha = Math.min(1, t.vida * 2); h2.font = '800 ' + t.tam + 'px system-ui, sans-serif';
+      h2.strokeStyle = '#000'; h2.lineWidth = 4; h2.strokeText(t.t, pt.x, pt.y); h2.fillStyle = t.cor; h2.fillText(t.t, pt.x, pt.y);
     });
-    ctx.globalAlpha = 1;
-    ctx.restore();
-
-    // controle de toque
-    if (toque && toque.ativo) {
-      ctx.globalAlpha = 0.35; ctx.fillStyle = '#fff';
-      ctx.beginPath(); ctx.arc(toque.ox, toque.oy, 60, 0, 7); ctx.fill();
-      ctx.globalAlpha = 0.7;
-      var dx = toque.x - toque.ox, dy = toque.y - toque.oy, d = Math.hypot(dx, dy), f = d > 60 ? 60 / d : 1;
-      ctx.beginPath(); ctx.arc(toque.ox + dx * f, toque.oy + dy * f, 26, 0, 7); ctx.fill();
-      ctx.globalAlpha = 1;
+    h2.globalAlpha = 1;
+    // mira
+    var cx = W / 2, cy = H / 2;
+    h2.strokeStyle = 'rgba(255,255,255,.9)'; h2.lineWidth = 2;
+    h2.beginPath(); h2.moveTo(cx - 10, cy); h2.lineTo(cx - 4, cy); h2.moveTo(cx + 4, cy); h2.lineTo(cx + 10, cy);
+    h2.moveTo(cx, cy - 10); h2.lineTo(cx, cy - 4); h2.moveTo(cx, cy + 4); h2.lineTo(cx, cy + 10); h2.stroke();
+    // radar: mostra os monstros em volta (você no meio, olhando para cima)
+    var R = 50, rx = 12 + R, ry = toqueAparelho ? 112 + R : H - 12 - R;
+    h2.fillStyle = 'rgba(0,0,0,.45)'; h2.beginPath(); h2.arc(rx, ry, R, 0, 7); h2.fill();
+    h2.strokeStyle = 'rgba(255,255,255,.7)'; h2.lineWidth = 2; h2.stroke();
+    var sy = Math.sin(jog.yaw), cyw = Math.cos(jog.yaw), ALC = 30;
+    monstros.forEach(function (m) {
+      var dx = m.x - jog.x, dz = m.z - jog.z;
+      var lx = dx * cyw - dz * sy, lz = dx * sy + dz * cyw; // em relação para onde você olha
+      var d = Math.hypot(lx, lz); if (d > ALC) { lx *= ALC / d; lz *= ALC / d; }
+      h2.fillStyle = m.dourado ? '#ffd23f' : (m.n > save.nivel ? '#f97316' : '#ff4d4d');
+      h2.beginPath(); h2.arc(rx + lx / ALC * (R - 5), ry + lz / ALC * (R - 5), d > ALC ? 2.5 : 3.5, 0, 7); h2.fill();
+    });
+    h2.fillStyle = '#fff'; h2.beginPath(); h2.moveTo(rx, ry - 7); h2.lineTo(rx - 5, ry + 5); h2.lineTo(rx + 5, ry + 5); h2.closePath(); h2.fill();
+    // controles de toque
+    for (var id in toques) {
+      var tq = toques[id]; if (tq.tipo !== 'mover') continue;
+      h2.globalAlpha = 0.3; h2.fillStyle = '#fff'; h2.beginPath(); h2.arc(tq.ox, tq.oy, 60, 0, 7); h2.fill();
+      var dx = tq.x - tq.ox, dy = tq.y - tq.oy, d = Math.hypot(dx, dy), f = d > 60 ? 60 / d : 1;
+      h2.globalAlpha = 0.65; h2.beginPath(); h2.arc(tq.ox + dx * f, tq.oy + dy * f, 26, 0, 7); h2.fill();
+      h2.globalAlpha = 1;
     }
-  }
-
-  function olhos(x, y, r, cor) {
-    ctx.fillStyle = '#fff';
-    ctx.beginPath(); ctx.arc(x - r * 0.35, y - r * 0.15, r * 0.25, 0, 7); ctx.arc(x + r * 0.35, y - r * 0.15, r * 0.25, 0, 7); ctx.fill();
-    ctx.fillStyle = cor || '#111';
-    ctx.beginPath(); ctx.arc(x - r * 0.3, y - r * 0.1, r * 0.12, 0, 7); ctx.arc(x + r * 0.4, y - r * 0.1, r * 0.12, 0, 7); ctx.fill();
-  }
-
-  function desenharMonstro(m) {
-    var x = m.x, y = m.y, r = m.r, cor = m.bate > 0 ? '#fff' : (m.dourado ? '#ffd23f' : m.tipo.cor);
-    var balanco = Math.sin(relogio * 6 + m.fase);
-    ctx.fillStyle = 'rgba(0,0,0,.25)'; ctx.beginPath(); ctx.ellipse(x, y + r * 0.9, r * 0.9, r * 0.3, 0, 0, 7); ctx.fill();
-    ctx.fillStyle = cor;
-    if (m.tipo.forma === 'geleca') {
-      ctx.beginPath(); ctx.ellipse(x, y + 2, r * (1 + balanco * 0.08), r * (0.85 - balanco * 0.08), 0, Math.PI, 0); ctx.lineTo(x + r, y + r * 0.6); ctx.lineTo(x - r, y + r * 0.6); ctx.fill();
-    } else if (m.tipo.forma === 'morcego') {
-      var asa = balanco * r * 0.5;
-      ctx.beginPath(); ctx.moveTo(x - r * 0.5, y); ctx.lineTo(x - r * 1.7, y - r * 0.4 + asa); ctx.lineTo(x - r * 0.9, y + r * 0.5); ctx.fill();
-      ctx.beginPath(); ctx.moveTo(x + r * 0.5, y); ctx.lineTo(x + r * 1.7, y - r * 0.4 + asa); ctx.lineTo(x + r * 0.9, y + r * 0.5); ctx.fill();
-      ctx.beginPath(); ctx.arc(x, y, r, 0, 7); ctx.fill();
-    } else if (m.tipo.forma === 'fantasma') {
-      ctx.globalAlpha = 0.85;
-      ctx.beginPath(); ctx.arc(x, y, r, Math.PI, 0); ctx.lineTo(x + r, y + r);
-      for (var i = 0; i < 4; i++) ctx.lineTo(x + r - (i + 0.5) * r / 2, y + r * (i % 2 ? 1 : 0.6) + balanco * 2);
-      ctx.lineTo(x - r, y + r); ctx.fill(); ctx.globalAlpha = 1;
-    } else {
-      ctx.beginPath(); ctx.arc(x, y, r, 0, 7); ctx.fill();
-      ctx.strokeStyle = 'rgba(0,0,0,.35)'; ctx.lineWidth = 3; ctx.stroke();
+    if (estado === 'jogando' && !toqueAparelho && !travado) {
+      h2.font = '700 16px system-ui, sans-serif';
+      var msg = 'Clique na tela para olhar com o mouse', w = h2.measureText(msg).width + 24;
+      h2.fillStyle = 'rgba(0,0,0,.55)'; h2.fillRect(cx - w / 2, H - 44, w, 30); h2.fillStyle = '#fff'; h2.fillText(msg, cx, H - 23);
     }
-    olhos(x, y, r, m.tipo.nome === 'Demônio' || m.tipo.nome === 'Dragãozinho' ? '#ffd23f' : '#111');
-    if (m.lento > 0) { ctx.fillStyle = 'rgba(125,211,252,.4)'; ctx.beginPath(); ctx.arc(x, y, r + 4, 0, 7); ctx.fill(); }
-    // vida e nível
-    var bw = Math.max(36, r * 2), by = y - r - 14;
-    ctx.fillStyle = 'rgba(0,0,0,.6)'; ctx.fillRect(x - bw / 2, by, bw, 6);
-    ctx.fillStyle = m.n > save.nivel ? '#f97316' : (m.n < save.nivel ? '#84cc16' : '#ef4444');
-    ctx.fillRect(x - bw / 2, by, bw * Math.max(0, m.vida / m.max), 6);
-    ctx.font = '800 12px system-ui, sans-serif'; ctx.textAlign = 'center';
-    ctx.strokeStyle = '#000'; ctx.lineWidth = 3; ctx.strokeText('Nv ' + m.n, x, by - 3);
-    ctx.fillStyle = m.dourado ? '#ffd23f' : '#fff'; ctx.fillText('Nv ' + m.n, x, by - 3);
-  }
-
-  function desenharJogador() {
-    var x = jog.x, y = jog.y + (jog.andando ? Math.sin(relogio * 14) * 2 : 0), r = 20, a = arma(), arm = armadura();
-    ctx.fillStyle = 'rgba(0,0,0,.25)'; ctx.beginPath(); ctx.ellipse(jog.x, jog.y + r * 0.9, r * 0.9, r * 0.3, 0, 0, 7); ctx.fill();
-    // arma
-    var ang = jog.golpe > 0 ? jog.golpeDir - 1 + (1 - jog.golpe / 0.18) * 2 : jog.dir;
-    var comp = a.distancia ? 26 : Math.min(48, 18 + a.alcance * 0.35);
-    ctx.strokeStyle = a.cor; ctx.lineWidth = a.distancia ? 5 : 7; ctx.lineCap = 'round';
-    ctx.beginPath(); ctx.moveTo(x + Math.cos(ang) * 12, y + Math.sin(ang) * 12); ctx.lineTo(x + Math.cos(ang) * (12 + comp), y + Math.sin(ang) * (12 + comp)); ctx.stroke();
-    if (jog.golpe > 0) {
-      ctx.strokeStyle = 'rgba(255,255,255,.5)'; ctx.lineWidth = 4;
-      ctx.beginPath(); ctx.arc(x, y, a.alcance, jog.golpeDir - 0.9, jog.golpeDir + 0.9); ctx.stroke();
-    }
-    // corpo (cor da armadura)
-    ctx.fillStyle = jog.piscar > 0 ? '#ff8a8a' : arm.cor;
-    ctx.beginPath(); ctx.arc(x, y, r, 0, 7); ctx.fill();
-    ctx.strokeStyle = '#fff'; ctx.lineWidth = 3; ctx.stroke();
-    // rosto
-    ctx.fillStyle = '#f5c99b'; ctx.beginPath(); ctx.arc(x, y - 2, r * 0.62, 0, 7); ctx.fill();
-    var ox = Math.cos(jog.dir) * 3, oy = Math.sin(jog.dir) * 3;
-    ctx.fillStyle = '#222'; ctx.beginPath(); ctx.arc(x - 5 + ox, y - 4 + oy, 2.5, 0, 7); ctx.arc(x + 5 + ox, y - 4 + oy, 2.5, 0, 7); ctx.fill();
   }
 
   // ---------- Barra de cima ----------
@@ -430,12 +664,13 @@
 
   // ---------- Loja ----------
   var abaLoja = 'armas', vindoDe = 'jogando';
-  function precoPocao() { return Math.max(20, Math.round(vidaMax() * 0.35)); }
+  function precoPocao() { return Math.max(20, Math.round(vidaMax() * 0.4)); }
   function abrirLoja() {
     if (estado !== 'jogando' && estado !== 'morto') return;
-    vindoDe = estado; estado = 'loja'; mostrar('tela-loja'); montarLoja();
+    vindoDe = estado; estado = 'loja'; atacando = false; destravar(); mostrar('tela-loja'); montarLoja();
   }
   function fecharLoja() {
+    montarArmaNaMao();
     if (vindoDe === 'morto') { estado = 'morto'; mostrar('tela-morte'); return; }
     continuar();
   }
@@ -482,7 +717,7 @@
       if (save.moedas < precoPocao()) return;
       save.moedas -= precoPocao(); save.pocoes++; bip(660, 0.12, 'triangle', 0.07);
     } else {
-      var ehArma = chave.indexOf('arma-') === 0 && chave.indexOf('armadura-') !== 0;
+      var ehArma = chave.indexOf('armadura-') !== 0;
       var id = chave.replace(/^arma(dura)?-/, '');
       var lista = ehArma ? ARMAS : ARMADURAS, donos = ehArma ? save.armas : save.armaduras, it = acha(lista, id);
       if (donos.indexOf(id) < 0) {
@@ -500,30 +735,55 @@
   // ---------- Controles ----------
   addEventListener('keydown', function (e) {
     teclas[e.code] = true;
-    if (e.code === 'Escape' || e.code === 'KeyP') { if (estado === 'jogando') pausar(); else if (estado === 'pausa') continuar(); }
+    if (e.code === 'KeyP') { if (estado === 'jogando') pausar(); else if (estado === 'pausa') continuar(); }
     if (e.code === 'KeyL' && estado === 'jogando') abrirLoja();
-    if (e.code === 'KeyQ' || e.code === 'KeyE') tomarPocao();
-    if (e.code.indexOf('Arrow') === 0 || e.code === 'Space') e.preventDefault();
+    if (e.code === 'KeyE' || e.code === 'KeyQ') tomarPocao();
+    if (e.code === 'Space') { if (estado === 'jogando') atacando = true; e.preventDefault(); }
+    if (e.code.indexOf('Arrow') === 0) e.preventDefault();
   });
-  addEventListener('keyup', function (e) { teclas[e.code] = false; });
-  addEventListener('blur', function () { teclas = {}; toque = null; });
+  addEventListener('keyup', function (e) { teclas[e.code] = false; if (e.code === 'Space') atacando = false; });
+  addEventListener('blur', function () { teclas = {}; toques = {}; atacando = false; });
+
+  document.addEventListener('pointerlockchange', function () {
+    var agora = document.pointerLockElement === canvas;
+    if (!agora && travado && estado === 'jogando') pausar(); // apertou Esc
+    travado = agora;
+  });
+  function olhar(dx, dy, k) { jog.yaw -= dx * k; jog.pitch = Math.max(-1.2, Math.min(1.2, jog.pitch - dy * k)); }
+  document.addEventListener('mousemove', function (e) {
+    if (estado !== 'jogando') return;
+    if (travado) olhar(e.movementX || 0, e.movementY || 0, 0.0025);
+    else if (olharMouse) { olhar(e.clientX - olharMouse.x, e.clientY - olharMouse.y, 0.005); olharMouse = { x: e.clientX, y: e.clientY }; }
+  });
 
   canvas.addEventListener('pointerdown', function (e) {
     if (estado !== 'jogando') return;
     somLigar();
-    toque = { id: e.pointerId, ativo: true, ox: e.clientX, oy: e.clientY, x: e.clientX, y: e.clientY };
+    if (e.pointerType === 'mouse') {
+      if (!travado) { travar(); olharMouse = { x: e.clientX, y: e.clientY }; }
+      atacando = true;
+      return;
+    }
+    toques[e.pointerId] = { tipo: e.clientX < W * 0.45 ? 'mover' : 'olhar', ox: e.clientX, oy: e.clientY, x: e.clientX, y: e.clientY };
     try { canvas.setPointerCapture(e.pointerId); } catch (er) { /* ok */ }
   });
   canvas.addEventListener('pointermove', function (e) {
-    if (!toque || toque.id !== e.pointerId) return;
-    toque.x = e.clientX; toque.y = e.clientY;
-    // a bolinha acompanha o dedo se ele for longe demais
-    var dx = toque.x - toque.ox, dy = toque.y - toque.oy, d = Math.hypot(dx, dy);
-    if (d > 90) { toque.ox = toque.x - dx / d * 90; toque.oy = toque.y - dy / d * 90; }
+    var tq = toques[e.pointerId]; if (!tq || estado !== 'jogando') return;
+    if (tq.tipo === 'olhar') olhar(e.clientX - tq.x, e.clientY - tq.y, 0.006);
+    tq.x = e.clientX; tq.y = e.clientY;
+    if (tq.tipo === 'mover') {
+      var dx = tq.x - tq.ox, dy = tq.y - tq.oy, d = Math.hypot(dx, dy);
+      if (d > 90) { tq.ox = tq.x - dx / d * 90; tq.oy = tq.y - dy / d * 90; }
+    }
   });
-  function soltar(e) { if (toque && toque.id === e.pointerId) toque = null; }
+  function soltar(e) { delete toques[e.pointerId]; if (e.pointerType === 'mouse') { atacando = false; olharMouse = null; } }
   canvas.addEventListener('pointerup', soltar);
   canvas.addEventListener('pointercancel', soltar);
+
+  var btnAtacar = $('btn-atacar');
+  btnAtacar.addEventListener('pointerdown', function (e) { e.preventDefault(); somLigar(); if (estado === 'jogando') atacando = true; try { btnAtacar.setPointerCapture(e.pointerId); } catch (er) { /* ok */ } });
+  ['pointerup', 'pointercancel', 'lostpointercapture'].forEach(function (n) { btnAtacar.addEventListener(n, function () { atacando = false; }); });
+  btnAtacar.addEventListener('contextmenu', function (e) { e.preventDefault(); });
 
   document.addEventListener('visibilitychange', function () { if (document.hidden) { pausar(); if (audio) audio.suspend(); } });
 
@@ -533,7 +793,7 @@
   $('btn-confirmar-nao').onclick = irInicio;
   $('btn-pausar').onclick = function () { if (estado === 'jogando') pausar(); };
   $('btn-continuar').onclick = continuar;
-  $('btn-sair').onclick = irInicio;
+  $('btn-sair').onclick = function () { limparCampo(); jog = null; irInicio(); };
   $('btn-som').onclick = function () { save.som = !save.som; guardar(); atualizarHud(); somLigar(); bip(660, 0.1, 'triangle', 0.07); };
   $('btn-reviver').onclick = reviver;
   $('btn-loja-morte').onclick = abrirLoja;
@@ -545,7 +805,7 @@
   $('aba-pocoes').onclick = function () { trocarAba('pocoes'); };
 
   function irInicio() {
-    estado = 'inicio';
+    estado = 'inicio'; destravar();
     var tem = save.nivel > 1 || save.moedas > 0;
     $('btn-jogar').textContent = tem ? 'Continuar (nível ' + save.nivel + ')' : 'Jogar';
     $('btn-recomecar').hidden = !tem;
@@ -553,4 +813,5 @@
   }
 
   ajustar(); atualizarHud(); irInicio();
+  requestAnimationFrame(quadro);
 })();

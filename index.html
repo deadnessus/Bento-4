@@ -8,11 +8,13 @@
 </head>
 <body>
 <main id="app">
-  <canvas id="campo" aria-label="Área do jogo"></canvas>
+  <canvas id="mundo" aria-label="Área do jogo"></canvas>
+  <canvas id="hud2d" aria-hidden="true"></canvas>
+  <div id="dano" aria-hidden="true"></div>
 
   <header class="barra" id="hud" hidden>
     <div class="hud-esq">
-      <div class="barra-vida" aria-label="Vida"><div id="vida-cheia"></div><span id="vida-texto">100/100</span></div>
+      <div class="barra-vida" aria-label="Vida"><div id="vida-cheia"></div><span id="vida-texto">70/70</span></div>
       <div class="barra-xp" aria-label="Experiência"><div id="xp-cheia"></div><span id="nivel-texto">Nível 1</span></div>
     </div>
     <div class="hud-dir">
@@ -22,12 +24,13 @@
       <button id="btn-pausar" type="button" aria-label="Pausar">II</button>
     </div>
   </header>
+  <button id="btn-atacar" type="button" hidden aria-label="Atacar">⚔️</button>
 
   <section id="tela-inicio" class="tela">
     <h1>Caçador de Monstros</h1>
     <p>Derrote monstros, ganhe moedas e compre armas e armaduras melhores.<br>
-      Quanto maior o seu nível, mais fortes os monstros e mais moedas eles dão!</p>
-    <p class="dica">Celular: arraste o dedo na tela para andar.<br>Computador: setas ou W A S D. Você ataca sozinho quando chega perto.</p>
+      Quanto maior o seu nível, mais monstros aparecem, e mais fortes eles ficam!</p>
+    <p class="dica" id="dica-controles"></p>
     <button id="btn-jogar" class="grande" type="button">Jogar</button>
     <button id="btn-recomecar" type="button" hidden>Começar do zero</button>
   </section>
@@ -67,8 +70,14 @@
     <div id="loja-lista" class="loja-lista"></div>
   </section>
 
+  <section id="tela-erro" class="tela" hidden>
+    <h2>Ops!</h2>
+    <p>Este aparelho não conseguiu abrir o jogo em 3D.</p>
+  </section>
+
   <div id="aviso" class="aviso" hidden></div>
 </main>
+<script src="vendor/three.min.js"></script>
 <script src="src/main.js"></script>
 </body>
 </html>
