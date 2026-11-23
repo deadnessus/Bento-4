@@ -37,8 +37,14 @@ h2 { margin: 0; }
 .loja { justify-content: flex-start; padding: 12px; padding-top: max(12px, env(safe-area-inset-top)); }
 .loja-topo { display: flex; align-items: center; gap: 10px; width: 100%; max-width: 640px; }
 .loja-topo h2 { flex: 1; text-align: left; font-size: 28px; color: #ffd23f; }
-.abas { display: flex; gap: 6px; width: 100%; max-width: 640px; }
-.aba { flex: 1; padding: 8px 6px; }
+.abas { display: flex; flex-wrap: wrap; gap: 6px; width: 100%; max-width: 640px; }
+.aba { flex: 1 1 30%; padding: 8px 4px; font-size: 15px; min-width: 0; }
+.loja-dica { font-size: 14px; opacity: .85; text-align: left; margin: 0; max-width: none; }
+.construir { position: absolute; z-index: 2; right: max(14px, env(safe-area-inset-right)); bottom: calc(max(24px, env(safe-area-inset-bottom)) + 110px); display: flex; flex-direction: column; gap: 8px; }
+.construir[hidden] { display: none; }
+.construir button { position: relative; width: 64px; height: 56px; padding: 0; background: rgba(30,40,70,.7); border-color: #93c5fd; font-size: 26px; touch-action: none; }
+.construir .qt { position: absolute; right: 4px; bottom: 2px; font-size: 14px; font-weight: 800; text-shadow: 0 1px 2px #000; }
+.construir .tecla { position: absolute; left: 5px; top: 2px; font-size: 12px; font-weight: 800; opacity: .8; }
 .aba.ativa { background: #6c62b8; border-color: #fff; font-weight: 800; }
 .loja-lista { display: flex; flex-direction: column; gap: 8px; width: 100%; max-width: 640px; padding-bottom: 20px; }
 .item { display: flex; align-items: center; gap: 10px; background: #26213f; border: 2px solid #4a4280; border-radius: 14px; padding: 8px 10px; text-align: left; }

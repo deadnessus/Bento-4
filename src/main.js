@@ -45,6 +45,22 @@
     { nome: 'Dragãozinho', cor: 0xef4444, vel: 2.4, r: 0.75, hp: 1.8, dano: 1.5, forma: 'dragao' },
     { nome: 'Demônio', cor: 0x9f1239, vel: 2.6, r: 0.7, hp: 2, dano: 1.8, forma: 'humano', chifres: true }
   ];
+  // Defesas: você compra e coloca no campo. Muros seguram os monstros que andam; torres atiram sozinhas.
+  var DEFESAS = [
+    { id: 'muro-madeira', nome: 'Muro de madeira', icone: '🪵', preco: 25, tipo: 'muro', vida: 60, cor: 0x9c6b3c },
+    { id: 'muro-pedra', nome: 'Muro de pedra', icone: '🧱', preco: 150, tipo: 'muro', vida: 260, cor: 0x9ca3af },
+    { id: 'torre-flechas', nome: 'Torre de flechas', icone: '🗼', preco: 120, tipo: 'torre', vida: 80, dano: 6, espera: 0.8, alcance: 14, cor: 0xa1662f, tiro: 0xfff1c1 },
+    { id: 'torre-gelo', nome: 'Torre de gelo', icone: '🧊', preco: 400, tipo: 'torre', vida: 100, dano: 9, espera: 1.0, alcance: 14, gelo: true, cor: 0x7dd3fc, tiro: 0x7dd3fc },
+    { id: 'canhao', nome: 'Canhão', icone: '💣', preco: 900, tipo: 'torre', vida: 160, dano: 40, espera: 1.6, alcance: 17, area: 2.2, cor: 0x374151, tiro: 0x222222 }
+  ];
+  // Ajudantes: monstros amigos que seguem você e atacam os monstros
+  var AJUDANTES = [
+    { id: 'geleca-amiga', nome: 'Geleca amiga', icone: '💧', preco: 100, vida: 60, dano: 4, espera: 0.9, vel: 3.5, alcance: 1.3, forma: 'geleca', cor: 0x38bdf8, r: 0.5 },
+    { id: 'lobo', nome: 'Lobo', icone: '🐺', preco: 350, vida: 90, dano: 9, espera: 0.7, vel: 6, alcance: 1.4, forma: 'lobo', cor: 0x9ca3af, r: 0.5 },
+    { id: 'golem-amigo', nome: 'Golem amigo', icone: '🗿', preco: 1500, vida: 400, dano: 20, espera: 1.1, vel: 3.5, alcance: 1.8, forma: 'golem', cor: 0x60a5fa, r: 0.8 },
+    { id: 'dragao-amigo', nome: 'Dragão amigo', icone: '🐲', preco: 5000, vida: 300, dano: 45, espera: 1.0, vel: 5, alcance: 9, distancia: true, forma: 'dragao', cor: 0x22c55e, r: 0.7, tiro: 0xff7a1a }
+  ];
+  function forcaNivel(n) { return Math.pow(1.17, n - 1); } // defesas e ajudantes ficam mais fortes junto com você
   var LIM = 44; // o campo vai de -44 a 44 metros
 
   // ---------- Contas do jogo ----------
@@ -58,7 +74,7 @@
 
   // ---------- Progresso salvo (só neste aparelho; nada de dado pessoal) ----------
   var CHAVE = 'cacador-monstros-v1';
-  function novoSave() { return { moedas: 0, nivel: 1, xp: 0, armas: ['graveto'], armaduras: ['roupa'], arma: 'graveto', armadura: 'roupa', pocoes: 1, som: true }; }
+  function novoSave() { return { moedas: 0, nivel: 1, xp: 0, armas: ['graveto'], armaduras: ['roupa'], arma: 'graveto', armadura: 'roupa', pocoes: 1, som: true, defesas: {}, ajudantes: [] }; }
   var save = novoSave();
   try { var lido = JSON.parse(localStorage.getItem(CHAVE) || 'null'); if (lido && lido.nivel) save = Object.assign(novoSave(), lido); } catch (e) { /* sem salvar */ }
   function guardar() { try { localStorage.setItem(CHAVE, JSON.stringify(save)); } catch (e) { /* sem salvar */ } }
@@ -218,7 +234,7 @@
       p.bracos = [-1, 1].map(function (lado) { var b = new T.Group(); b.position.set(lado * r * 1.05, r * 2.0, 0); g.add(b); peca(G.caixa, mat, r * 0.5, r * 1.4, r * 0.5, 0, -r * 0.6, 0, b); return b; });
       p.pernas = [-1, 1].map(function (lado) { var b = new T.Group(); b.position.set(lado * r * 0.45, r * 0.8, 0); g.add(b); peca(G.caixa, mat, r * 0.55, r * 0.8, r * 0.55, 0, -r * 0.4, 0, b); return b; });
       alt = r * 3;
-    } else { // humano: esqueleto, orc, demônio
+    } else if (tipo.forma !== 'lobo') { // humano: esqueleto, orc, demônio
       peca(G.caixa, mat, r * 1.3, r * 1.5, r * 0.8, 0, r * 2.0, 0, g);
       peca(G.esfera, mat, r * 0.62, r * 0.62, r * 0.62, 0, r * 3.2, 0, g);
       olhos(g, r * 3.3, r * 0.5, r * 0.9, olhoBrilho);
@@ -227,6 +243,16 @@
       p.bracos = [-1, 1].map(function (lado) { var b = new T.Group(); b.position.set(lado * r * 0.85, r * 2.6, 0); g.add(b); peca(G.caixa, mat, r * 0.32, r * 1.3, r * 0.32, 0, -r * 0.6, 0, b); return b; });
       p.pernas = [-1, 1].map(function (lado) { var b = new T.Group(); b.position.set(lado * r * 0.35, r * 1.25, 0); g.add(b); peca(G.caixa, mat, r * 0.38, r * 1.25, r * 0.38, 0, -r * 0.62, 0, b); return b; });
       alt = r * 3.9;
+    } else if (tipo.forma === 'lobo') {
+      peca(G.caixa, mat, r * 0.9, r * 0.8, r * 1.8, 0, r * 1.2, 0, g);
+      peca(G.caixa, mat, r * 0.75, r * 0.7, r * 0.8, 0, r * 1.65, r * 1.15, g);
+      peca(G.caixa, M.escuro, r * 0.32, r * 0.25, r * 0.4, 0, r * 1.5, r * 1.65, g);
+      peca(G.cone, mat, r * 0.15, r * 0.35, r * 0.15, -r * 0.24, r * 2.15, r * 1.05, g);
+      peca(G.cone, mat, r * 0.15, r * 0.35, r * 0.15, r * 0.24, r * 2.15, r * 1.05, g);
+      olhos(g, r * 1.8, r * 1.56, r * 0.8);
+      var rabo = peca(G.caixa, mat, r * 0.2, r * 0.2, r * 0.8, 0, r * 1.5, -r * 1.2, g); rabo.rotation.x = -0.5;
+      p.pernas = [[-1, 1], [1, -1], [-1, -1], [1, 1]].map(function (l) { var b = new T.Group(); b.position.set(l[0] * r * 0.3, r * 0.8, l[1] * r * 0.6); g.add(b); peca(G.caixa, mat, r * 0.25, r * 0.8, r * 0.25, 0, -r * 0.4, 0, b); return b; });
+      alt = r * 2.3;
     }
     // sombra
     var sombra = new T.Mesh(G.esfera, matSombra); sombra.scale.set(r * 0.9, 0.01, r * 0.9); sombra.position.y = 0.02; g.add(sombra);
@@ -238,7 +264,7 @@
     if (m.tipo.forma === 'geleca') { p.corpo.scale.y = m.r * (0.75 + f * 0.1); p.corpo.scale.x = p.corpo.scale.z = m.r * (1 - f * 0.06); }
     if (p.asas) p.asas.forEach(function (a) { a.rotation.z = a.userData.lado * Math.sin(t * 14 + m.fase) * 0.6; });
     if (p.voo) p.voo.position.y = p.vooY + Math.sin(t * 3 + m.fase) * 0.2;
-    if (p.pernas) { p.pernas[0].rotation.x = f * 0.6; p.pernas[1].rotation.x = -f * 0.6; }
+    if (p.pernas) p.pernas.forEach(function (pe, i) { pe.rotation.x = (i % 2 ? -1 : 1) * f * 0.6; });
     if (p.bracos) { p.bracos[0].rotation.x = -f * 0.5 - (m.ataque > 0 ? 1.5 : 0); p.bracos[1].rotation.x = f * 0.5 - (m.ataque > 0 ? 1.5 : 0); }
   }
 
@@ -275,7 +301,7 @@
 
   // ---------- Estado ----------
   var estado = 'inicio';
-  var jog = null, monstros = [], tiros = [], textos = [], particulas = [];
+  var jog = null, monstros = [], tiros = [], textos = [], particulas = [], defesas = [], amigos = [];
   var ultimo = 0, relogio = 0, proxMonstro = 0, vermelho = 0;
   var teclas = {}, toques = {}, atacando = false, travado = false, olharMouse = null;
   var W = innerWidth, H = innerHeight, dpr2 = 1;
@@ -300,6 +326,24 @@
     var emJogo = !qual;
     $('hud').hidden = !(emJogo || qual === 'tela-pausa' || qual === 'tela-morte');
     $('btn-atacar').hidden = !emJogo;
+    montarBarraConstruir(emJogo);
+  }
+
+  // ---------- Barra para colocar defesas ----------
+  function defesasNaMochila() { return DEFESAS.filter(function (d) { return (save.defesas[d.id] || 0) > 0; }); }
+  function montarBarraConstruir(mostrarBarra) {
+    var barra = $('construir'); barra.textContent = '';
+    var lista = defesasNaMochila();
+    barra.hidden = !mostrarBarra || !lista.length;
+    lista.forEach(function (d, i) {
+      var b = document.createElement('button'); b.type = 'button';
+      b.setAttribute('data-colocar', d.id);
+      b.setAttribute('aria-label', 'Colocar ' + d.nome);
+      b.innerHTML = '<span class="ic"></span><span class="qt"></span>' + (toqueAparelho ? '' : '<span class="tecla">' + (i + 1) + '</span>');
+      b.querySelector('.ic').textContent = d.icone; b.querySelector('.qt').textContent = save.defesas[d.id];
+      b.addEventListener('pointerdown', function (e) { e.preventDefault(); e.stopPropagation(); colocar(d.id); });
+      barra.appendChild(b);
+    });
   }
 
   function novoJogador() { jog = { x: 0, z: 0, yaw: 0, pitch: 0, vida: vidaMax(), espera: 0, golpe: 0, semDano: 0, passo: 0, andando: false }; }
@@ -308,7 +352,9 @@
     monstros.forEach(tirarMonstro);
     tiros.forEach(function (t) { scene.remove(t.mesh); t.mesh.material.dispose(); });
     particulas.forEach(function (p) { scene.remove(p.mesh); });
-    monstros = []; tiros = []; textos = []; particulas = [];
+    defesas.forEach(function (d) { scene.remove(d.modelo.grupo); d.modelo.mat.dispose(); });
+    amigos.forEach(function (a) { scene.remove(a.modelo.grupo); a.modelo.mat.dispose(); });
+    monstros = []; tiros = []; textos = []; particulas = []; defesas = []; amigos = [];
     vermelho = 0; $('dano').style.opacity = 0;
   }
 
@@ -355,15 +401,123 @@
   }
   function curto(v) { v = Math.round(v); return v >= 100000 ? Math.round(v / 1000) + 'mil' : String(v); }
 
-  function ferir(m, dano) {
+  // de = quem bateu de perto (empurra o monstro para trás); gelo = deixa lento
+  function ferir(m, dano, gelo, de) {
+    if (monstros.indexOf(m) < 0) return;
     m.vida -= dano; m.bate = 0.12;
     texto(m.x, m.modelo.alt + 0.2, m.z, curto(dano), '#ffffff', 22);
-    if (arma().gelo) m.lento = 1.5;
-    if (!arma().distancia) { // empurrão para trás
-      var dx = m.x - jog.x, dz = m.z - jog.z, d = Math.hypot(dx, dz) || 1;
+    if (gelo) m.lento = 1.5;
+    if (de) {
+      var dx = m.x - de.x, dz = m.z - de.z, d = Math.hypot(dx, dz) || 1;
       m.x += dx / d * 0.5; m.z += dz / d * 0.5;
     }
     if (m.vida <= 0) matar(m);
+  }
+
+  // ---------- Defesas no campo ----------
+  function fazerDefesa(def) {
+    var g = new T.Group(), mat = new T.MeshLambertMaterial({ color: def.cor }), cabeca = null;
+    if (def.id === 'muro-madeira') {
+      for (var i = 0; i < 7; i++) { var x = -1.35 + i * 0.45; peca(G.cilindro, mat, 0.22, 1.5, 0.22, x, 0.75, 0, g); peca(G.cone, mat, 0.22, 0.35, 0.22, x, 1.67, 0, g); }
+      peca(G.caixa, M.madeira, 3, 0.15, 0.1, 0, 1.0, 0.2, g);
+    } else if (def.id === 'muro-pedra') {
+      peca(G.caixa, mat, 3, 1.5, 0.6, 0, 0.75, 0, g);
+      for (var k = 0; k < 4; k++) peca(G.caixa, mat, 0.5, 0.35, 0.6, -1.25 + k * 0.83, 1.65, 0, g);
+    } else {
+      peca(G.cilindro, def.id === 'canhao' ? M.escuro : M.madeira, 0.45, 1.2, 0.45, 0, 0.6, 0, g);
+      cabeca = new T.Group(); cabeca.position.y = 1.45; g.add(cabeca);
+      if (def.id === 'canhao') {
+        peca(G.esfera, mat, 0.45, 0.45, 0.45, 0, 0, 0, cabeca);
+        var cano = peca(G.cilindro, mat, 0.2, 1.0, 0.2, 0, 0.1, 0.5, cabeca); cano.rotation.x = Math.PI / 2 - 0.2;
+      } else if (def.id === 'torre-gelo') {
+        peca(G.esfera, new T.MeshBasicMaterial({ color: def.cor }), 0.4, 0.4, 0.4, 0, 0.1, 0, cabeca);
+        peca(G.cone, mat, 0.15, 0.5, 0.15, 0, 0.6, 0, cabeca);
+      } else {
+        peca(G.caixa, mat, 0.7, 0.35, 0.7, 0, 0, 0, cabeca);
+        var arcoT = peca(G.cilindro, M.madeira, 0.06, 0.8, 0.06, 0, 0.1, 0.35, cabeca); arcoT.rotation.x = Math.PI / 2;
+      }
+    }
+    return { grupo: g, mat: mat, cabeca: cabeca };
+  }
+  function colocar(id) {
+    if (estado !== 'jogando' || !(save.defesas[id] > 0)) return;
+    if (defesas.length >= 16) { avisar('Já tem defesas demais no campo'); return; }
+    var def = acha(DEFESAS, id), forca = forcaNivel(save.nivel);
+    var x = Math.max(-LIM, Math.min(LIM, jog.x - Math.sin(jog.yaw) * 2.6)), z = Math.max(-LIM, Math.min(LIM, jog.z - Math.cos(jog.yaw) * 2.6));
+    var lugar = { x: x, z: z }; for (var t = 0; t < 3; t++) empurrarDefesas(lugar, def.tipo === 'muro' ? 0.4 : 0.7); // não fica em cima de outra defesa
+    x = lugar.x; z = lugar.z;
+    var modelo = fazerDefesa(def);
+    var ang = def.tipo === 'muro' ? jog.yaw : 0;
+    modelo.grupo.position.set(x, 0, z); modelo.grupo.rotation.y = ang;
+    scene.add(modelo.grupo);
+    var vida = def.vida * forca;
+    defesas.push({ def: def, x: x, z: z, ang: ang, vida: vida, max: vida, dano: (def.dano || 0) * forca, espera: 0.3, modelo: modelo, bate: 0 });
+    save.defesas[id]--; guardar();
+    montarBarraConstruir(true);
+    bip(400, 0.12, 'square', 0.05);
+  }
+  // empurra quem anda para fora dos muros e torres; devolve a defesa que encostou
+  function empurrarDefesas(o, r) {
+    var tocou = null;
+    for (var i = 0; i < defesas.length; i++) {
+      var d = defesas[i], dx = o.x - d.x, dz = o.z - d.z;
+      if (d.def.tipo === 'muro') {
+        var c = Math.cos(d.ang), s = Math.sin(d.ang);
+        var lx = dx * c - dz * s, lz = dx * s + dz * c;
+        var cx = Math.max(-1.5, Math.min(1.5, lx)), cz = Math.max(-0.3, Math.min(0.3, lz));
+        var ox = lx - cx, oz = lz - cz, dist = Math.hypot(ox, oz);
+        if (dist < r) {
+          if (dist > 0.0001) { lx = cx + ox / dist * r; lz = cz + oz / dist * r; }
+          else { lz = (lz >= 0 ? 0.3 + r : -0.3 - r); }
+          o.x = d.x + lx * c + lz * s; o.z = d.z - lx * s + lz * c; tocou = d;
+        }
+      } else {
+        var dd = Math.hypot(dx, dz) || 1, min = 0.5 + r;
+        if (dd < min) { o.x = d.x + dx / dd * min; o.z = d.z + dz / dd * min; tocou = d; }
+      }
+    }
+    return tocou;
+  }
+  function ferirDefesa(d, dano) {
+    d.vida -= dano; d.bate = 0.12;
+    if (d.vida <= 0) {
+      var i = defesas.indexOf(d); if (i < 0) return;
+      defesas.splice(i, 1); scene.remove(d.modelo.grupo); d.modelo.mat.dispose();
+      estourar(d.x, 0.8, d.z, d.def.cor, 14); bip(160, 0.25, 'sawtooth', 0.06);
+    }
+  }
+
+  // ---------- Ajudantes ----------
+  function criarAjudante(def, i) {
+    var modelo = fazerMonstro(def, false);
+    var vaga = vagaAmigo(i);
+    var a = { def: def, tipo: def, x: vaga.x, z: vaga.z, r: modelo.r, vida: 0, max: 0, espera: 0, bate: 0, ataque: 0,
+      fase: Math.random() * 6, morto: 0, modelo: modelo, voa: def.forma === 'dragao', ordem: i };
+    a.max = a.vida = def.vida * forcaNivel(save.nivel);
+    scene.add(modelo.grupo);
+    return a;
+  }
+  // lugar de cada ajudante: dos lados de você, um pouco à frente (para você ver eles)
+  function vagaAmigo(i) {
+    var lado = (i % 2 ? 1 : -1) * (2 + Math.floor(i / 2) * 1.7), frente = 1 - Math.floor(i / 2) * 0.8;
+    var sy = Math.sin(jog.yaw), cy = Math.cos(jog.yaw);
+    return { x: jog.x - sy * frente + cy * lado, z: jog.z - cy * frente - sy * lado };
+  }
+  function sincronizarAjudantes() {
+    if (!jog) return;
+    save.ajudantes.forEach(function (id) {
+      if (amigos.some(function (a) { return a.def.id === id; })) return;
+      amigos.push(criarAjudante(acha(AJUDANTES, id), amigos.length));
+    });
+  }
+  function ferirAmigo(a, dano) {
+    a.vida -= dano; a.bate = 0.12;
+    texto(a.x, a.modelo.alt + 0.2, a.z, '-' + curto(dano), '#ff8a8a', 18);
+    if (a.vida <= 0) {
+      a.morto = 20; scene.remove(a.modelo.grupo);
+      estourar(a.x, 0.6, a.z, a.def.cor, 10);
+      avisar(a.def.nome + ' caiu! Volta em 20 segundos');
+    }
   }
   function matar(m) {
     var i = monstros.indexOf(m); if (i < 0) return;
@@ -382,6 +536,7 @@
     while (save.xp >= xpParaSubir(save.nivel)) {
       save.xp -= xpParaSubir(save.nivel); save.nivel++;
       jog.vida = vidaMax();
+      amigos.forEach(function (a) { a.max = a.def.vida * forcaNivel(save.nivel); if (!a.morto) a.vida = a.max; });
       avisar('Subiu para o nível ' + save.nivel + '!');
       bip(523, 0.15, 'triangle', 0.08); setTimeout(function () { bip(784, 0.25, 'triangle', 0.08); }, 120);
       if (save.nivel % 5 === 0) setTimeout(function () { if (estado === 'jogando') horda(); }, 2200);
@@ -404,6 +559,7 @@
     somLigar();
     novoJogador(); limparCampo(); montarArmaNaMao(); proxMonstro = 0;
     for (var i = 0; i < 3; i++) criarMonstro();
+    sincronizarAjudantes();
     entrar();
     evento('partida_iniciada');
   }
@@ -418,7 +574,7 @@
     atualizarHud(); mostrar('tela-morte');
     evento('partida_terminada', { nivel: save.nivel });
   }
-  function reviver() { somLigar(); novoJogador(); limparCampo(); montarArmaNaMao(); for (var i = 0; i < 3; i++) criarMonstro(); entrar(); }
+  function reviver() { somLigar(); novoJogador(); limparCampo(); montarArmaNaMao(); for (var i = 0; i < 3; i++) criarMonstro(); sincronizarAjudantes(); entrar(); }
 
   function tomarPocao() {
     if (estado !== 'jogando' || save.pocoes <= 0) return;
@@ -448,7 +604,7 @@
       else { camera.getWorldDirection(frente); dir = frente.clone(); }
       var mesh = new T.Mesh(G.esfera, new T.MeshBasicMaterial({ color: a.tiro })); mesh.scale.setScalar(0.12); mesh.position.copy(origem);
       scene.add(mesh);
-      tiros.push({ mesh: mesh, vel: dir.multiplyScalar(32), vida: 1.2, dano: danoArma() });
+      tiros.push({ mesh: mesh, vel: dir.multiplyScalar(32), vida: 1.2, dano: danoArma(), gelo: !!a.gelo });
       bip(a.gelo ? 1000 : 700, 0.07, 'triangle', 0.04);
     } else {
       var acertou = false;
@@ -456,7 +612,7 @@
         var dx = m.x - jog.x, dz = m.z - jog.z, d = Math.hypot(dx, dz);
         if (d - m.r > a.alcance) return;
         var ang = Math.acos(Math.max(-1, Math.min(1, (dx * fx + dz * fz) / (d || 1))));
-        if (ang < 0.75 || d < m.r + 0.3) { ferir(m, danoArma()); acertou = true; }
+        if (ang < 0.75 || d < m.r + 0.3) { ferir(m, danoArma(), a.gelo, jog); acertou = true; }
       });
       bip(acertou ? 320 : 220, 0.06, 'square', 0.04);
     }
@@ -531,25 +687,103 @@
       var acertou = false, tp = tr.mesh.position;
       for (var j = 0; j < monstros.length; j++) {
         var mm = monstros[j], cy2 = mm.modelo.alt * 0.55;
-        if (Math.hypot(mm.x - tp.x, mm.z - tp.z) < mm.r + 0.35 && Math.abs(tp.y - cy2) < mm.modelo.alt * 0.6 + 0.3) { ferir(mm, tr.dano); acertou = true; break; }
+        if (Math.hypot(mm.x - tp.x, mm.z - tp.z) < mm.r + 0.35 && Math.abs(tp.y - cy2) < mm.modelo.alt * 0.6 + 0.3) {
+          if (tr.area) { // canhão: explode e acerta todos em volta
+            var px = tp.x, pz = tp.z;
+            monstros.slice().forEach(function (m3) { if (Math.hypot(m3.x - px, m3.z - pz) < tr.area + m3.r) ferir(m3, tr.dano, false, null); });
+            estourar(px, tp.y, pz, 0xff9a3c, 10); bip(90, 0.25, 'sawtooth', 0.07);
+          } else ferir(mm, tr.dano, tr.gelo, null);
+          acertou = true; break;
+        }
       }
       if (acertou || tr.vida <= 0 || tp.y < 0) { scene.remove(tr.mesh); tr.mesh.material.dispose(); tiros.splice(k, 1); }
     }
 
-    // Monstros andam até você e atacam
+    // Você não atravessa os muros e torres
+    empurrarDefesas(jog, 0.4);
+
+    // Torres atiram sozinhas no monstro mais perto
+    defesas.forEach(function (d) {
+      if (d.bate > 0) { d.bate -= dt; d.modelo.mat.emissive.setHex(0x661111); } else d.modelo.mat.emissive.setHex(0x000000);
+      if (d.def.tipo !== 'torre') return;
+      d.espera -= dt;
+      var alvo = null, bd = d.def.alcance;
+      monstros.forEach(function (m) { if (m.nasce < 1) return; var dd = Math.hypot(m.x - d.x, m.z - d.z); if (dd < bd) { bd = dd; alvo = m; } });
+      if (!alvo) return;
+      d.modelo.cabeca.rotation.y = Math.atan2(alvo.x - d.x, alvo.z - d.z);
+      if (d.espera > 0) return;
+      d.espera = d.def.espera;
+      var origem = new T.Vector3(d.x, 1.55, d.z);
+      var dir = new T.Vector3(alvo.x, alvo.modelo.alt * 0.55, alvo.z).sub(origem).normalize();
+      var mesh = new T.Mesh(G.esfera, new T.MeshBasicMaterial({ color: d.def.tiro })); mesh.scale.setScalar(d.def.area ? 0.2 : 0.1); mesh.position.copy(origem);
+      scene.add(mesh);
+      tiros.push({ mesh: mesh, vel: dir.multiplyScalar(26), vida: 1.2, dano: d.dano, gelo: !!d.def.gelo, area: d.def.area || 0 });
+    });
+
+    // Ajudantes seguem você e atacam os monstros
+    amigos.forEach(function (a) {
+      if (a.morto > 0) {
+        a.morto -= dt;
+        if (a.morto <= 0) { a.morto = 0; a.vida = a.max; var vg = vagaAmigo(a.ordem); a.x = vg.x; a.z = vg.z; scene.add(a.modelo.grupo); avisar(a.def.nome + ' voltou!'); }
+        return;
+      }
+      var alvo = null, bd = 1e9;
+      monstros.forEach(function (m) {
+        if (m.nasce < 1 || Math.hypot(m.x - jog.x, m.z - jog.z) > 15) return;
+        var dd = Math.hypot(m.x - a.x, m.z - a.z); if (dd < bd) { bd = dd; alvo = m; }
+      });
+      var tx, tz, parar;
+      if (alvo) { tx = alvo.x; tz = alvo.z; parar = a.def.alcance + alvo.r - 0.2; }
+      else { var vaga = vagaAmigo(a.ordem); tx = vaga.x; tz = vaga.z; parar = 0.4; } // fica do seu lado
+      if (Math.hypot(jog.x - a.x, jog.z - a.z) > 25) { var vl = vagaAmigo(a.ordem); a.x = vl.x; a.z = vl.z; }
+      var ax = tx - a.x, az = tz - a.z, ad = Math.hypot(ax, az) || 1;
+      var andou = ad > parar;
+      if (andou) { var passoA = Math.min(ad - parar, a.def.vel * dt); a.x += ax / ad * passoA; a.z += az / ad * passoA; }
+      if (!a.voa) { soltarDeObstaculos(a, a.r * 0.8); empurrarDefesas(a, a.r * 0.8); }
+      var px = a.x - jog.x, pz = a.z - jog.z, pd = Math.hypot(px, pz) || 1, longe = a.r + 0.9; // não entra na sua frente colado na câmera
+      if (pd < longe) { a.x = jog.x + px / pd * longe; a.z = jog.z + pz / pd * longe; }
+      a.modelo.grupo.position.set(a.x, 0, a.z);
+      if (alvo || andou) a.modelo.grupo.rotation.y = Math.atan2(alvo ? alvo.x - a.x : ax, alvo ? alvo.z - a.z : az);
+      a.vida = Math.min(a.max, a.vida + a.max * 0.02 * dt);
+      if (a.ataque > 0) a.ataque -= dt;
+      if (a.bate > 0) { a.bate -= dt; a.modelo.mat.emissive.setHex(0xff0000); } else a.modelo.mat.emissive.setHex(0x000000);
+      animarMonstro(a, relogio);
+      a.espera -= dt;
+      if (alvo && bd <= a.def.alcance + alvo.r && a.espera <= 0) {
+        a.espera = a.def.espera; a.ataque = 0.25;
+        var danoA = a.def.dano * forcaNivel(save.nivel);
+        if (a.def.distancia) {
+          var o2 = new T.Vector3(a.x, a.modelo.alt * 0.7, a.z);
+          var d2 = new T.Vector3(alvo.x, alvo.modelo.alt * 0.55, alvo.z).sub(o2).normalize();
+          var m2 = new T.Mesh(G.esfera, new T.MeshBasicMaterial({ color: a.def.tiro })); m2.scale.setScalar(0.18); m2.position.copy(o2);
+          scene.add(m2); tiros.push({ mesh: m2, vel: d2.multiplyScalar(24), vida: 1.2, dano: danoA, gelo: false, area: 0 });
+        } else ferir(alvo, danoA, false, a);
+      }
+    });
+
+    // Monstros andam até você (ou até o ajudante mais perto) e atacam
     for (var q = 0; q < monstros.length; q++) {
       var mo = monstros[q];
       if (mo.nasce < 1) { mo.nasce = Math.min(1, mo.nasce + dt * 2); mo.modelo.grupo.scale.setScalar(Math.max(0.01, mo.nasce)); }
-      var ex = jog.x - mo.x, ez = jog.z - mo.z, dist = Math.hypot(ex, ez) || 1;
+      var voa = mo.tipo.forma === 'fantasma' || mo.tipo.forma === 'morcego' || mo.tipo.forma === 'dragao';
+      var distJog = Math.hypot(jog.x - mo.x, jog.z - mo.z) || 1;
+      var alvoM = null, alvoX = jog.x, alvoZ = jog.z, dist = distJog, alcanceAlvo = mo.r + 1.0;
+      for (var a2 = 0; a2 < amigos.length; a2++) {
+        var am = amigos[a2]; if (am.morto) continue;
+        var da = Math.hypot(am.x - mo.x, am.z - mo.z);
+        if (da < dist) { dist = da; alvoM = am; alvoX = am.x; alvoZ = am.z; alcanceAlvo = mo.r + am.r + 0.6; }
+      }
+      var ex = alvoX - mo.x, ez = alvoZ - mo.z; dist = dist || 1;
       var v = mo.vel * (mo.lento > 0 ? 0.45 : 1);
       if (mo.lento > 0) mo.lento -= dt;
       if (mo.ataque > 0) mo.ataque -= dt;
-      if (dist > mo.r + 0.7) { mo.x += ex / dist * v * dt; mo.z += ez / dist * v * dt; }
+      if (dist > alcanceAlvo - 0.3) { mo.x += ex / dist * v * dt; mo.z += ez / dist * v * dt; }
       for (var o = q + 1; o < monstros.length; o++) {
         var ou = monstros[o], sx = ou.x - mo.x, sz = ou.z - mo.z, sd = Math.hypot(sx, sz) || 1, min = mo.r + ou.r;
         if (sd < min) { var emp = (min - sd) / 2; mo.x -= sx / sd * emp; mo.z -= sz / sd * emp; ou.x += sx / sd * emp; ou.z += sz / sd * emp; }
       }
-      if (mo.tipo.forma !== 'fantasma' && mo.tipo.forma !== 'morcego' && mo.tipo.forma !== 'dragao') soltarDeObstaculos(mo, mo.r * 0.8);
+      var tocou = null;
+      if (!voa) { soltarDeObstaculos(mo, mo.r * 0.8); tocou = empurrarDefesas(mo, mo.r * 0.8); } // os que voam passam por cima dos muros
       mo.modelo.grupo.position.set(mo.x, 0, mo.z);
       mo.modelo.grupo.rotation.y = Math.atan2(ex, ez);
       // pisca de branco quando apanha
@@ -557,15 +791,20 @@
       else mo.modelo.mat.emissive.setHex(mo.dourado ? 0x553300 : (mo.lento > 0 ? 0x1e4d6b : 0x000000));
       animarMonstro(mo, relogio);
       mo.espera -= dt;
-      if (dist < mo.r + 1.0 && mo.espera <= 0 && mo.nasce >= 1) {
-        mo.espera = 1.2; mo.ataque = 0.25;
-        var dano = mo.dano * (1 - armadura().defesa);
-        jog.vida -= dano; jog.semDano = 0; vermelho = Math.min(0.9, vermelho + 0.55); $('dano').style.opacity = vermelho;
-        bip(140, 0.1, 'sawtooth', 0.05);
-        if (jog.vida <= 0) { jog.vida = 0; atualizarHud(); morrer(); return; }
+      if (mo.espera <= 0 && mo.nasce >= 1) {
+        if (dist < alcanceAlvo) {
+          mo.espera = 1.2; mo.ataque = 0.25;
+          if (alvoM) ferirAmigo(alvoM, mo.dano);
+          else {
+            var dano = mo.dano * (1 - armadura().defesa);
+            jog.vida -= dano; jog.semDano = 0; vermelho = Math.min(0.9, vermelho + 0.55); $('dano').style.opacity = vermelho;
+            bip(140, 0.1, 'sawtooth', 0.05);
+            if (jog.vida <= 0) { jog.vida = 0; atualizarHud(); morrer(); return; }
+          }
+        } else if (tocou) { mo.espera = 1.2; mo.ataque = 0.25; ferirDefesa(tocou, mo.dano); } // bate no muro que está no caminho
       }
       // monstro que ficou muito longe some (e outro aparece mais perto)
-      if (dist > 48) { tirarMonstro(mo); monstros.splice(q, 1); q--; }
+      if (distJog > 48) { tirarMonstro(mo); monstros.splice(q, 1); q--; }
     }
 
     // Efeitos
@@ -605,6 +844,22 @@
       h2.strokeStyle = '#000'; h2.lineWidth = 3; h2.strokeText('Nv ' + m.n, pt.x, pt.y - 3);
       h2.fillStyle = m.dourado ? '#ffd23f' : '#fff'; h2.fillText('Nv ' + m.n, pt.x, pt.y - 3);
     });
+    // vida dos ajudantes (verde, com coração) e das defesas machucadas
+    function barra(x, y, z, frac, cor, rotulo) {
+      var d = Math.hypot(x - jog.x, z - jog.z);
+      if (d > 28 || ((x - jog.x) * fx + (z - jog.z) * fz) <= 0) return;
+      var pt = naTela(x, y, z); if (!pt) return;
+      var esc = Math.max(0.55, Math.min(1.2, 8 / d)), bw = 48 * esc, bh = 6 * esc;
+      h2.fillStyle = 'rgba(0,0,0,.6)'; h2.fillRect(pt.x - bw / 2, pt.y, bw, bh);
+      h2.fillStyle = cor; h2.fillRect(pt.x - bw / 2, pt.y, bw * Math.max(0, frac), bh);
+      if (rotulo) {
+        h2.font = '800 ' + Math.round(14 * esc) + 'px system-ui, sans-serif';
+        h2.strokeStyle = '#000'; h2.lineWidth = 3; h2.strokeText(rotulo, pt.x, pt.y - 3);
+        h2.fillStyle = '#7dffa0'; h2.fillText(rotulo, pt.x, pt.y - 3);
+      }
+    }
+    amigos.forEach(function (a) { if (!a.morto) barra(a.x, a.modelo.alt + 0.35, a.z, a.vida / a.max, '#22c55e', '♥'); });
+    defesas.forEach(function (d) { if (d.vida < d.max) barra(d.x, 2.2, d.z, d.vida / d.max, '#38bdf8', ''); });
     // números que sobem
     textos.forEach(function (t) {
       if (((t.x - jog.x) * fx + (t.z - jog.z) * fz) <= 0) return;
@@ -623,13 +878,18 @@
     h2.fillStyle = 'rgba(0,0,0,.45)'; h2.beginPath(); h2.arc(rx, ry, R, 0, 7); h2.fill();
     h2.strokeStyle = 'rgba(255,255,255,.7)'; h2.lineWidth = 2; h2.stroke();
     var sy = Math.sin(jog.yaw), cyw = Math.cos(jog.yaw), ALC = 30;
-    monstros.forEach(function (m) {
-      var dx = m.x - jog.x, dz = m.z - jog.z;
+    function ponto(x, z, cor, tam, quadrado) {
+      var dx = x - jog.x, dz = z - jog.z;
       var lx = dx * cyw - dz * sy, lz = dx * sy + dz * cyw; // em relação para onde você olha
-      var d = Math.hypot(lx, lz); if (d > ALC) { lx *= ALC / d; lz *= ALC / d; }
-      h2.fillStyle = m.dourado ? '#ffd23f' : (m.n > save.nivel ? '#f97316' : '#ff4d4d');
-      h2.beginPath(); h2.arc(rx + lx / ALC * (R - 5), ry + lz / ALC * (R - 5), d > ALC ? 2.5 : 3.5, 0, 7); h2.fill();
-    });
+      var d = Math.hypot(lx, lz); if (d > ALC) { lx *= ALC / d; lz *= ALC / d; tam *= 0.7; }
+      var px = rx + lx / ALC * (R - 5), pz = ry + lz / ALC * (R - 5);
+      h2.fillStyle = cor;
+      if (quadrado) h2.fillRect(px - tam, pz - tam, tam * 2, tam * 2);
+      else { h2.beginPath(); h2.arc(px, pz, tam, 0, 7); h2.fill(); }
+    }
+    defesas.forEach(function (d) { ponto(d.x, d.z, '#93c5fd', 2.5, true); });
+    amigos.forEach(function (a) { if (!a.morto) ponto(a.x, a.z, '#4ade80', 3.5); });
+    monstros.forEach(function (m) { ponto(m.x, m.z, m.dourado ? '#ffd23f' : (m.n > save.nivel ? '#f97316' : '#ff4d4d'), 3.5); });
     h2.fillStyle = '#fff'; h2.beginPath(); h2.moveTo(rx, ry - 7); h2.lineTo(rx - 5, ry + 5); h2.lineTo(rx + 5, ry + 5); h2.closePath(); h2.fill();
     // controles de toque
     for (var id in toques) {
@@ -672,11 +932,12 @@
   function fecharLoja() {
     montarArmaNaMao();
     if (vindoDe === 'morto') { estado = 'morto'; mostrar('tela-morte'); return; }
+    sincronizarAjudantes();
     continuar();
   }
   function trocarAba(qual) {
     abaLoja = qual;
-    ['armas', 'armaduras', 'pocoes'].forEach(function (a) { $('aba-' + a).classList.toggle('ativa', a === qual); });
+    ['armas', 'armaduras', 'defesas', 'ajudantes', 'pocoes'].forEach(function (a) { $('aba-' + a).classList.toggle('ativa', a === qual); });
     montarLoja();
   }
   function montarLoja() {
@@ -684,6 +945,30 @@
     atualizarHud();
     if (abaLoja === 'pocoes') {
       lista.appendChild(itemHtml('🧪', 'Poção de vida', 'Recupera boa parte da vida. Você tem ' + save.pocoes + '.', 'Comprar ' + curto(precoPocao()), 'pocao', true, save.moedas >= precoPocao(), false));
+      return;
+    }
+    if (abaLoja === 'defesas') {
+      var dicaD = document.createElement('p'); dicaD.className = 'loja-dica';
+      dicaD.textContent = 'Compre e depois coloque no campo pelos botões do lado direito da tela' + (toqueAparelho ? '.' : ' (ou teclas 1 a 5).') + ' Os monstros que voam passam por cima dos muros. Se você for derrotado, as defesas do campo somem.';
+      lista.appendChild(dicaD);
+      DEFESAS.forEach(function (d) {
+        var tem = save.defesas[d.id] || 0, desc;
+        if (d.tipo === 'muro') desc = 'Segura os monstros que andam · vida ' + d.vida;
+        else desc = 'Atira sozinha · dano ' + d.dano + (d.gelo ? ' · deixa lento' : '') + (d.area ? ' · explode e acerta vários' : '');
+        desc += ' · você tem ' + tem;
+        lista.appendChild(itemHtml(d.icone, d.nome, desc, curto(d.preco) + ' moedas', 'defesa-' + d.id, true, save.moedas >= d.preco, false));
+      });
+      return;
+    }
+    if (abaLoja === 'ajudantes') {
+      var dicaA = document.createElement('p'); dicaA.className = 'loja-dica';
+      dicaA.textContent = 'Ajudantes ficam com você para sempre, seguem você e atacam os monstros. Se caírem, voltam depois de 20 segundos.';
+      lista.appendChild(dicaA);
+      AJUDANTES.forEach(function (a) {
+        var tem = save.ajudantes.indexOf(a.id) >= 0;
+        var desc = 'Vida ' + a.vida + ' · dano ' + a.dano + (a.distancia ? ' · cospe fogo de longe' : '');
+        lista.appendChild(itemHtml(a.icone, a.nome, desc, tem ? 'Com você' : curto(a.preco) + ' moedas', 'ajudante-' + a.id, !tem, !tem && save.moedas >= a.preco, tem));
+      });
       return;
     }
     var itens = abaLoja === 'armas' ? ARMAS : ARMADURAS;
@@ -716,6 +1001,16 @@
     if (chave === 'pocao') {
       if (save.moedas < precoPocao()) return;
       save.moedas -= precoPocao(); save.pocoes++; bip(660, 0.12, 'triangle', 0.07);
+    } else if (chave.indexOf('defesa-') === 0) {
+      var def = acha(DEFESAS, chave.slice(7));
+      if (save.moedas < def.preco) return;
+      save.moedas -= def.preco; save.defesas[def.id] = (save.defesas[def.id] || 0) + 1;
+      bip(880, 0.1, 'triangle', 0.07);
+    } else if (chave.indexOf('ajudante-') === 0) {
+      var aj = acha(AJUDANTES, chave.slice(9));
+      if (save.ajudantes.indexOf(aj.id) >= 0 || save.moedas < aj.preco) return;
+      save.moedas -= aj.preco; save.ajudantes.push(aj.id);
+      bip(880, 0.1, 'triangle', 0.07); setTimeout(function () { bip(1320, 0.18, 'triangle', 0.07); }, 90);
     } else {
       var ehArma = chave.indexOf('armadura-') !== 0;
       var id = chave.replace(/^arma(dura)?-/, '');
@@ -738,6 +1033,8 @@
     if (e.code === 'KeyP') { if (estado === 'jogando') pausar(); else if (estado === 'pausa') continuar(); }
     if (e.code === 'KeyL' && estado === 'jogando') abrirLoja();
     if (e.code === 'KeyE' || e.code === 'KeyQ') tomarPocao();
+    var num = /^Digit([1-5])$/.exec(e.code);
+    if (num && estado === 'jogando') { var lista = defesasNaMochila(), d = lista[+num[1] - 1]; if (d) colocar(d.id); }
     if (e.code === 'Space') { if (estado === 'jogando') atacando = true; e.preventDefault(); }
     if (e.code.indexOf('Arrow') === 0) e.preventDefault();
   });
@@ -803,6 +1100,8 @@
   $('aba-armas').onclick = function () { trocarAba('armas'); };
   $('aba-armaduras').onclick = function () { trocarAba('armaduras'); };
   $('aba-pocoes').onclick = function () { trocarAba('pocoes'); };
+  $('aba-defesas').onclick = function () { trocarAba('defesas'); };
+  $('aba-ajudantes').onclick = function () { trocarAba('ajudantes'); };
 
   function irInicio() {
     estado = 'inicio'; destravar();
