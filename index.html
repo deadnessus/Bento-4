@@ -3,35 +3,71 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Meu Jogo (modelo)</title>
+<title>Caçador de Monstros</title>
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
-<!-- JOGO-MODELO do queres.games: um exemplo mínimo e funcional. TROQUE pelo seu jogo, mantendo as boas práticas:
-     charset e viewport, caminhos relativos, nada de sites externos, botões com id, pausa ao esconder a aba. -->
 <main id="app">
-  <header class="barra">
-    <span id="placar">0</span>
-    <span id="tempo">20</span>
-    <button id="btn-pausar" type="button" aria-label="Pausar">II</button>
-  </header>
   <canvas id="campo" aria-label="Área do jogo"></canvas>
 
+  <header class="barra" id="hud" hidden>
+    <div class="hud-esq">
+      <div class="barra-vida" aria-label="Vida"><div id="vida-cheia"></div><span id="vida-texto">100/100</span></div>
+      <div class="barra-xp" aria-label="Experiência"><div id="xp-cheia"></div><span id="nivel-texto">Nível 1</span></div>
+    </div>
+    <div class="hud-dir">
+      <span class="moedas"><span class="moeda-icone"></span><span id="moedas-texto">0</span></span>
+      <button id="btn-pocao" type="button" aria-label="Tomar poção">🧪<span id="pocoes-texto">0</span></button>
+      <button id="btn-loja" type="button">Loja</button>
+      <button id="btn-pausar" type="button" aria-label="Pausar">II</button>
+    </div>
+  </header>
+
   <section id="tela-inicio" class="tela">
-    <h1>Meu Jogo</h1>
-    <p>Toque nos círculos antes que o tempo acabe.</p>
+    <h1>Caçador de Monstros</h1>
+    <p>Derrote monstros, ganhe moedas e compre armas e armaduras melhores.<br>
+      Quanto maior o seu nível, mais fortes os monstros e mais moedas eles dão!</p>
+    <p class="dica">Celular: arraste o dedo na tela para andar.<br>Computador: setas ou W A S D. Você ataca sozinho quando chega perto.</p>
     <button id="btn-jogar" class="grande" type="button">Jogar</button>
+    <button id="btn-recomecar" type="button" hidden>Começar do zero</button>
   </section>
+
   <section id="tela-pausa" class="tela" hidden>
     <h2>Pausado</h2>
     <button id="btn-continuar" class="grande" type="button">Continuar</button>
+    <button id="btn-som" type="button">Som: ligado</button>
     <button id="btn-sair" type="button">Sair para o início</button>
   </section>
-  <section id="tela-fim" class="tela" hidden>
-    <h2>Fim!</h2>
-    <p id="fim-texto"></p>
-    <button id="btn-de-novo" class="grande" type="button">Jogar de novo</button>
+
+  <section id="tela-confirmar" class="tela" hidden>
+    <h2>Começar do zero?</h2>
+    <p>Você perde o nível, as moedas, as armas e as armaduras.</p>
+    <button id="btn-confirmar-sim" type="button">Sim, apagar tudo</button>
+    <button id="btn-confirmar-nao" class="grande" type="button">Não</button>
   </section>
+
+  <section id="tela-morte" class="tela" hidden>
+    <h2>Você foi derrotado!</h2>
+    <p id="morte-texto"></p>
+    <button id="btn-reviver" class="grande" type="button">Voltar à luta</button>
+    <button id="btn-loja-morte" type="button">Ir à loja</button>
+  </section>
+
+  <section id="tela-loja" class="tela loja" hidden>
+    <div class="loja-topo">
+      <h2>Loja</h2>
+      <span class="moedas"><span class="moeda-icone"></span><span id="loja-moedas">0</span></span>
+      <button id="btn-fechar-loja" class="grande" type="button">Voltar</button>
+    </div>
+    <div class="abas">
+      <button id="aba-armas" type="button" class="aba ativa">Armas</button>
+      <button id="aba-armaduras" type="button" class="aba">Armaduras</button>
+      <button id="aba-pocoes" type="button" class="aba">Poções</button>
+    </div>
+    <div id="loja-lista" class="loja-lista"></div>
+  </section>
+
+  <div id="aviso" class="aviso" hidden></div>
 </main>
 <script src="src/main.js"></script>
 </body>
