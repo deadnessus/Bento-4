@@ -36,15 +36,25 @@
   ];
   // vel em metros por segundo, r = tamanho
   var TIPOS = [
+    // um tipo novo aparece a cada 2 níveis
     { nome: 'Geleca', cor: 0x5fd35f, vel: 1.7, r: 0.7, hp: 1, dano: 1, forma: 'geleca' },
+    { nome: 'Aranha', cor: 0x3f3f46, vel: 2.6, r: 0.55, hp: 0.8, dano: 0.9, forma: 'aranha' },
     { nome: 'Morcego', cor: 0x8b5cf6, vel: 3.0, r: 0.45, hp: 0.7, dano: 0.8, forma: 'morcego' },
+    { nome: 'Cogumelo', cor: 0xdc2626, vel: 1.5, r: 0.65, hp: 1.2, dano: 1, forma: 'cogumelo' },
     { nome: 'Esqueleto', cor: 0xe5e7eb, vel: 2.1, r: 0.5, hp: 1.1, dano: 1.1, forma: 'humano' },
+    { nome: 'Abelha gigante', cor: 0xfacc15, vel: 3.2, r: 0.45, hp: 0.8, dano: 1, forma: 'morcego', listras: true },
+    { nome: 'Zumbi', cor: 0x6b8f71, vel: 1.6, r: 0.55, hp: 1.4, dano: 1.2, forma: 'humano' },
+    { nome: 'Lobo mau', cor: 0x4b5563, vel: 3.4, r: 0.55, hp: 1.1, dano: 1.2, forma: 'lobo' },
     { nome: 'Orc', cor: 0x65a30d, vel: 2.0, r: 0.65, hp: 1.5, dano: 1.3, forma: 'humano', dentes: true },
     { nome: 'Fantasma', cor: 0xe0f2fe, vel: 2.4, r: 0.6, hp: 0.9, dano: 1.1, forma: 'fantasma' },
+    { nome: 'Yeti', cor: 0xf1f5f9, vel: 1.8, r: 0.9, hp: 2.0, dano: 1.4, forma: 'golem' },
     { nome: 'Golem', cor: 0x78716c, vel: 1.3, r: 1.0, hp: 2.4, dano: 1.6, forma: 'golem' },
+    { nome: 'Ciclope', cor: 0xa16207, vel: 1.7, r: 0.95, hp: 2.6, dano: 1.7, forma: 'humano', umOlho: true },
     { nome: 'Dragãozinho', cor: 0xef4444, vel: 2.4, r: 0.75, hp: 1.8, dano: 1.5, forma: 'dragao' },
+    { nome: 'Golem de lava', cor: 0xea580c, brilho: 0x7c2d12, vel: 1.4, r: 1.05, hp: 2.8, dano: 1.9, forma: 'golem' },
     { nome: 'Demônio', cor: 0x9f1239, vel: 2.6, r: 0.7, hp: 2, dano: 1.8, forma: 'humano', chifres: true }
   ];
+  var CHEFE_COR = 0x2a0040; // brilho roxo do chefão
   // Defesas: você compra e coloca no campo. Muros seguram os monstros que andam; torres atiram sozinhas.
   var DEFESAS = [
     { id: 'muro-madeira', nome: 'Muro de madeira', icone: '🪵', preco: 25, tipo: 'muro', vida: 60, cor: 0x9c6b3c },
@@ -193,9 +203,9 @@
       peca(G.esfera, pupila || M.preto, r * 0.12, r * 0.12, r * 0.12, lado * r * 0.33, y, z + r * 0.18, g);
     });
   }
-  function fazerMonstro(tipo, dourado) {
-    var r = tipo.r * (dourado ? 1.15 : 1);
-    var mat = new T.MeshLambertMaterial({ color: dourado ? 0xffd23f : tipo.cor, emissive: dourado ? 0x553300 : 0x000000 });
+  function fazerMonstro(tipo, dourado, chefe) {
+    var r = tipo.r * (dourado ? 1.15 : 1) * (chefe ? 1.7 : 1);
+    var mat = new T.MeshLambertMaterial({ color: dourado ? 0xffd23f : tipo.cor, emissive: chefe ? CHEFE_COR : (dourado ? 0x553300 : (tipo.brilho || 0x000000)) });
     if (tipo.forma === 'fantasma') { mat.transparent = true; mat.opacity = 0.8; }
     var g = new T.Group(), p = {}, alt = r * 2;
     var olhoBrilho = (tipo.nome === 'Demônio' || tipo.nome === 'Dragãozinho') ? M.amarelo : M.preto;
@@ -212,8 +222,14 @@
         var olhosD = new T.Group(); olhosD.position.set(0, r * 0.55, r * 1.25); voo.add(olhosD); olhos(olhosD, 0, 0, r * 0.8, olhoBrilho);
       } else {
         peca(G.esfera, mat, r, r, r, 0, 0, 0, voo);
-        peca(G.cone, mat, r * 0.25, r * 0.5, r * 0.25, -r * 0.5, r * 0.95, 0, voo);
-        peca(G.cone, mat, r * 0.25, r * 0.5, r * 0.25, r * 0.5, r * 0.95, 0, voo);
+        if (tipo.listras) { // abelha: listras pretas e ferrão
+          peca(G.esfera, M.preto, r * 1.02, r * 0.18, r * 1.02, 0, -r * 0.25, 0, voo);
+          peca(G.esfera, M.preto, r * 0.9, r * 0.16, r * 0.9, 0, -r * 0.6, 0, voo);
+          var ferrao = peca(G.cone, M.preto, r * 0.15, r * 0.5, r * 0.15, 0, 0, -r * 1.1, voo); ferrao.rotation.x = -Math.PI / 2;
+        } else {
+          peca(G.cone, mat, r * 0.25, r * 0.5, r * 0.25, -r * 0.5, r * 0.95, 0, voo);
+          peca(G.cone, mat, r * 0.25, r * 0.5, r * 0.25, r * 0.5, r * 0.95, 0, voo);
+        }
         olhos(voo, r * 0.15, r * 0.82, r, olhoBrilho);
       }
       p.asas = [-1, 1].map(function (lado) {
@@ -234,10 +250,33 @@
       p.bracos = [-1, 1].map(function (lado) { var b = new T.Group(); b.position.set(lado * r * 1.05, r * 2.0, 0); g.add(b); peca(G.caixa, mat, r * 0.5, r * 1.4, r * 0.5, 0, -r * 0.6, 0, b); return b; });
       p.pernas = [-1, 1].map(function (lado) { var b = new T.Group(); b.position.set(lado * r * 0.45, r * 0.8, 0); g.add(b); peca(G.caixa, mat, r * 0.55, r * 0.8, r * 0.55, 0, -r * 0.4, 0, b); return b; });
       alt = r * 3;
-    } else if (tipo.forma !== 'lobo') { // humano: esqueleto, orc, demônio
+    } else if (tipo.forma === 'aranha') {
+      peca(G.esfera, mat, r, r * 0.65, r * 1.15, 0, r * 0.75, -r * 0.3, g);
+      peca(G.esfera, mat, r * 0.55, r * 0.5, r * 0.55, 0, r * 0.7, r * 0.75, g);
+      olhos(g, r * 0.85, r * 1.2, r * 0.7, new T.MeshBasicMaterial({ color: 0xff2222 }));
+      p.pernas = [];
+      [-1, 1].forEach(function (lado) {
+        for (var i = 0; i < 4; i++) {
+          var b = new T.Group(); b.position.set(lado * r * 0.45, r * 0.75, (i - 1.5) * r * 0.38); b.rotation.z = lado * 0.5; g.add(b);
+          peca(G.caixa, mat, r * 1.3, r * 0.1, r * 0.1, lado * r * 0.6, -r * 0.25, 0, b).rotation.z = -lado * 0.6;
+          p.pernas.push(b);
+        }
+      });
+      alt = r * 1.4;
+    } else if (tipo.forma === 'cogumelo') {
+      var pulo = new T.Group(); pulo.position.y = 0.15; g.add(pulo); p.voo = pulo; p.vooY = 0.15;
+      peca(G.cilindro, M.osso, r * 0.45, r * 1.0, r * 0.45, 0, r * 0.5, 0, pulo);
+      peca(G.esfera, mat, r * 1.15, r * 0.6, r * 1.15, 0, r * 1.15, 0, pulo);
+      [[0.5, 0.3], [-0.45, 0.4], [0.1, -0.6], [-0.3, -0.3], [0.6, -0.35]].forEach(function (pt) { peca(G.esfera, M.branco, r * 0.16, r * 0.1, r * 0.16, pt[0] * r, r * 1.55, pt[1] * r, pulo); });
+      olhos(pulo, r * 0.6, r * 0.42, r * 0.8);
+      alt = r * 1.9;
+    } else if (tipo.forma === 'humano') { // esqueleto, zumbi, orc, ciclope, demônio
       peca(G.caixa, mat, r * 1.3, r * 1.5, r * 0.8, 0, r * 2.0, 0, g);
       peca(G.esfera, mat, r * 0.62, r * 0.62, r * 0.62, 0, r * 3.2, 0, g);
-      olhos(g, r * 3.3, r * 0.5, r * 0.9, olhoBrilho);
+      if (tipo.umOlho) { // ciclope: um olho grande só
+        peca(G.esfera, M.branco, r * 0.3, r * 0.3, r * 0.3, 0, r * 3.3, r * 0.45, g);
+        peca(G.esfera, M.preto, r * 0.14, r * 0.14, r * 0.14, 0, r * 3.3, r * 0.72, g);
+      } else olhos(g, r * 3.3, r * 0.5, r * 0.9, olhoBrilho);
       if (tipo.dentes) { peca(G.cone, M.osso, r * 0.08, r * 0.25, r * 0.08, -r * 0.2, r * 3.0, r * 0.55, g); peca(G.cone, M.osso, r * 0.08, r * 0.25, r * 0.08, r * 0.2, r * 3.0, r * 0.55, g); }
       if (tipo.chifres) { peca(G.cone, M.escuro, r * 0.14, r * 0.5, r * 0.14, -r * 0.35, r * 3.85, 0, g); peca(G.cone, M.escuro, r * 0.14, r * 0.5, r * 0.14, r * 0.35, r * 3.85, 0, g); }
       p.bracos = [-1, 1].map(function (lado) { var b = new T.Group(); b.position.set(lado * r * 0.85, r * 2.6, 0); g.add(b); peca(G.caixa, mat, r * 0.32, r * 1.3, r * 0.32, 0, -r * 0.6, 0, b); return b; });
@@ -253,6 +292,13 @@
       var rabo = peca(G.caixa, mat, r * 0.2, r * 0.2, r * 0.8, 0, r * 1.5, -r * 1.2, g); rabo.rotation.x = -0.5;
       p.pernas = [[-1, 1], [1, -1], [-1, -1], [1, 1]].map(function (l) { var b = new T.Group(); b.position.set(l[0] * r * 0.3, r * 0.8, l[1] * r * 0.6); g.add(b); peca(G.caixa, mat, r * 0.25, r * 0.8, r * 0.25, 0, -r * 0.4, 0, b); return b; });
       alt = r * 2.3;
+    }
+    if (chefe) { // coroa dourada do chefão
+      var coroa = new T.Group(); coroa.position.y = alt + 0.05; g.add(coroa);
+      peca(G.cilindro, M.amarelo, r * 0.45, r * 0.15, r * 0.45, 0, 0, 0, coroa);
+      for (var c = 0; c < 5; c++) { var ac = c / 5 * Math.PI * 2; peca(G.cone, M.amarelo, r * 0.1, r * 0.3, r * 0.1, Math.cos(ac) * r * 0.38, r * 0.2, Math.sin(ac) * r * 0.38, coroa); }
+      if (p.voo) { g.remove(coroa); coroa.position.y = alt - p.vooY + 0.05; p.voo.add(coroa); }
+      alt += r * 0.4;
     }
     // sombra
     var sombra = new T.Mesh(G.esfera, matSombra); sombra.scale.set(r * 0.9, 0.01, r * 0.9); sombra.position.y = 0.02; g.add(sombra);
@@ -302,7 +348,7 @@
   // ---------- Estado ----------
   var estado = 'inicio';
   var jog = null, monstros = [], tiros = [], textos = [], particulas = [], defesas = [], amigos = [];
-  var ultimo = 0, relogio = 0, proxMonstro = 0, vermelho = 0;
+  var ultimo = 0, relogio = 0, proxMonstro = 0, vermelho = 0, esperaChefe = 3;
   var teclas = {}, toques = {}, atacando = false, travado = false, olharMouse = null;
   var W = innerWidth, H = innerHeight, dpr2 = 1;
   var toqueAparelho = !!(window.matchMedia && window.matchMedia('(pointer: coarse)').matches);
@@ -355,7 +401,7 @@
     defesas.forEach(function (d) { scene.remove(d.modelo.grupo); d.modelo.mat.dispose(); });
     amigos.forEach(function (a) { scene.remove(a.modelo.grupo); a.modelo.mat.dispose(); });
     monstros = []; tiros = []; textos = []; particulas = []; defesas = []; amigos = [];
-    vermelho = 0; $('dano').style.opacity = 0;
+    vermelho = 0; $('dano').style.opacity = 0; esperaChefe = 3;
   }
 
   // ---------- Monstros ----------
@@ -366,18 +412,19 @@
     }
     o.x = Math.max(-LIM, Math.min(LIM, o.x)); o.z = Math.max(-LIM, Math.min(LIM, o.z));
   }
-  function criarMonstro() {
-    var n = Math.max(1, save.nivel + Math.floor(Math.random() * 3) - 1); // nível do jogador -1, igual ou +1
-    var disp = Math.min(TIPOS.length, 1 + Math.floor((save.nivel - 1) / 3));
+  // chefe = o monstro do fim do nível: 2 níveis acima de você e com muito mais vida
+  function criarMonstro(chefe) {
+    var n = chefe ? save.nivel + 2 : Math.max(1, save.nivel + Math.floor(Math.random() * 3) - 1); // nível do jogador -1, igual ou +1
+    var disp = Math.min(TIPOS.length, 1 + Math.floor((save.nivel - 1) / 2));
     var tipo = TIPOS[Math.max(0, disp - 1 - Math.floor(Math.random() * Math.min(3, disp)))];
-    var dourado = Math.random() < 0.05;
-    var ang = Math.random() * Math.PI * 2, dist = 10 + Math.random() * 8;
+    var dourado = !chefe && Math.random() < 0.05;
+    var ang = Math.random() * Math.PI * 2, dist = chefe ? 13 + Math.random() * 3 : 10 + Math.random() * 8;
     var pos = { x: jog.x + Math.cos(ang) * dist, z: jog.z + Math.sin(ang) * dist };
     soltarDeObstaculos(pos, tipo.r);
-    var modelo = fazerMonstro(tipo, dourado);
-    var vida = vidaMonstro(n) * tipo.hp * (dourado ? 2 : 1);
-    var m = { x: pos.x, z: pos.z, n: n, tipo: tipo, vida: vida, max: vida, dano: danoMonstro(n) * tipo.dano, r: modelo.r,
-      vel: tipo.vel * (0.9 + Math.random() * 0.2), espera: 0.5, lento: 0, bate: 0, ataque: 0, dourado: dourado, fase: Math.random() * 6, nasce: 0, modelo: modelo };
+    var modelo = fazerMonstro(tipo, dourado, chefe);
+    var vida = vidaMonstro(n) * tipo.hp * (dourado ? 2 : 1) * (chefe ? 6 : 1);
+    var m = { x: pos.x, z: pos.z, n: n, tipo: tipo, vida: vida, max: vida, dano: danoMonstro(n) * tipo.dano * (chefe ? 1.3 : 1), r: modelo.r,
+      vel: tipo.vel * (chefe ? 0.85 : 0.9 + Math.random() * 0.2), espera: 0.5, lento: 0, bate: 0, ataque: 0, dourado: dourado, chefe: !!chefe, fase: Math.random() * 6, nasce: 0, modelo: modelo };
     modelo.grupo.position.set(m.x, 0, m.z); modelo.grupo.scale.setScalar(0.01);
     scene.add(modelo.grupo);
     monstros.push(m);
@@ -522,25 +569,32 @@
   function matar(m) {
     var i = monstros.indexOf(m); if (i < 0) return;
     monstros.splice(i, 1); tirarMonstro(m);
-    var ganho = moedasMonstro(m.n) * (m.dourado ? 5 : 1);
+    var ganho = moedasMonstro(m.n) * (m.dourado ? 5 : 1) * (m.chefe ? 5 : 1);
     ganho = Math.max(1, Math.round(ganho * (0.85 + Math.random() * 0.3)));
     save.moedas += ganho;
-    texto(m.x, m.modelo.alt * 0.6, m.z, '+' + curto(ganho), '#ffd23f', m.dourado ? 30 : 24);
-    estourar(m.x, m.modelo.alt * 0.5, m.z, m.dourado ? 0xffd23f : m.tipo.cor, 12);
+    texto(m.x, m.modelo.alt * 0.6, m.z, '+' + curto(ganho), '#ffd23f', m.dourado || m.chefe ? 32 : 24);
+    estourar(m.x, m.modelo.alt * 0.5, m.z, m.dourado ? 0xffd23f : m.tipo.cor, m.chefe ? 30 : 12);
     bip(m.dourado ? 1200 : 880, 0.12, 'triangle', 0.07);
-    ganharXp(xpMonstro(m.n));
+    if (m.chefe) passarNivel();
+    else ganharXp(xpMonstro(m.n));
     guardar(); atualizarHud();
   }
-  function ganharXp(q) {
-    save.xp += q;
-    while (save.xp >= xpParaSubir(save.nivel)) {
-      save.xp -= xpParaSubir(save.nivel); save.nivel++;
-      jog.vida = vidaMax();
-      amigos.forEach(function (a) { a.max = a.def.vida * forcaNivel(save.nivel); if (!a.morto) a.vida = a.max; });
-      avisar('Subiu para o nível ' + save.nivel + '!');
-      bip(523, 0.15, 'triangle', 0.08); setTimeout(function () { bip(784, 0.25, 'triangle', 0.08); }, 120);
-      if (save.nivel % 5 === 0) setTimeout(function () { if (estado === 'jogando') horda(); }, 2200);
-    }
+  // A barra de experiência enche até o fim; aí vem o chefão. Só passa de nível quando o chefão é derrotado.
+  function ganharXp(q) { save.xp = Math.min(xpParaSubir(save.nivel), save.xp + q); }
+  function chefeNoCampo() { for (var i = 0; i < monstros.length; i++) if (monstros[i].chefe) return monstros[i]; return null; }
+  function chamarChefe() {
+    criarMonstro(true);
+    var c = chefeNoCampo();
+    avisar('O chefão chegou: ' + c.tipo.nome + ' nível ' + c.n + '! Derrote ele para passar de nível');
+    bip(110, 0.7, 'sawtooth', 0.08); setTimeout(function () { bip(90, 0.7, 'sawtooth', 0.08); }, 350);
+  }
+  function passarNivel() {
+    save.xp = 0; save.nivel++;
+    jog.vida = vidaMax();
+    amigos.forEach(function (a) { a.max = a.def.vida * forcaNivel(save.nivel); if (!a.morto) a.vida = a.max; });
+    avisar('Chefão derrotado! Subiu para o nível ' + save.nivel + '!');
+    bip(523, 0.15, 'triangle', 0.08); setTimeout(function () { bip(784, 0.25, 'triangle', 0.08); }, 120); setTimeout(function () { bip(1046, 0.3, 'triangle', 0.08); }, 260);
+    if (save.nivel % 5 === 0) setTimeout(function () { if (estado === 'jogando') horda(); }, 2600);
   }
 
   // ---------- Avisos na tela ----------
@@ -676,6 +730,9 @@
     if (mao.userData.distancia) mao.rotation.set(-0.2 + s * 0.2, 0.15, -0.1);
     else mao.rotation.set(-0.85 - s * 1.1, 0.3 * s, -0.35 + s * 0.7);
 
+    // Barra de experiência cheia: chega o chefão do fim do nível
+    if (save.xp >= xpParaSubir(save.nivel) && !chefeNoCampo()) { esperaChefe -= dt; if (esperaChefe <= 0) { chamarChefe(); esperaChefe = 3; } }
+
     // Novos monstros (quanto maior o nível, mais monstros)
     proxMonstro -= dt;
     if (proxMonstro <= 0 && monstros.length < maxMonstros()) { criarMonstro(); proxMonstro = Math.max(0.4, 1.4 - save.nivel * 0.03); }
@@ -788,7 +845,7 @@
       mo.modelo.grupo.rotation.y = Math.atan2(ex, ez);
       // pisca de branco quando apanha
       if (mo.bate > 0) { mo.bate -= dt; mo.modelo.mat.emissive.setHex(0xffffff); }
-      else mo.modelo.mat.emissive.setHex(mo.dourado ? 0x553300 : (mo.lento > 0 ? 0x1e4d6b : 0x000000));
+      else mo.modelo.mat.emissive.setHex(mo.lento > 0 ? 0x1e4d6b : (mo.chefe ? CHEFE_COR : (mo.dourado ? 0x553300 : (mo.tipo.brilho || 0x000000))));
       animarMonstro(mo, relogio);
       mo.espera -= dt;
       if (mo.espera <= 0 && mo.nasce >= 1) {
@@ -804,7 +861,7 @@
         } else if (tocou) { mo.espera = 1.2; mo.ataque = 0.25; ferirDefesa(tocou, mo.dano); } // bate no muro que está no caminho
       }
       // monstro que ficou muito longe some (e outro aparece mais perto)
-      if (distJog > 48) { tirarMonstro(mo); monstros.splice(q, 1); q--; }
+      if (distJog > 48 && !mo.chefe) { tirarMonstro(mo); monstros.splice(q, 1); q--; }
     }
 
     // Efeitos
@@ -836,13 +893,14 @@
       .sort(function (a, b) { return b.d - a.d; });
     lista.forEach(function (o) {
       var m = o.m, pt = naTela(m.x, m.modelo.alt + 0.35, m.z); if (!pt) return;
-      var esc = Math.max(0.55, Math.min(1.3, 8 / o.d)), bw = 54 * esc, bh = 7 * esc;
+      var esc = Math.max(0.55, Math.min(1.3, 8 / o.d)) * (m.chefe ? 1.4 : 1), bw = 54 * esc, bh = 7 * esc;
       h2.fillStyle = 'rgba(0,0,0,.6)'; h2.fillRect(pt.x - bw / 2, pt.y, bw, bh);
-      h2.fillStyle = m.n > save.nivel ? '#f97316' : (m.n < save.nivel ? '#84cc16' : '#ef4444');
+      h2.fillStyle = m.chefe ? '#d946ef' : (m.n > save.nivel ? '#f97316' : (m.n < save.nivel ? '#84cc16' : '#ef4444'));
       h2.fillRect(pt.x - bw / 2, pt.y, bw * Math.max(0, m.vida / m.max), bh);
+      var rot = (m.chefe ? 'CHEFÃO ' : '') + 'Nv ' + m.n;
       h2.font = '800 ' + Math.round(13 * esc) + 'px system-ui, sans-serif';
-      h2.strokeStyle = '#000'; h2.lineWidth = 3; h2.strokeText('Nv ' + m.n, pt.x, pt.y - 3);
-      h2.fillStyle = m.dourado ? '#ffd23f' : '#fff'; h2.fillText('Nv ' + m.n, pt.x, pt.y - 3);
+      h2.strokeStyle = '#000'; h2.lineWidth = 3; h2.strokeText(rot, pt.x, pt.y - 3);
+      h2.fillStyle = m.chefe ? '#f0abfc' : (m.dourado ? '#ffd23f' : '#fff'); h2.fillText(rot, pt.x, pt.y - 3);
     });
     // vida dos ajudantes (verde, com coração) e das defesas machucadas
     function barra(x, y, z, frac, cor, rotulo) {
@@ -889,7 +947,18 @@
     }
     defesas.forEach(function (d) { ponto(d.x, d.z, '#93c5fd', 2.5, true); });
     amigos.forEach(function (a) { if (!a.morto) ponto(a.x, a.z, '#4ade80', 3.5); });
-    monstros.forEach(function (m) { ponto(m.x, m.z, m.dourado ? '#ffd23f' : (m.n > save.nivel ? '#f97316' : '#ff4d4d'), 3.5); });
+    monstros.forEach(function (m) { ponto(m.x, m.z, m.chefe ? '#d946ef' : (m.dourado ? '#ffd23f' : (m.n > save.nivel ? '#f97316' : '#ff4d4d')), m.chefe ? 6 : 3.5); });
+    // barra grande do chefão no alto da tela
+    var chefe = chefeNoCampo();
+    if (chefe) {
+      var cw = Math.min(420, W * 0.6), cxb = W / 2 - cw / 2, cyb = toqueAparelho ? 96 : 74;
+      h2.font = '800 15px system-ui, sans-serif'; h2.lineWidth = 3; h2.strokeStyle = '#000';
+      var tit = 'CHEFÃO: ' + chefe.tipo.nome + ' · nível ' + chefe.n;
+      h2.strokeText(tit, W / 2, cyb - 5); h2.fillStyle = '#f0abfc'; h2.fillText(tit, W / 2, cyb - 5);
+      h2.fillStyle = 'rgba(0,0,0,.6)'; h2.fillRect(cxb, cyb, cw, 12);
+      h2.fillStyle = '#d946ef'; h2.fillRect(cxb, cyb, cw * Math.max(0, chefe.vida / chefe.max), 12);
+      h2.strokeStyle = '#fff'; h2.lineWidth = 2; h2.strokeRect(cxb, cyb, cw, 12);
+    }
     h2.fillStyle = '#fff'; h2.beginPath(); h2.moveTo(rx, ry - 7); h2.lineTo(rx - 5, ry + 5); h2.lineTo(rx + 5, ry + 5); h2.closePath(); h2.fill();
     // controles de toque
     for (var id in toques) {
@@ -915,7 +984,7 @@
   function atualizarHud() {
     if (jog) atualizarVida();
     $('xp-cheia').style.width = Math.min(100, save.xp / xpParaSubir(save.nivel) * 100) + '%';
-    $('nivel-texto').textContent = 'Nível ' + save.nivel;
+    $('nivel-texto').textContent = 'Nível ' + save.nivel + (save.xp >= xpParaSubir(save.nivel) ? ' · derrote o chefão!' : '');
     $('moedas-texto').textContent = curto(save.moedas);
     $('loja-moedas').textContent = curto(save.moedas);
     $('pocoes-texto').textContent = save.pocoes;
