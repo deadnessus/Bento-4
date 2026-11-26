@@ -47,13 +47,13 @@
     { nome: 'Morcego vampiro', cor: 0x4c0519, vel: 3.1, r: 0.45, hp: 0.8, dano: 1, forma: 'morcego', olhos: 'vermelho', presas: true },
     { nome: 'Lobo', cor: 0x6b7280, vel: 3.4, r: 0.55, hp: 1.1, dano: 1.2, forma: 'lobo', olhos: 'amarelo' },
     { nome: 'Javali', cor: 0x78350f, vel: 2.8, r: 0.6, hp: 1.4, dano: 1.3, forma: 'lobo', dentes: true, orelhasRedondas: true },
-    { nome: 'Zumbi', cor: 0x6b8f71, vel: 1.6, r: 0.55, hp: 1.5, dano: 1.2, forma: 'humano' },
+    { nome: 'Zumbi', cor: 0x6b8f71, vel: 1.6, r: 0.55, hp: 1.5, dano: 1.2, forma: 'humano', bracosFrente: true },
     { nome: 'Urso', cor: 0x5d4037, vel: 2.2, r: 0.95, hp: 2.2, dano: 1.5, forma: 'lobo', orelhasRedondas: true, raboCurto: true },
     { nome: 'Vampiro', cor: 0x1e1b4b, vel: 2.6, r: 0.6, hp: 1.6, dano: 1.5, forma: 'humano', pele: true, capa: true, presas: true, olhos: 'vermelho' },
     { nome: 'Lobisomem', cor: 0x52525b, vel: 3.0, r: 0.7, hp: 1.9, dano: 1.6, forma: 'humano', lobisomem: true, olhos: 'amarelo' },
     { nome: 'Fantasma', cor: 0xe0f2fe, vel: 2.4, r: 0.6, hp: 1.2, dano: 1.3, forma: 'fantasma' },
     { nome: 'Escorpião gigante', cor: 0xc2410c, vel: 2.5, r: 0.7, hp: 2, dano: 1.6, forma: 'aranha', cauda: true },
-    { nome: 'Yeti', cor: 0xf1f5f9, vel: 1.8, r: 0.95, hp: 2.4, dano: 1.6, forma: 'golem' },
+    { nome: 'Yeti', cor: 0xf1f5f9, vel: 1.8, r: 0.95, hp: 2.4, dano: 1.6, forma: 'yeti' },
     { nome: 'Ciclope', cor: 0xa16207, vel: 1.7, r: 0.95, hp: 2.6, dano: 1.7, forma: 'humano', umOlho: true },
     { nome: 'Dragãozinho', cor: 0xef4444, vel: 2.4, r: 0.75, hp: 2, dano: 1.7, forma: 'dragao', olhos: 'amarelo' },
     { nome: 'Golem de lava', cor: 0xea580c, brilho: 0x7c2d12, vel: 1.4, r: 1.05, hp: 2.8, dano: 1.9, forma: 'golem' },
@@ -131,15 +131,15 @@
   catch (e) { $('tela-inicio').hidden = true; $('tela-erro').hidden = false; return; }
   renderer.outputEncoding = T.sRGBEncoding;
   renderer.toneMapping = T.ACESFilmicToneMapping;
-  renderer.toneMappingExposure = 1.0;
+  renderer.toneMappingExposure = 1.05;
   renderer.shadowMap.type = T.PCFSoftShadowMap;
   renderer.info.autoReset = false;
   var webgl2 = renderer.capabilities.isWebGL2;
   var ANISO = Math.min(8, renderer.capabilities.getMaxAnisotropy());
 
   var scene = new T.Scene();
-  var COR_HOR = new T.Color(0xcfe6f2), COR_ALTO = new T.Color(0x3a8ee6);
-  var DIR_SOL = new T.Vector3(0.5, 0.72, 0.48).normalize();
+  var COR_HOR = new T.Color(0xd8e9f0), COR_ALTO = new T.Color(0x3b8be0);
+  var DIR_SOL = new T.Vector3(0.56, 0.6, 0.58).normalize();
   scene.fog = new T.Fog(COR_HOR, 26, 200);
   var camera = new T.PerspectiveCamera(70, 1, 0.05, 230);
   camera.rotation.order = 'YXZ';
@@ -175,8 +175,8 @@
   } catch (e) { envMapa = null; }
 
   // luz do céu (azulada por cima, esverdeada por baixo) e o sol, que faz as sombras
-  var hemi = new T.HemisphereLight(0xd6ebff, 0x5b7a3c, 0.62); scene.add(hemi);
-  var sol = new T.DirectionalLight(0xfff0d6, 1.2); scene.add(sol); scene.add(sol.target);
+  var hemi = new T.HemisphereLight(0xc6e0ff, 0x6f7b42, 0.6); scene.add(hemi);
+  var sol = new T.DirectionalLight(0xffe7c4, 1.38); scene.add(sol); scene.add(sol.target);
   sol.shadow.bias = -0.0004; sol.shadow.normalBias = 0.035;
   function posicionarSol(cx, cz) { sol.target.position.set(cx, 0, cz); sol.position.set(cx + DIR_SOL.x * 90, DIR_SOL.y * 90, cz + DIR_SOL.z * 90); sol.target.updateMatrixWorld(); }
   posicionarSol(0, 0);
@@ -208,8 +208,6 @@
     madeira: facetado(0x6b4423), madeiraClara: facetado(0xa8743f), escuro: toon(0x2f2f35), couro: toon(0x5a3a22),
     ouro: metal(0xffc93c, 0.22), ferro: metal(0xd5dde4, 0.28), ferroEscuro: metal(0x4b5563, 0.45)
   };
-  // pedaço comprido entre dois pontos (pernas dobradas)
-  function segmento(pai, mat, x0, y0, x1, y1, esp) { var m = peca(G.caixa, mat, Math.hypot(x1 - x0, y1 - y0), esp, esp, (x0 + x1) / 2, (y0 + y1) / 2, 0, pai); m.rotation.z = Math.atan2(y1 - y0, x1 - x0); return m; }
   function peca(geo, mat, sx, sy, sz, x, y, z, pai) {
     var m = new T.Mesh(geo, mat); m.scale.set(sx, sy, sz); m.position.set(x, y, z); if (pai) pai.add(m); return m;
   }
@@ -225,6 +223,128 @@
   var texSombra = texRadial([[0, 'rgba(0,0,0,0.5)'], [0.55, 'rgba(0,0,0,0.28)'], [1, 'rgba(0,0,0,0)']]);
   var matSombra = new T.MeshBasicMaterial({ map: texSombra, transparent: true, depthWrite: false });
   var geoSombra = new T.PlaneGeometry(2, 2); geoSombra.rotateX(-Math.PI / 2);
+
+  // ---------- Texturas desenhadas na hora (nada vem de fora do jogo) ----------
+  // Cada uma é clarinha (multiplica a cor do material) e vem com um "relevo" (mapa de normais) para a luz pegar nas ranhuras.
+  var semT = 99;
+  function rt() { semT = (semT * 16807) % 2147483647; return (semT - 1) / 2147483646; }
+  function tela(tam, fn) { var c = document.createElement('canvas'); c.width = c.height = tam; fn(c.getContext('2d'), tam); return c; }
+  // desenha repetindo nas bordas, para a textura emendar sem costura
+  function emendado(tam, x, y, fn) { [[0, 0], [-tam, 0], [tam, 0], [0, -tam], [0, tam]].forEach(function (o) { fn(x + o[0], y + o[1]); }); }
+  function riscos(g, tam, qtd, cores, cmin, cmax, ang, angVar, larg, alfa) {
+    g.lineCap = 'round';
+    for (var i = 0; i < qtd; i++) {
+      var x = rt() * tam, y = rt() * tam, c = cmin + rt() * (cmax - cmin), a = ang + (rt() - 0.5) * angVar;
+      g.strokeStyle = cores[Math.floor(rt() * cores.length)]; g.globalAlpha = alfa; g.lineWidth = larg;
+      emendado(tam, x, y, function (px, py) { g.beginPath(); g.moveTo(px, py); g.lineTo(px + Math.cos(a) * c, py + Math.sin(a) * c); g.stroke(); });
+    }
+    g.globalAlpha = 1;
+  }
+  function manchasRedondas(g, tam, qtd, cores, rmin, rmax, alfa) {
+    for (var i = 0; i < qtd; i++) {
+      var x = rt() * tam, y = rt() * tam, r = rmin + rt() * (rmax - rmin), cor = cores[Math.floor(rt() * cores.length)];
+      emendado(tam, x, y, function (px, py) { var gr = g.createRadialGradient(px, py, 0, px, py, r); gr.addColorStop(0, cor); gr.addColorStop(1, 'rgba(0,0,0,0)'); g.globalAlpha = alfa; g.fillStyle = gr; g.fillRect(px - r, py - r, r * 2, r * 2); });
+    }
+    g.globalAlpha = 1;
+  }
+  function rachaduras(g, tam, qtd, cor, larg, brilho) {
+    g.strokeStyle = cor; g.lineWidth = larg; g.lineJoin = 'round';
+    if (brilho) { g.shadowColor = brilho; g.shadowBlur = 6; }
+    for (var i = 0; i < qtd; i++) {
+      var x = rt() * tam, y = rt() * tam, a = rt() * 6.28, pts = [[x, y]];
+      for (var k = 0; k < 7; k++) { a += (rt() - 0.5) * 1.3; x += Math.cos(a) * (6 + rt() * 10); y += Math.sin(a) * (6 + rt() * 10); pts.push([x, y]); }
+      emendado(tam, 0, 0, function (ox, oy) { g.beginPath(); pts.forEach(function (p, j) { if (j) g.lineTo(p[0] + ox, p[1] + oy); else g.moveTo(p[0] + ox, p[1] + oy); }); g.stroke(); });
+    }
+    g.shadowBlur = 0;
+  }
+  // relevo: transforma o desenho cinza (claro = alto) num mapa de normais
+  function relevo(c, forca) {
+    var w = c.width, h = c.height, src = c.getContext('2d').getImageData(0, 0, w, h).data;
+    return tela(w, function (g) {
+      var img = g.createImageData(w, h), d = img.data;
+      function alt(x, y) { x = (x + w) % w; y = (y + h) % h; var i = (y * w + x) * 4; return (src[i] + src[i + 1] + src[i + 2]) / 765; }
+      for (var y = 0; y < h; y++) for (var x = 0; x < w; x++) {
+        var dx = (alt(x + 1, y) - alt(x - 1, y)) * forca, dy = (alt(x, y + 1) - alt(x, y - 1)) * forca, l = Math.sqrt(dx * dx + dy * dy + 1), i = (y * w + x) * 4;
+        d[i] = (-dx / l * 0.5 + 0.5) * 255; d[i + 1] = (dy / l * 0.5 + 0.5) * 255; d[i + 2] = (1 / l * 0.5 + 0.5) * 255; d[i + 3] = 255;
+      }
+      g.putImageData(img, 0, 0);
+    });
+  }
+  var DESENHOS = {
+    pelo: { tam: 128, forca: 1.6, fn: function (g, t) { g.fillStyle = '#dedede'; g.fillRect(0, 0, t, t); manchasRedondas(g, t, 18, ['#c4c4c4', '#f4f4f4'], 8, 20, 0.6); riscos(g, t, 2600, ['#ffffff', '#f2f2f2', '#b2b2b2', '#c6c6c6'], 4, 10, Math.PI / 2, 0.7, 1.3, 0.6); } },
+    escamas: { tam: 128, forca: 2.4, fn: function (g, t) {
+      g.fillStyle = '#9c9c9c'; g.fillRect(0, 0, t, t);
+      for (var j = 0; j < 12; j++) for (var i = 0; i < 9; i++) {
+        var cx = i * 16 + (j % 2) * 8, cy = j * 11;
+        emendado(t, cx, cy, function (x, y) { var gr = g.createRadialGradient(x, y - 3, 1, x, y, 10); gr.addColorStop(0, '#ffffff'); gr.addColorStop(0.7, '#dcdcdc'); gr.addColorStop(1, '#8e8e8e'); g.fillStyle = gr; g.beginPath(); g.arc(x, y, 9.5, 0, Math.PI); g.lineTo(x - 9.5, y - 5); g.arc(x, y - 5, 9.5, Math.PI, 0); g.fill(); });
+      }
+    } },
+    manchas: { tam: 128, forca: 1.0, fn: function (g, t) { g.fillStyle = '#f0f0f0'; g.fillRect(0, 0, t, t); manchasRedondas(g, t, 50, ['#cfcfcf', '#ffffff', '#dadada'], 5, 18, 0.55); riscos(g, t, 600, ['#d4d4d4', '#ffffff'], 1, 2, 0, 6.28, 1, 0.5); } },
+    pedra: { tam: 256, forca: 3.2, fn: function (g, t) { g.fillStyle = '#c4c4c4'; g.fillRect(0, 0, t, t); manchasRedondas(g, t, 140, ['#a4a4a4', '#e2e2e2', '#b8b8b8', '#d6d6d6'], 8, 32, 0.7); riscos(g, t, 2400, ['#9a9a9a', '#ececec'], 1, 2, 0, 6.28, 1.2, 0.6); rachaduras(g, t, 16, '#707070', 1.6); } },
+    lava: { tam: 256, forca: 2.4, fn: function (g, t) { g.fillStyle = '#4a342c'; g.fillRect(0, 0, t, t); manchasRedondas(g, t, 120, ['#2c201c', '#5e463c', '#3a2a24'], 8, 30, 0.8); rachaduras(g, t, 26, '#ff9a1a', 3.2, '#ff6a00'); rachaduras(g, t, 10, '#ffe27a', 1.4); } },
+    casca: { tam: 128, forca: 3.0, fn: function (g, t) {
+      g.fillStyle = '#d6d6d6'; g.fillRect(0, 0, t, t);
+      for (var i = 0; i < 24; i++) { var x0 = rt() * t, f = rt() * 6.28; g.strokeStyle = rt() < 0.6 ? '#8a8a8a' : '#efefef'; g.lineWidth = 1.5 + rt() * 2.5; emendado(t, 0, 0, function (ox) { g.beginPath(); for (var y = -4; y <= t + 4; y += 4) { var x = x0 + ox + Math.sin(y * 0.09 + f) * 3; if (y < 0) g.moveTo(x, y); else g.lineTo(x, y); } g.stroke(); }); }
+      riscos(g, t, 500, ['#b0b0b0', '#f6f6f6'], 2, 6, Math.PI / 2, 0.3, 1, 0.5);
+    } },
+    madeira: { tam: 128, forca: 1.4, fn: function (g, t) {
+      g.fillStyle = '#e0e0e0'; g.fillRect(0, 0, t, t);
+      for (var i = 0; i < 36; i++) { var y0 = rt() * t, f = rt() * 6.28, a = 1 + rt() * 2; g.strokeStyle = rt() < 0.5 ? '#bababa' : '#f8f8f8'; g.lineWidth = 1 + rt() * 1.5; emendado(t, 0, 0, function (ox, oy) { g.beginPath(); for (var x = -4; x <= t + 4; x += 4) { var y = y0 + oy + Math.sin(x * 0.05 + f) * a; if (x < 0) g.moveTo(x, y); else g.lineTo(x, y); } g.stroke(); }); }
+      for (var k = 0; k < 3; k++) { var nx = rt() * t, ny = rt() * t; for (var a2 = 6; a2 > 0; a2 -= 2) { g.strokeStyle = '#a8a8a8'; g.lineWidth = 1; g.beginPath(); g.ellipse(nx, ny, a2 * 1.8, a2 * 0.8, 0, 0, 6.28); g.stroke(); } }
+    } },
+    folhas: { tam: 128, forca: 1.2, fn: function (g, t) {
+      g.fillStyle = '#d2d2d2'; g.fillRect(0, 0, t, t);
+      for (var i = 0; i < 950; i++) { var x = rt() * t, y = rt() * t, r = 2 + rt() * 3, a = rt() * 6.28; g.fillStyle = ['#ffffff', '#bdbdbd', '#e8e8e8', '#a8a8a8'][Math.floor(rt() * 4)]; emendado(t, x, y, function (px, py) { g.beginPath(); g.ellipse(px, py, r, r * 0.55, a, 0, 6.28); g.fill(); }); }
+    } },
+    metal: { tam: 128, forca: 0.8, fn: function (g, t) { g.fillStyle = '#e6e6e6'; g.fillRect(0, 0, t, t); riscos(g, t, 700, ['#ffffff', '#c8c8c8', '#d8d8d8'], 20, 70, 0, 0.04, 1, 0.35); } },
+    tecido: { tam: 64, forca: 1.2, fn: function (g, t) { g.fillStyle = '#d8d8d8'; g.fillRect(0, 0, t, t); for (var y = 0; y < t; y += 4) for (var x = 0; x < t; x += 4) { g.fillStyle = ((x + y) / 4) % 2 ? '#f2f2f2' : '#c4c4c4'; g.fillRect(x, y, 3, 3); } } },
+    grama: { tam: 512, forca: 1.2, fn: function (g, t) { g.fillStyle = '#dfe6d6'; g.fillRect(0, 0, t, t); manchasRedondas(g, t, 60, ['#cbd6bd', '#eef3e6'], 20, 60, 0.6); riscos(g, t, 9000, ['#f6fbef', '#c2ceb3', '#e4ecd9', '#b0bea0'], 3, 9, -Math.PI / 2, 0.8, 1.4, 0.7); manchasRedondas(g, t, 260, ['#c4d4b0'], 2, 4, 0.8); } },
+    terra: { tam: 256, forca: 2.2, fn: function (g, t) {
+      g.fillStyle = '#d6c8b2'; g.fillRect(0, 0, t, t); manchasRedondas(g, t, 70, ['#c4b498', '#e6dbc8'], 10, 30, 0.7);
+      for (var i = 0; i < 1300; i++) { var x = rt() * t, y = rt() * t, r = 0.8 + rt() * 2.6; g.fillStyle = ['#b6a487', '#efe5d4', '#a39275', '#c9baa0'][Math.floor(rt() * 4)]; emendado(t, x, y, function (px, py) { g.beginPath(); g.ellipse(px, py, r, r * 0.75, rt() * 3, 0, 6.28); g.fill(); }); }
+    } }
+  };
+  var telas = {}, cacheTex = {};
+  // tex('pelo', 3, 3) -> { cor: textura de cor, relevo: mapa de normais }, com a repetição pedida
+  function tex(nome, rx, ry) {
+    var k = nome + ':' + rx + ':' + (ry || rx);
+    if (cacheTex[k]) return cacheTex[k];
+    if (!telas[nome]) { var d = DESENHOS[nome], c = tela(d.tam, d.fn); telas[nome] = { cor: c, relevo: relevo(c, d.forca) }; }
+    var t = telas[nome], cor = new T.CanvasTexture(t.cor), rel = new T.CanvasTexture(t.relevo);
+    [cor, rel].forEach(function (x) { x.wrapS = x.wrapT = T.RepeatWrapping; x.repeat.set(rx, ry || rx); x.anisotropy = ANISO; });
+    cor.encoding = T.sRGBEncoding;
+    return (cacheTex[k] = { cor: cor, relevo: rel });
+  }
+  // põe a textura e o relevo num material
+  function texturizar(mat, nome, rx, ry, forcaRelevo) {
+    var t = tex(nome, rx, ry); mat.map = t.cor;
+    if (forcaRelevo !== 0 && 'normalMap' in mat) { mat.normalMap = t.relevo; mat.normalScale.set(forcaRelevo || 0.7, forcaRelevo || 0.7); }
+    mat.needsUpdate = true; return mat;
+  }
+
+  // ---------- Iluminação dos bichos e do cenário ----------
+  // Borda clara (contorno de luz, deixa os bichos destacados do fundo) e um escurecido perto do chão
+  // (parece que as coisas estão "pisando" no chão, e não flutuando).
+  var luzBorda = { cor: { value: new T.Color(0xfff2d8) }, forca: { value: 0.38 } };
+  function sombraNoPe(sh, minimo, altura) {
+    sh.vertexShader = sh.vertexShader.replace('#include <common>', '#include <common>\nvarying float vAlturaMundo;')
+      .replace('#include <project_vertex>', '#include <project_vertex>\n{ vec4 pm = vec4(transformed, 1.0);\n#ifdef USE_INSTANCING\n pm = instanceMatrix * pm;\n#endif\n vAlturaMundo = (modelMatrix * pm).y; }');
+    sh.fragmentShader = sh.fragmentShader.replace('#include <common>', '#include <common>\nvarying float vAlturaMundo;')
+      .replace('#include <output_fragment>', 'outgoingLight *= mix(' + minimo.toFixed(2) + ', 1.0, smoothstep(0.0, ' + altura.toFixed(2) + ', vAlturaMundo));\n#include <output_fragment>');
+  }
+  function shaderCriatura(sh) {
+    sh.uniforms.corBorda = luzBorda.cor; sh.uniforms.forcaBorda = luzBorda.forca;
+    sombraNoPe(sh, 0.62, 0.55);
+    sh.fragmentShader = sh.fragmentShader.replace('#include <common>', '#include <common>\nuniform vec3 corBorda;\nuniform float forcaBorda;')
+      .replace('outgoingLight *= mix(', 'float borda = 1.0 - clamp(dot(normal, normalize(vViewPosition)), 0.0, 1.0);\noutgoingLight += corBorda * pow(borda, 3.0) * forcaBorda;\noutgoingLight *= mix(');
+  }
+  function shaderCenario(sh) { sombraNoPe(sh, 0.68, 0.7); }
+  function realceCriatura(mat) { mat.onBeforeCompile = shaderCriatura; mat.customProgramCacheKey = function () { return 'criatura'; }; return mat; }
+  function realceCenario(mat) { mat.onBeforeCompile = shaderCenario; mat.customProgramCacheKey = function () { return 'cenario'; }; return mat; }
+
+  // madeira, couro e metal com textura (as mesmas peças servem para o cenário, as defesas e as armas)
+  texturizar(M.madeira, 'madeira', 1, 1, 0.6); texturizar(M.madeiraClara, 'madeira', 1, 1, 0.6); texturizar(M.couro, 'manchas', 2, 2, 0.6);
+  [M.ferro, M.ferroEscuro, M.ouro].forEach(function (m) { texturizar(m, 'metal', 1, 1, 0.25); });
 
   // números aleatórios sempre iguais para o cenário
   var semente = 7;
@@ -242,28 +362,35 @@
     var k = Math.min(1, d / 38); return k * k * (4 + fbm(x * 0.04 + 7, z * 0.04) * 24);
   }
 
-  // chão: cor muda aos poucos (grama clara e escura), trilhas de terra e o círculo de terra no meio
+  // chão: grama clara e escura, trilhas de terra e o círculo de terra no meio (duas texturas misturadas, com relevo)
   (function chao() {
-    var c = document.createElement('canvas'); c.width = c.height = 256; var g = c.getContext('2d');
-    g.fillStyle = '#e9ede4'; g.fillRect(0, 0, 256, 256);
-    for (var i = 0; i < 2600; i++) { var l = 175 + Math.floor(rnd() * 80); g.fillStyle = 'rgb(' + (l - 18) + ',' + l + ',' + (l - 38) + ')'; g.fillRect(rnd() * 256, rnd() * 256, 1 + rnd() * 1.5, 2 + rnd() * 4); }
-    var tex = new T.CanvasTexture(c); tex.wrapS = tex.wrapT = T.RepeatWrapping; tex.repeat.set(95, 95); tex.anisotropy = ANISO; tex.encoding = T.sRGBEncoding;
+    var tg = tex('grama', 95, 95), tt = tex('terra', 95, 95);
     var geo = new T.PlaneGeometry(360, 360, 180, 180); geo.rotateX(-Math.PI / 2);
-    var pos = geo.attributes.position, cores = new Float32Array(pos.count * 3), cor = new T.Color();
-    var g1 = new T.Color(0x62ad40), g2 = new T.Color(0x3f8a2c), g3 = new T.Color(0x86c24e), terra = new T.Color(0xa07f52), pedra = new T.Color(0x8d918a);
+    var pos = geo.attributes.position, cores = new Float32Array(pos.count * 3), terras = new Float32Array(pos.count), cor = new T.Color();
+    var g1 = new T.Color(0x62ad40), g2 = new T.Color(0x3f8a2c), g3 = new T.Color(0x86c24e), claro = new T.Color(0xf2ebe0), pedra = new T.Color(0x8d918a);
     for (var v = 0; v < pos.count; v++) {
-      var x = pos.getX(v), z = pos.getZ(v), y = alturaChao(x, z); pos.setY(v, y);
+      var x = pos.getX(v), z = pos.getZ(v), y = alturaChao(x, z), t = 0; pos.setY(v, y);
       cor.copy(g2).lerp(g1, fbm(x * 0.07, z * 0.07)).lerp(g3, Math.max(0, ruido(x * 0.25 + 50, z * 0.25) - 0.62) * 1.6);
       if (Math.max(Math.abs(x), Math.abs(z)) < LIM) {
         var trilha = Math.max(0, 1 - Math.abs(fbm(x * 0.03 + 3, z * 0.03 + 1) - 0.5) * 22);
         var meio = Math.hypot(x, z), circulo = meio < 4.5 ? Math.min(1, (4.5 - meio) / 2.5) : 0;
-        cor.lerp(terra, Math.min(0.7, Math.max(trilha * 0.65, circulo * 0.6)));
+        t = Math.min(0.9, Math.max(trilha * 0.85, circulo * 0.85));
+        cor.lerp(claro, t); // onde é terra, quem dá a cor é a textura da terra
       }
       if (y > 9) cor.lerp(pedra, Math.min(0.9, (y - 9) / 9));
-      cores[v * 3] = cor.r; cores[v * 3 + 1] = cor.g; cores[v * 3 + 2] = cor.b;
+      cores[v * 3] = cor.r; cores[v * 3 + 1] = cor.g; cores[v * 3 + 2] = cor.b; terras[v] = t;
     }
-    geo.setAttribute('color', new T.BufferAttribute(cores, 3)); geo.computeVertexNormals();
-    var chao = new T.Mesh(geo, new T.MeshLambertMaterial({ map: tex, vertexColors: true }));
+    geo.setAttribute('color', new T.BufferAttribute(cores, 3)); geo.setAttribute('terra', new T.BufferAttribute(terras, 1)); geo.computeVertexNormals();
+    var mat = new T.MeshLambertMaterial({ map: tg.cor, normalMap: tg.relevo, vertexColors: true });
+    mat.normalScale.set(0.5, 0.5);
+    mat.onBeforeCompile = function (sh) {
+      sh.uniforms.mapaTerra = { value: tt.cor };
+      sh.vertexShader = 'attribute float terra;\nvarying float vTerra;\n' + sh.vertexShader.replace('#include <uv_vertex>', '#include <uv_vertex>\nvTerra = terra;');
+      sh.fragmentShader = 'uniform sampler2D mapaTerra;\nvarying float vTerra;\n' + sh.fragmentShader.replace('#include <map_fragment>',
+        '#ifdef USE_MAP\n  vec4 cGrama = texture2D(map, vUv);\n  vec4 cTerra = texture2D(mapaTerra, vUv * 0.7);\n  diffuseColor *= mix(cGrama, cTerra, smoothstep(0.08, 0.6, vTerra));\n#endif');
+    };
+    mat.customProgramCacheKey = function () { return 'chao'; };
+    var chao = new T.Mesh(geo, mat);
     chao.receiveShadow = true; scene.add(chao);
   })();
 
@@ -334,7 +461,7 @@
   })();
   (function montanhas() {
     var n = 36, cone = new T.ConeGeometry(1, 1, 7, 1); cone.translate(0, 0.5, 0);
-    var m = new T.InstancedMesh(cone, facetado(0xffffff), n), neve = new T.InstancedMesh(cone, facetado(0xf3f6fa), n), d = new T.Object3D(), cor = new T.Color();
+    var m = new T.InstancedMesh(cone, texturizar(facetado(0xffffff), 'pedra', 3, 3, 0), n), neve = new T.InstancedMesh(cone, facetado(0xf3f6fa), n), d = new T.Object3D(), cor = new T.Color();
     for (var i = 0; i < n; i++) {
       var a = i / n * 6.28 + rnd() * 0.12, r = 125 + rnd() * 35, h = 24 + rnd() * 34, w = 22 + rnd() * 18;
       d.position.set(Math.cos(a) * r, -2, Math.sin(a) * r); d.rotation.set(0, rnd() * 6, 0); d.scale.set(w, h, w); d.updateMatrix(); m.setMatrixAt(i, d.matrix);
@@ -376,9 +503,16 @@
       lista.forEach(function (o, i) { d.position.set(0, 0, 0); d.rotation.set(0, 0, 0); d.scale.set(1, 1, 1); fn(o, i, m); d.updateMatrix(); m.setMatrixAt(i, d.matrix); });
       m.castShadow = sombra !== false; m.receiveShadow = true; scene.add(m); return m;
     }
-    var geoTronco = new T.CylinderGeometry(0.16, 0.26, 1, 7); geoTronco.translate(0, 0.5, 0);
-    var geoCone = new T.ConeGeometry(1, 1, 8); geoCone.translate(0, 0.5, 0);
-    var matTronco = facetado(0xffffff), matFolha = facetado(0xffffff);
+    var geoTronco = new T.CylinderGeometry(0.15, 0.27, 1, 8, 4); geoTronco.translate(0, 0.5, 0);
+    (function (pp) { for (var v = 0; v < pp.count; v++) { var y = pp.getY(v); if (y < 0.26) { var k = 1 + (0.26 - y) * 2.2 * (0.7 + hash2(Math.round(Math.atan2(pp.getZ(v), pp.getX(v)) * 3), 1) * 0.6); pp.setX(v, pp.getX(v) * k); pp.setZ(v, pp.getZ(v) * k); } } })(geoTronco.attributes.position); // raízes
+    geoTronco.computeVertexNormals();
+    var geoCone = new T.ConeGeometry(1, 1, 12, 2); geoCone.translate(0, 0.5, 0);
+    (function (pp) { for (var v = 0; v < pp.count; v++) { var x = pp.getX(v), z = pp.getZ(v), rr = Math.hypot(x, z); if (rr > 0.05 && pp.getY(v) < 0.01) { var ia = Math.round(Math.atan2(z, x) / (Math.PI * 2 / 12)), k = ia % 2 ? 0.74 : 1.06; pp.setX(v, x * k); pp.setZ(v, z * k); pp.setY(v, ia % 2 ? 0.06 : -0.04); } } })(geoCone.attributes.position); // galhos em pontas
+    geoCone.computeVertexNormals();
+    var geoCopa = new T.IcosahedronGeometry(1, 1);
+    (function (pp) { for (var v = 0; v < pp.count; v++) { var X = pp.getX(v), Y = pp.getY(v), Z = pp.getZ(v), j = 0.86 + hash2(Math.round(X * 7) * 1.3 + Math.round(Z * 7) * 2.7, Math.round(Y * 7) * 1.9) * 0.26; pp.setXYZ(v, X * j, Y * j, Z * j); } })(geoCopa.attributes.position);
+    geoCopa.computeVertexNormals();
+    var matTronco = texturizar(realceCenario(facetado(0xffffff)), 'casca', 1, 2, 0.9), matFolha = texturizar(realceCenario(facetado(0xffffff)), 'folhas', 2, 2, 0);
     var todas = pinheiros.concat(redondas);
     inst(geoTronco, matTronco, todas, function (o, i, m) { d.position.set(o.x, o.y, o.z); d.rotation.y = o.r; d.scale.set(o.s, (o.pin ? 1.7 : 2.1) * o.s, o.s); cor.setHSL(0.07, 0.42, 0.24 + o.o * 0.08); m.setColorAt(i, cor); });
     [[1.15, 1.55, 2.1], [2.05, 1.18, 1.75], [2.85, 0.8, 1.45]].forEach(function (cam, nivel) {
@@ -388,7 +522,7 @@
       });
     });
     [[0, 2.7, 0, 1.45], [0.55, 2.25, 0.25, 1.0], [-0.45, 2.35, -0.3, 0.95]].forEach(function (bl) {
-      inst(G.icosa, matFolha, redondas, function (o, i, m) {
+      inst(geoCopa, matFolha, redondas, function (o, i, m) {
         var c = Math.cos(o.r), s = Math.sin(o.r);
         d.position.set(o.x + (bl[0] * c - bl[2] * s) * o.s, o.y + bl[1] * o.s, o.z + (bl[0] * s + bl[2] * c) * o.s); d.rotation.set(o.r, o.r * 2, 0); d.scale.setScalar(bl[3] * o.s);
         if (o.o > 0.86) cor.setHSL(0.08 + o.o * 0.02, 0.75, 0.42); else cor.setHSL(0.24 + o.o * 0.07, 0.62, 0.24 + o.o * 0.07);
@@ -399,8 +533,8 @@
     var geoPedra = new T.DodecahedronGeometry(1, 1), pp = geoPedra.attributes.position;
     for (var v = 0; v < pp.count; v++) { var X = pp.getX(v), Y = pp.getY(v), Z = pp.getZ(v), j = 0.78 + hash2(Math.round(X * 9) * 1.3 + Math.round(Z * 9) * 2.1, Math.round(Y * 9) * 0.7) * 0.44; pp.setXYZ(v, X * j, Y * j, Z * j); }
     geoPedra.computeVertexNormals();
-    inst(geoPedra, facetado(0xffffff), pedras, function (o, i, m) { d.position.set(o.x, o.s * 0.35, o.z); d.rotation.set(o.r * 0.3, o.r, 0); d.scale.set(o.s, o.s * 0.72, o.s); cor.setHSL(0.1 + o.r * 0.01, 0.07, 0.3 + o.r * 0.025); m.setColorAt(i, cor); });
-    inst(G.icosa, facetado(0xffffff), arbustos, function (o, i, m) { d.position.set(o.x, o.s * 0.6, o.z); d.rotation.set(o.r, o.r, 0); d.scale.set(o.s * 1.4, o.s, o.s * 1.3); cor.setHSL(0.29 + o.r * 0.01, 0.55, 0.22 + o.r * 0.012); m.setColorAt(i, cor); });
+    inst(geoPedra, texturizar(realceCenario(facetado(0xffffff)), 'pedra', 1, 1, 0.9), pedras, function (o, i, m) { d.position.set(o.x, o.s * 0.35, o.z); d.rotation.set(o.r * 0.3, o.r, 0); d.scale.set(o.s, o.s * 0.72, o.s); cor.setHSL(0.1 + o.r * 0.01, 0.07, 0.3 + o.r * 0.025); m.setColorAt(i, cor); });
+    inst(geoCopa, matFolha, arbustos, function (o, i, m) { d.position.set(o.x, o.s * 0.6, o.z); d.rotation.set(o.r, o.r, 0); d.scale.set(o.s * 1.4, o.s, o.s * 1.3); cor.setHSL(0.29 + o.r * 0.01, 0.55, 0.22 + o.r * 0.012); m.setColorAt(i, cor); });
     var frutas = []; arbustos.forEach(function (o) { if (o.fruta) for (var f = 0; f < 4; f++) { var af = f * 1.7 + o.r; frutas.push({ x: o.x + Math.cos(af) * o.s * 1.1, y: o.s * (0.5 + (f % 2) * 0.35), z: o.z + Math.sin(af) * o.s * 1.05 }); } });
     inst(new T.SphereGeometry(1, 8, 6), toon(0xe0263a), frutas, function (o) { d.position.set(o.x, o.y, o.z); d.scale.setScalar(0.06); }, false);
     // cogumelos pequenos perto das árvores
@@ -408,12 +542,14 @@
     inst(G.cilindro, toon(0xfff3dc), cogus, function (o) { d.position.set(o.x, o.s * 0.6, o.z); d.scale.set(o.s * 0.35, o.s * 1.2, o.s * 0.35); }, false);
     inst(geoChapeu, toon(0xd9333f), cogus, function (o) { d.position.set(o.x, o.s * 1.15, o.z); d.scale.set(o.s, o.s * 0.75, o.s); }, false);
     // troncos caídos
-    inst(new T.CylinderGeometry(0.28, 0.32, 2.6, 8), facetado(0x7a5230), troncos, function (o) { d.position.set(o.x, 0.28, o.z); d.rotation.set(0, o.r, Math.PI / 2); d.scale.setScalar(o.s); });
+    inst(new T.CylinderGeometry(0.28, 0.32, 2.6, 10), texturizar(realceCenario(facetado(0x9a7048)), 'casca', 2, 1, 0.9), troncos, function (o) { d.position.set(o.x, 0.28, o.z); d.rotation.set(0, o.r, Math.PI / 2); d.scale.setScalar(o.s); });
     // cerca de madeira em volta do campo
     var lado = LIM + 1, postes = [], passo = 3;
     for (var w = -lado; w <= lado; w += passo) postes.push([w, -lado], [w, lado], [-lado, w], [lado, w]);
-    inst(G.caixa, M.madeira, postes, function (p) { d.position.set(p[0], 0.62, p[1]); d.scale.set(0.2, 1.24, 0.2); });
-    var mTabua = facetado(0x9a6a3a);
+    var matCerca = texturizar(realceCenario(facetado(0x8a5d36)), 'madeira', 1, 2, 0.7);
+    inst(new T.CylinderGeometry(0.1, 0.12, 1.24, 7), matCerca, postes, function (p) { d.position.set(p[0], 0.62, p[1]); });
+    inst(new T.ConeGeometry(0.1, 0.18, 7), matCerca, postes, function (p) { d.position.set(p[0], 1.33, p[1]); });
+    var mTabua = texturizar(realceCenario(facetado(0xa5774a)), 'madeira', 8, 1, 0.6);
     [0.45, 0.95].forEach(function (y) {
       [[0, -lado, lado * 2, 0.08], [0, lado, lado * 2, 0.08], [-lado, 0, 0.08, lado * 2], [lado, 0, 0.08, lado * 2]].forEach(function (t) {
         var tab = peca(G.caixa, mTabua, t[2], 0.12, t[3], t[0], y, t[1], scene); tab.castShadow = true; tab.receiveShadow = true;
@@ -512,6 +648,8 @@
   }
 
   // ---------- Modelos dos monstros ----------
+  // Formas arredondadas (cápsulas, torneados, asas recortadas). Cada tipo é montado uma vez e depois copiado;
+  // as peças que não se mexem sozinhas são juntadas num desenho só (fica leve no celular).
   function olhos(g, y, z, r, pupila) {
     [-1, 1].forEach(function (lado) {
       peca(G.esfera, M.branco, r * 0.24, r * 0.24, r * 0.24, lado * r * 0.33, y, z, g);
@@ -519,120 +657,220 @@
       peca(G.esfera, M.brilho, r * 0.045, r * 0.045, r * 0.045, lado * r * 0.33 - r * 0.04, y + r * 0.05, z + r * 0.27, g); // brilho no olho
     });
   }
-  function fazerMonstro(tipo, dourado, chefe) {
+  var capsCache = {};
+  function geoCapsula(k) { k = Math.round(k * 4) / 4; if (!capsCache[k]) capsCache[k] = new T.CapsuleGeometry(1, k, 6, 14); return capsCache[k]; }
+  function capsula(pai, mat, raio, comp, x, y, z) { var m = new T.Mesh(geoCapsula(Math.max(0, comp / raio - 2)), mat); m.scale.setScalar(raio); m.position.set(x, y, z); pai.add(m); return m; }
+  var EIXO_Y = new T.Vector3(0, 1, 0), dirTmp = new T.Vector3();
+  // braço, perna, pescoço: cápsula de um ponto a outro
+  function membro(pai, mat, x0, y0, z0, x1, y1, z1, raio) {
+    var dx = x1 - x0, dy = y1 - y0, dz = z1 - z0, L = Math.hypot(dx, dy, dz) || 0.001;
+    var m = capsula(pai, mat, raio, L + raio * 1.4, (x0 + x1) / 2, (y0 + y1) / 2, (z0 + z1) / 2);
+    m.quaternion.setFromUnitVectors(EIXO_Y, dirTmp.set(dx / L, dy / L, dz / L)); return m;
+  }
+  function segmento(pai, mat, x0, y0, x1, y1, esp) { return membro(pai, mat, x0, y0, 0, x1, y1, 0, esp * 0.55); }
+  // tronco das pessoas (peito largo, cintura fina), feito no torno
+  var geoTronco = new T.LatheGeometry([[0, -0.5], [0.6, -0.47], [0.8, -0.32], [0.74, -0.08], [0.8, 0.16], [0.95, 0.35], [0.84, 0.5], [0.42, 0.6], [0, 0.62]].map(function (p) { return new T.Vector2(p[0], p[1]); }), 18);
+  // fantasma: cúpula redonda e saia com a barra ondulada
+  var geoFantasma = (function () {
+    var g = new T.LatheGeometry([[1.12, -0.78], [1.04, -0.4], [0.97, 0], [1.0, 0.42], [0.95, 0.75], [0.8, 1.05], [0.55, 1.3], [0.28, 1.45], [0, 1.5]].map(function (p) { return new T.Vector2(p[0], p[1]); }), 28, 0, Math.PI * 2);
+    var pos = g.attributes.position;
+    for (var i = 0; i < pos.count; i++) { var y = pos.getY(i); if (y < -0.6) pos.setY(i, y + Math.sin(Math.atan2(pos.getZ(i), pos.getX(i)) * 7) * 0.13); }
+    g.computeVertexNormals(); return g;
+  })();
+  // asa recortada (morcego e dragão): borda de cima lisa e a de baixo em "ondas"
+  var geoAsa = (function () {
+    var s = new T.Shape(); s.moveTo(0, 0.14); s.quadraticCurveTo(0.5, 0.48, 1.0, 0.34);
+    s.quadraticCurveTo(0.9, 0.06, 0.8, -0.04); s.quadraticCurveTo(0.68, 0.08, 0.56, -0.12); s.quadraticCurveTo(0.43, 0.02, 0.31, -0.17); s.quadraticCurveTo(0.17, -0.02, 0, -0.1); s.lineTo(0, 0.14);
+    var g = new T.ShapeGeometry(s, 10); g.rotateX(Math.PI / 2); return g;
+  })();
+  // pedra com cantos tortos (golem)
+  var geoRocha = (function () {
+    var g = new T.DodecahedronGeometry(1, 0), p = g.attributes.position;
+    for (var v = 0; v < p.count; v++) { var X = p.getX(v), Y = p.getY(v), Z = p.getZ(v), j = 0.82 + hash2(Math.round(X * 9) * 1.7 + Math.round(Z * 9) * 2.3, Math.round(Y * 9) * 0.9 + 5) * 0.36; p.setXYZ(v, X * j, Y * j, Z * j); }
+    g.computeVertexNormals(); return g;
+  })();
+  var matCapa = texturizar(realceCriatura(toon(0x8b1d1d)), 'tecido', 3, 3, 0.4); matCapa.side = T.DoubleSide;
+  var geoCapa = new T.CylinderGeometry(0.62, 1.0, 1, 18, 1, true, Math.PI / 2 + 0.25, Math.PI - 0.5);
+  var geoGola = new T.CylinderGeometry(1.0, 0.62, 1, 14, 1, true, Math.PI / 2, Math.PI);
+  function texturaDoTipo(tipo) {
+    if (tipo.forma === 'lobo' || tipo.forma === 'morcego' || tipo.forma === 'aranha' || tipo.forma === 'yeti' || tipo.lobisomem) return ['pelo', 3, 3];
+    if (tipo.forma === 'cobra' || tipo.forma === 'dragao') return ['escamas', 5, 3];
+    if (tipo.forma === 'golem') return tipo.brilho ? ['lava', 2, 2] : ['pedra', 2, 2];
+    if (tipo.forma === 'humano') return ['manchas', 2, 2];
+    return null;
+  }
+  // junta as peças paradas de cada parte (corpo, cada braço, cada perna...) num desenho só por material
+  function juntarGeos(lista) {
+    var pos = [], nor = [], uv = [], v = new T.Vector3(), nm = new T.Matrix3();
+    lista.forEach(function (m) {
+      m.updateMatrix(); nm.getNormalMatrix(m.matrix);
+      var g = m.geometry.index ? m.geometry.toNonIndexed() : m.geometry, P = g.attributes.position, N = g.attributes.normal, U = g.attributes.uv;
+      for (var i = 0; i < P.count; i++) {
+        v.fromBufferAttribute(P, i).applyMatrix4(m.matrix); pos.push(v.x, v.y, v.z);
+        v.fromBufferAttribute(N, i).applyMatrix3(nm).normalize(); nor.push(v.x, v.y, v.z);
+        if (U) uv.push(U.getX(i), U.getY(i)); else uv.push(0, 0);
+      }
+      if (g !== m.geometry) g.dispose();
+    });
+    var out = new T.BufferGeometry();
+    out.setAttribute('position', new T.Float32BufferAttribute(pos, 3)); out.setAttribute('normal', new T.Float32BufferAttribute(nor, 3)); out.setAttribute('uv', new T.Float32BufferAttribute(uv, 2));
+    out.computeBoundingSphere(); return out;
+  }
+  function fundir(raiz) {
+    var grupos = [];
+    raiz.traverse(function (o) { if (o.children && o.children.length && !o.isMesh) grupos.push(o); });
+    grupos.forEach(function (o) {
+      var porMat = {};
+      o.children.slice().forEach(function (m) {
+        if (!m.isMesh || m.isInstancedMesh || m.children.length || m.userData.solto || m.name) return;
+        var k = m.material.uuid; (porMat[k] = porMat[k] || []).push(m);
+      });
+      Object.keys(porMat).forEach(function (k) {
+        var lista = porMat[k]; if (lista.length < 2) return;
+        var nova = new T.Mesh(juntarGeos(lista), lista[0].material);
+        nova.castShadow = lista[0].castShadow; nova.receiveShadow = lista[0].receiveShadow;
+        lista.forEach(function (m) { o.remove(m); }); o.add(nova);
+      });
+    });
+  }
+  function construirMonstro(tipo, dourado, chefe) {
     var r = tipo.r * (dourado ? 1.15 : 1) * (chefe ? 1.7 : 1);
-    var mat = toon(dourado ? 0xf2ae1c : tipo.cor, chefe ? CHEFE_COR : (dourado ? 0x5a3a00 : (tipo.brilho || 0x000000)));
-    if (tipo.forma === 'fantasma') { mat.transparent = true; mat.opacity = 0.82; }
+    var lava = tipo.forma === 'golem' && tipo.brilho;
+    var mat = realceCriatura(toon(dourado ? 0xf2ae1c : (lava ? 0xffe2cc : tipo.cor), chefe ? CHEFE_COR : (dourado ? 0x5a3a00 : (tipo.brilho || 0x000000))));
+    var tt = texturaDoTipo(tipo), forcaRel = tt && tt[0] === 'manchas' ? 0.18 : 0.55; if (tt) texturizar(mat, tt[0], tt[1], tt[2], forcaRel);
+    if (tipo.forma === 'fantasma') { mat.transparent = true; mat.opacity = 0.82; mat.side = T.DoubleSide; }
+    if (tipo.forma === 'morcego' || tipo.forma === 'dragao') mat.side = T.DoubleSide; // as asas são finas
+    var corEsc = new T.Color(dourado ? 0xf2ae1c : tipo.cor).multiplyScalar(0.55);
+    var matEsc = realceCriatura(toon(corEsc.getHex())); if (tt) texturizar(matEsc, tt[0], tt[1], tt[2], forcaRel);
     var g = new T.Group(), p = {}, alt = r * 2;
     var olhoBrilho = tipo.olhos === 'vermelho' ? M.vermelho : (tipo.olhos === 'amarelo' ? M.amarelo : M.preto);
     if (tipo.forma === 'geleca') {
-      p.corpo = peca(G.esfera, mat, r, r * 0.75, r, 0, r * 0.7, 0, g);
+      p.corpo = peca(G.esfera, mat, r, r * 0.75, r, 0, r * 0.7, 0, g); p.corpo.name = 'corpo';
+      peca(G.esfera, M.brilho, r * 0.22, r * 0.1, r * 0.14, -r * 0.35, r * 1.2, r * 0.45, g);
       olhos(g, r * 0.9, r * 0.82, r); alt = r * 1.5;
     } else if (tipo.forma === 'morcego' || tipo.forma === 'dragao') {
-      var voo = new T.Group(); voo.position.y = tipo.forma === 'dragao' ? 2.1 : 1.6; g.add(voo); p.voo = voo; p.vooY = voo.position.y;
+      var voo = new T.Group(); voo.position.y = tipo.forma === 'dragao' ? 2.1 : 1.6; voo.name = 'voo'; g.add(voo); p.voo = voo; p.vooY = voo.position.y;
+      var tamAsa = tipo.forma === 'dragao' ? 2.1 : 1.7;
       if (tipo.forma === 'dragao') {
-        peca(G.esfera, mat, r * 0.8, r * 0.7, r * 1.2, 0, 0, 0, voo);
-        peca(G.esfera, mat, r * 0.55, r * 0.5, r * 0.6, 0, r * 0.45, r * 1.0, voo);
-        peca(G.cone, M.osso, r * 0.12, r * 0.4, r * 0.12, -r * 0.25, r * 0.95, r * 0.9, voo);
-        peca(G.cone, M.osso, r * 0.12, r * 0.4, r * 0.12, r * 0.25, r * 0.95, r * 0.9, voo);
-        var olhosD = new T.Group(); olhosD.position.set(0, r * 0.55, r * 1.47); voo.add(olhosD); olhos(olhosD, 0, 0, r * 0.8, olhoBrilho);
-        var raboD = peca(G.cone, mat, r * 0.28, r * 1.1, r * 0.28, 0, -r * 0.05, -r * 1.55, voo); raboD.rotation.x = -Math.PI / 2;
-        peca(G4, mat, r * 0.2, r * 0.25, r * 0.06, 0, -r * 0.05, -r * 2.15, voo).rotation.x = -Math.PI / 2;
+        capsula(voo, mat, r * 0.42, r * 1.6, 0, 0, 0).rotation.x = Math.PI / 2;
+        peca(G.esfera, matEsc, r * 0.32, r * 0.26, r * 0.62, 0, -r * 0.18, r * 0.05, voo); // barriga
+        membro(voo, mat, 0, r * 0.15, r * 0.55, 0, r * 0.5, r * 0.95, r * 0.22); // pescoço
+        peca(G.esfera, mat, r * 0.42, r * 0.36, r * 0.5, 0, r * 0.58, r * 1.1, voo);
+        membro(voo, mat, 0, r * 0.5, r * 1.32, 0, r * 0.46, r * 1.62, r * 0.15); // focinho
+        peca(G.esfera, M.preto, r * 0.04, r * 0.04, r * 0.04, -r * 0.07, r * 0.55, r * 1.74, voo); peca(G.esfera, M.preto, r * 0.04, r * 0.04, r * 0.04, r * 0.07, r * 0.55, r * 1.74, voo);
+        [-1, 1].forEach(function (l) { var ch = peca(G.cone, M.osso, r * 0.08, r * 0.38, r * 0.08, l * r * 0.2, r * 0.95, r * 0.92, voo); ch.rotation.set(-0.6, 0, -l * 0.25); });
+        for (var es = 0; es < 4; es++) peca(G.cone, matEsc, r * 0.07, r * 0.2, r * 0.07, 0, r * 0.42, r * 0.45 - es * r * 0.32, voo).rotation.x = -0.3; // espinhos nas costas
+        var olhosD = new T.Group(); olhosD.position.set(0, r * 0.66, r * 1.43); voo.add(olhosD); olhos(olhosD, 0, 0, r * 0.8, olhoBrilho);
+        var raboD = peca(G.cone, mat, r * 0.26, r * 1.2, r * 0.26, 0, -r * 0.05, -r * 1.55, voo); raboD.rotation.x = -Math.PI / 2;
+        peca(G4, matEsc, r * 0.2, r * 0.26, r * 0.06, 0, -r * 0.05, -r * 2.2, voo).rotation.x = -Math.PI / 2;
       } else {
-        peca(G.esfera, mat, r, r, r, 0, 0, 0, voo);
-        if (tipo.listras) { // abelha: listras pretas e ferrão
-          peca(G.esfera, M.preto, r * 1.02, r * 0.18, r * 1.02, 0, -r * 0.25, 0, voo);
-          peca(G.esfera, M.preto, r * 0.9, r * 0.16, r * 0.9, 0, -r * 0.6, 0, voo);
-          var ferrao = peca(G.cone, M.preto, r * 0.15, r * 0.5, r * 0.15, 0, 0, -r * 1.1, voo); ferrao.rotation.x = -Math.PI / 2;
-        } else {
-          peca(G.cone, mat, r * 0.25, r * 0.5, r * 0.25, -r * 0.5, r * 0.95, 0, voo);
-          peca(G.cone, mat, r * 0.25, r * 0.5, r * 0.25, r * 0.5, r * 0.95, 0, voo);
-        }
-        olhos(voo, r * 0.15, r * 0.82, r, olhoBrilho);
-        if (tipo.presas) [-1, 1].forEach(function (l) { peca(G.cone, M.branco, r * 0.09, r * 0.3, r * 0.09, l * r * 0.22, -r * 0.4, r * 0.85, voo).rotation.x = Math.PI; });
+        peca(G.esfera, mat, r, r * 0.95, r * 0.9, 0, 0, 0, voo);
+        [-1, 1].forEach(function (l) { var or = peca(G.cone, mat, r * 0.24, r * 0.55, r * 0.14, l * r * 0.48, r * 0.92, 0, voo); or.rotation.z = -l * 0.2; peca(G.cone, M.rosa, r * 0.12, r * 0.34, r * 0.06, l * r * 0.48, r * 0.88, r * 0.06, voo).rotation.z = -l * 0.2; });
+        olhos(voo, r * 0.18, r * 0.8, r, olhoBrilho);
+        if (tipo.presas) [-1, 1].forEach(function (l) { peca(G.cone, M.branco, r * 0.09, r * 0.3, r * 0.09, l * r * 0.22, -r * 0.4, r * 0.8, voo).rotation.x = Math.PI; });
+        [-1, 1].forEach(function (l) { peca(G.esfera, matEsc, r * 0.12, r * 0.1, r * 0.16, l * r * 0.3, -r * 0.92, 0, voo); }); // pezinhos
       }
-      p.asas = [-1, 1].map(function (lado) {
-        var piv = new T.Group(); piv.position.set(lado * r * 0.6, 0, 0); voo.add(piv);
-        peca(G.caixa, mat, r * 1.6, 0.05, r * 0.9, lado * r * 0.8, 0, 0, piv);
+      p.asas = [-1, 1].map(function (lado, i) {
+        var piv = new T.Group(); piv.position.set(lado * r * (tipo.forma === 'dragao' ? 0.35 : 0.6), tipo.forma === 'dragao' ? r * 0.25 : 0, 0); piv.name = 'asas' + i; voo.add(piv);
+        var asa = new T.Mesh(geoAsa, mat); asa.scale.set(lado * r * tamAsa, 1, r * tamAsa * 0.75); asa.userData.solto = true; piv.add(asa);
+        membro(piv, matEsc, 0, 0, r * tamAsa * 0.1, lado * r * tamAsa, 0, r * tamAsa * 0.25, r * 0.05).userData.solto = true; // osso da asa
         piv.userData.lado = lado; return piv;
       });
       alt = voo.position.y + r;
     } else if (tipo.forma === 'fantasma') {
-      var flut = new T.Group(); flut.position.y = 1.0; g.add(flut); p.voo = flut; p.vooY = 1.0;
-      peca(G.esfera, mat, r, r, r, 0, r * 0.5, 0, flut);
-      var saia = peca(G.cone, mat, r, r * 1.4, r, 0, -r * 0.2, 0, flut); saia.rotation.x = Math.PI;
-      olhos(flut, r * 0.6, r * 0.85, r); alt = 1 + r * 1.5;
-    } else if (tipo.forma === 'golem') {
-      p.corpo = peca(G.caixa, mat, r * 1.6, r * 1.4, r * 1.0, 0, r * 1.5, 0, g);
-      peca(G.caixa, mat, r * 0.8, r * 0.7, r * 0.8, 0, r * 2.55, 0, g);
-      olhos(g, r * 2.6, r * 0.41, r * 0.9, M.amarelo);
-      p.bracos = [-1, 1].map(function (lado) { var b = new T.Group(); b.position.set(lado * r * 1.05, r * 2.0, 0); g.add(b); peca(G.caixa, mat, r * 0.5, r * 1.4, r * 0.5, 0, -r * 0.6, 0, b); return b; });
-      p.pernas = [-1, 1].map(function (lado) { var b = new T.Group(); b.position.set(lado * r * 0.45, r * 0.8, 0); g.add(b); peca(G.caixa, mat, r * 0.55, r * 0.8, r * 0.55, 0, -r * 0.4, 0, b); return b; });
+      var flut = new T.Group(); flut.position.y = 1.0; flut.name = 'voo'; g.add(flut); p.voo = flut; p.vooY = 1.0;
+      peca(geoFantasma, mat, r, r, r, 0, 0, 0, flut);
+      [-1, 1].forEach(function (l) { membro(flut, mat, l * r * 0.85, r * 0.35, r * 0.1, l * r * 1.25, r * 0.05, r * 0.35, r * 0.18); });
+      olhos(flut, r * 0.88, r * 0.83, r);
+      peca(G.esfera, M.preto, r * 0.13, r * 0.17, r * 0.06, 0, r * 0.5, r * 0.95, flut); // boquinha "O"
+      alt = 1 + r * 1.5;
+    } else if (tipo.forma === 'golem') { // feito de pedras
+      peca(geoRocha, mat, r * 0.95, r * 0.82, r * 0.66, 0, r * 1.6, 0, g);
+      peca(geoRocha, mat, r * 0.58, r * 0.42, r * 0.48, 0, r * 0.98, 0, g);
+      peca(geoRocha, mat, r * 0.44, r * 0.4, r * 0.42, 0, r * 2.55, r * 0.06, g);
+      [-1, 1].forEach(function (l) { peca(geoRocha, mat, r * 0.4, r * 0.36, r * 0.4, l * r * 0.95, r * 2.1, 0, g); });
+      olhos(g, r * 2.6, r * 0.42, r * 0.85, M.amarelo);
+      p.bracos = [-1, 1].map(function (lado, i) { var b = new T.Group(); b.position.set(lado * r * 1.08, r * 2.0, 0); b.name = 'bracos' + i; g.add(b); peca(geoRocha, mat, r * 0.3, r * 0.4, r * 0.3, 0, -r * 0.42, 0, b); peca(geoRocha, mat, r * 0.38, r * 0.36, r * 0.4, 0, -r * 1.0, r * 0.06, b); return b; });
+      p.pernas = [-1, 1].map(function (lado, i) { var b = new T.Group(); b.position.set(lado * r * 0.42, r * 0.8, 0); b.name = 'pernas' + i; g.add(b); peca(geoRocha, mat, r * 0.32, r * 0.34, r * 0.32, 0, -r * 0.32, 0, b); peca(geoRocha, mat, r * 0.34, r * 0.18, r * 0.42, 0, -r * 0.64, r * 0.08, b); return b; });
       alt = r * 3;
+    } else if (tipo.forma === 'yeti') { // grandão peludo, com a cara e as mãos mais claras
+      var matCara = realceCriatura(toon(0xaebccb));
+      var corpoY = capsula(g, mat, r * 0.72, r * 1.9, 0, r * 1.6, 0); corpoY.scale.z = r * 0.62;
+      peca(G.esfera, mat, r * 0.5, r * 0.48, r * 0.5, 0, r * 2.75, r * 0.08, g);
+      peca(G.esfera, matCara, r * 0.36, r * 0.32, r * 0.2, 0, r * 2.7, r * 0.45, g);
+      olhos(g, r * 2.8, r * 0.58, r * 0.62);
+      peca(G.esfera, M.preto, r * 0.12, r * 0.05, r * 0.05, 0, r * 2.56, r * 0.62, g);
+      p.bracos = [-1, 1].map(function (lado, i) { var b = new T.Group(); b.position.set(lado * r * 0.8, r * 2.3, 0); b.name = 'bracos' + i; g.add(b); membro(b, mat, 0, 0, 0, lado * r * 0.14, -r * 0.75, r * 0.05, r * 0.24); membro(b, mat, lado * r * 0.14, -r * 0.75, r * 0.05, lado * r * 0.2, -r * 1.35, r * 0.14, r * 0.22); peca(G.esfera, matCara, r * 0.24, r * 0.2, r * 0.26, lado * r * 0.2, -r * 1.52, r * 0.18, b); return b; });
+      p.pernas = [-1, 1].map(function (lado, i) { var b = new T.Group(); b.position.set(lado * r * 0.38, r * 0.95, 0); b.name = 'pernas' + i; g.add(b); membro(b, mat, 0, 0, 0, 0, -r * 0.55, 0, r * 0.27); peca(G.esfera, matCara, r * 0.3, r * 0.15, r * 0.42, 0, -r * 0.85, r * 0.1, b); return b; });
+      alt = r * 3.25;
     } else if (tipo.forma === 'cobra') {
       p.segs = [];
-      for (var sg = 0; sg < 7; sg++) {
-        var tam = r * (1 - sg * 0.09);
-        p.segs.push(peca(G.esfera, mat, tam, tam * 0.7, tam * 1.1, 0, tam * 0.7, r * 0.8 - sg * r * 1.6, g));
+      for (var sg = 0; sg < 11; sg++) {
+        var tam = r * (sg === 0 ? 1 : Math.max(0.28, 0.95 - sg * 0.07)), seg = peca(G.esfera, mat, tam, tam * 0.72, tam * 1.15, 0, tam * 0.72, r * 0.8 - sg * r * 1.05, g);
+        seg.userData.solto = true; seg.name = 'segs' + sg; p.segs.push(seg);
       }
-      var cabC = p.segs[0]; cabC.scale.set(r * 1.15, r * 0.9, r * 1.3); cabC.position.y = r * 1.1;
+      var cabC = p.segs[0]; cabC.scale.set(r * 1.15, r * 0.88, r * 1.35); cabC.position.y = r * 1.1;
+      peca(G.esfera, matEsc, r * 0.7, r * 0.42, r * 0.6, 0, r * 0.82, r * 1.5, g); // queixo mais escuro
       olhos(g, r * 1.5, r * 1.82, r, olhoBrilho);
-      var lingua = peca(G.caixa, M.vermelho, r * 0.08, r * 0.03, r * 0.6, 0, r * 0.95, r * 2.1, g); p.lingua = lingua;
+      p.lingua = peca(G.caixa, M.vermelho, r * 0.08, r * 0.03, r * 0.6, 0, r * 0.95, r * 2.15, g); p.lingua.name = 'lingua';
       alt = r * 2.0;
     } else if (tipo.forma === 'aranha') { // aranha e escorpião
       var esc = !!tipo.cauda, yc = esc ? r * 0.55 : r * 0.75;
       if (esc) {
         peca(G.esfera, mat, r * 0.72, r * 0.4, r * 1.25, 0, yc, -r * 0.2, g);
+        for (var pl = 0; pl < 3; pl++) peca(G.esfera, matEsc, r * 0.74, r * 0.12, r * 0.18, 0, yc + r * 0.28, -r * 0.7 + pl * r * 0.42, g); // placas das costas
         peca(G.esfera, mat, r * 0.5, r * 0.34, r * 0.5, 0, yc, r * 0.95, g);
         olhos(g, yc + r * 0.18, r * 1.32, r * 0.62, olhoBrilho);
       } else {
-        peca(G.esfera, mat, r, r * 0.65, r * 1.15, 0, yc, -r * 0.3, g);
+        peca(G.esfera, mat, r, r * 0.68, r * 1.15, 0, yc, -r * 0.3, g);
+        peca(G.esfera, matEsc, r * 0.4, r * 0.08, r * 0.5, 0, yc + r * 0.62, -r * 0.35, g); // desenho nas costas
         peca(G.esfera, mat, r * 0.55, r * 0.5, r * 0.55, 0, r * 0.7, r * 0.75, g);
         olhos(g, r * 0.85, r * 1.2, r * 0.7, olhoBrilho);
       }
       p.pernas = [];
       [-1, 1].forEach(function (lado) { // pernas dobradas: sobem até o joelho e descem até o chão
         for (var i = 0; i < 4; i++) {
-          var b = new T.Group(); b.position.set(lado * r * (esc ? 0.5 : 0.45), yc, (i - 1.5) * r * (esc ? 0.4 : 0.38) - (esc ? r * 0.2 : 0)); b.rotation.y = -lado * (i - 1.5) * 0.3; g.add(b);
+          var b = new T.Group(); b.position.set(lado * r * (esc ? 0.5 : 0.45), yc, (i - 1.5) * r * (esc ? 0.4 : 0.38) - (esc ? r * 0.2 : 0)); b.rotation.y = -lado * (i - 1.5) * 0.3; b.name = 'pernas' + p.pernas.length; g.add(b);
           var L1 = r * (esc ? 0.5 : 0.72), a = esc ? 0.45 : 0.75, kx = lado * L1 * Math.cos(a), ky = L1 * Math.sin(a), fx = kx + lado * r * (esc ? 0.32 : 0.42), fy = -yc + r * 0.04;
-          segmento(b, mat, 0, 0, kx, ky, r * 0.1); segmento(b, mat, kx, ky, fx, fy, r * 0.085);
+          segmento(b, mat, 0, 0, kx, ky, r * 0.12); segmento(b, matEsc, kx, ky, fx, fy, r * 0.1);
           p.pernas.push(b);
         }
       });
       if (esc) {
         // cauda: bolinhas encostadas que vão para trás, sobem e curvam para a frente, com o ferrão na ponta
-        var cauda = new T.Group(); cauda.position.set(0, yc, -r * 1.25); g.add(cauda); p.cauda = cauda;
+        var cauda = new T.Group(); cauda.position.set(0, yc, -r * 1.25); cauda.name = 'cauda'; g.add(cauda); p.cauda = cauda;
         var fim = null;
-        for (var cs = 0; cs <= 10; cs++) {
-          var t2 = cs / 10, cz = -r * 0.6 * Math.sin(Math.PI * t2) + r * 1.05 * t2 * t2, cy = r * 1.4 * Math.sin(Math.PI * t2 / 2), rr = r * (0.26 - t2 * 0.1);
-          peca(G.esfera, mat, rr, rr, rr, 0, cy, cz, cauda); fim = [cy, cz];
+        for (var cs = 0; cs <= 12; cs++) {
+          var t2 = cs / 12, cz = -r * 0.6 * Math.sin(Math.PI * t2) + r * 1.05 * t2 * t2, cy = r * 1.4 * Math.sin(Math.PI * t2 / 2), rr = r * (0.27 - t2 * 0.07);
+          peca(G.esfera, cs % 2 ? matEsc : mat, rr, rr, rr, 0, cy, cz, cauda); fim = [cy, cz];
         }
-        var ferrao = peca(G.cone, M.escuro, r * 0.09, r * 0.34, r * 0.09, 0, fim[0] - r * 0.08, fim[1] + r * 0.15, cauda); ferrao.rotation.x = Math.PI * 0.68;
+        var ferrao = peca(G.cone, realceCriatura(toon(0xf0c46a)), r * 0.13, r * 0.46, r * 0.13, 0, fim[0] - r * 0.1, fim[1] + r * 0.2, cauda); ferrao.rotation.x = Math.PI * 0.68;
         // pinças: braço, a mão e as duas pontas abertas
         [-1, 1].forEach(function (l) {
           var bx = l * r * 0.38, bz = r * 0.85, cx = l * r * 0.72, cz2 = r * 1.6;
-          var braco = peca(G.caixa, mat, r * 0.15, r * 0.15, Math.hypot(cx - bx, cz2 - bz), (bx + cx) / 2, yc, (bz + cz2) / 2, g); braco.rotation.y = Math.atan2(cx - bx, cz2 - bz);
+          membro(g, mat, bx, yc, bz, cx, yc, cz2, r * 0.09);
           peca(G.esfera, mat, r * 0.22, r * 0.17, r * 0.26, cx, yc, cz2, g);
-          [-1, 1].forEach(function (k) { var dente = peca(G.cone, mat, r * 0.085, r * 0.4, r * 0.085, cx + k * r * 0.09, yc, cz2 + r * 0.32, g); dente.rotation.order = 'YXZ'; dente.rotation.set(Math.PI / 2, k * 0.38, 0); });
+          [-1, 1].forEach(function (k) { var dente = peca(G.cone, matEsc, r * 0.085, r * 0.4, r * 0.085, cx + k * r * 0.09, yc, cz2 + r * 0.32, g); dente.rotation.order = 'YXZ'; dente.rotation.set(Math.PI / 2, k * 0.38, 0); });
         });
       }
       alt = r * (esc ? 2.0 : 1.4);
     } else if (tipo.forma === 'cogumelo') {
-      var pulo = new T.Group(); pulo.position.y = 0.15; g.add(pulo); p.voo = pulo; p.vooY = 0.15;
+      var pulo = new T.Group(); pulo.position.y = 0.15; pulo.name = 'voo'; g.add(pulo); p.voo = pulo; p.vooY = 0.15;
       peca(G.cilindro, M.osso, r * 0.45, r * 1.0, r * 0.45, 0, r * 0.5, 0, pulo);
       peca(G.esfera, mat, r * 1.15, r * 0.6, r * 1.15, 0, r * 1.15, 0, pulo);
-      [[0.5, 0.3], [-0.45, 0.4], [0.1, -0.6], [-0.3, -0.3], [0.6, -0.35]].forEach(function (pt) { peca(G.esfera, M.branco, r * 0.16, r * 0.1, r * 0.16, pt[0] * r, r * 1.55, pt[1] * r, pulo); });
       olhos(pulo, r * 0.6, r * 0.42, r * 0.8);
       alt = r * 1.9;
-    } else if (tipo.forma === 'humano') { // esqueleto, zumbi, orc, ciclope, demônio
-      peca(G.caixa, mat, r * 1.3, r * 1.5, r * 0.8, 0, r * 2.0, 0, g);
-      peca(G.esfera, tipo.pele ? M.pele : mat, r * 0.62, r * 0.62, r * 0.62, 0, r * 3.2, 0, g);
-      if (tipo.capa) { peca(G.caixa, M.capa, r * 1.5, r * 2.3, r * 0.08, 0, r * 1.75, -r * 0.48, g); peca(G.caixa, M.capa, r * 1.5, r * 0.5, r * 0.6, 0, r * 2.85, -r * 0.2, g); }
-      if (tipo.presas) [-1, 1].forEach(function (l) { peca(G.cone, M.branco, r * 0.06, r * 0.2, r * 0.06, l * r * 0.15, r * 2.95, r * 0.56, g).rotation.x = Math.PI; });
+    } else if (tipo.forma === 'humano') { // zumbi, vampiro, lobisomem, ciclope, demônio
+      var pele = tipo.pele ? M.pele : mat;
+      peca(geoTronco, mat, r * 0.66, r * 1.55, r * 0.44, 0, r * 2.05, 0, g);
+      peca(G.esfera, matEsc, r * 0.5, r * 0.3, r * 0.36, 0, r * 1.36, 0, g); // quadril (calça mais escura)
+      peca(G.esfera, pele, r * 0.6, r * 0.62, r * 0.58, 0, r * 3.2, 0, g);
+      if (tipo.capa) { peca(geoCapa, matCapa, r * 1.0, r * 2.3, r * 0.72, 0, r * 1.95, -r * 0.02, g); peca(geoGola, matCapa, r * 0.62, r * 0.5, r * 0.5, 0, r * 2.98, 0, g); }
+      if (tipo.presas) [-1, 1].forEach(function (l) { peca(G.cone, M.branco, r * 0.06, r * 0.2, r * 0.06, l * r * 0.15, r * 2.95, r * 0.55, g).rotation.x = Math.PI; });
       if (tipo.lobisomem) {
-        peca(G.caixa, mat, r * 0.4, r * 0.3, r * 0.5, 0, r * 3.05, r * 0.65, g);
-        peca(G.esfera, M.preto, r * 0.09, r * 0.08, r * 0.08, 0, r * 3.15, r * 0.92, g);
-        [-1, 1].forEach(function (l) { peca(G.cone, mat, r * 0.15, r * 0.45, r * 0.15, l * r * 0.32, r * 3.85, 0, g); });
+        membro(g, mat, 0, r * 3.08, r * 0.45, 0, r * 3.02, r * 0.8, r * 0.18);
+        peca(G.esfera, M.preto, r * 0.09, r * 0.08, r * 0.08, 0, r * 3.12, r * 0.96, g);
+        [-1, 1].forEach(function (l) { var ore = peca(G.cone, mat, r * 0.16, r * 0.48, r * 0.12, l * r * 0.33, r * 3.82, 0, g); ore.rotation.z = -l * 0.2; });
       }
       if (tipo.umOlho) { // ciclope: um olho grande só
         peca(G.esfera, M.branco, r * 0.3, r * 0.3, r * 0.3, 0, r * 3.3, r * 0.45, g);
@@ -640,23 +878,48 @@
         peca(G.esfera, M.brilho, r * 0.05, r * 0.05, r * 0.05, -r * 0.05, r * 3.37, r * 0.84, g);
       } else olhos(g, r * 3.3, r * 0.5, r * 0.9, olhoBrilho);
       if (tipo.dentes) { peca(G.cone, M.osso, r * 0.08, r * 0.25, r * 0.08, -r * 0.2, r * 3.0, r * 0.55, g); peca(G.cone, M.osso, r * 0.08, r * 0.25, r * 0.08, r * 0.2, r * 3.0, r * 0.55, g); }
-      if (tipo.chifres) { peca(G.cone, M.escuro, r * 0.14, r * 0.5, r * 0.14, -r * 0.35, r * 3.85, 0, g); peca(G.cone, M.escuro, r * 0.14, r * 0.5, r * 0.14, r * 0.35, r * 3.85, 0, g); }
-      p.bracos = [-1, 1].map(function (lado) { var b = new T.Group(); b.position.set(lado * r * 0.85, r * 2.6, 0); g.add(b); peca(G.caixa, mat, r * 0.32, r * 1.3, r * 0.32, 0, -r * 0.6, 0, b); return b; });
-      p.pernas = [-1, 1].map(function (lado) { var b = new T.Group(); b.position.set(lado * r * 0.35, r * 1.25, 0); g.add(b); peca(G.caixa, mat, r * 0.38, r * 1.25, r * 0.38, 0, -r * 0.62, 0, b); return b; });
+      if (tipo.chifres) [-1, 1].forEach(function (l) { var ch = peca(G.cone, M.escuro, r * 0.14, r * 0.55, r * 0.14, l * r * 0.36, r * 3.85, 0, g); ch.rotation.z = -l * 0.35; });
+      var frente = tipo.bracosFrente; // o zumbi anda com os braços esticados para a frente
+      p.bracos = [-1, 1].map(function (lado, i) {
+        var b = new T.Group(); b.position.set(lado * r * 0.8, r * 2.62, 0); b.name = 'bracos' + i; g.add(b);
+        var cot = frente ? [lado * r * 0.04, -r * 0.3, r * 0.55] : [lado * r * 0.06, -r * 0.62, r * 0.02], pun = frente ? [lado * r * 0.06, -r * 0.38, r * 1.08] : [lado * r * 0.09, -r * 1.12, r * 0.08];
+        membro(b, mat, 0, 0, 0, cot[0], cot[1], cot[2], r * 0.15); membro(b, mat, cot[0], cot[1], cot[2], pun[0], pun[1], pun[2], r * 0.13);
+        peca(G.esfera, pele, r * 0.16, r * 0.16, r * 0.17, pun[0], pun[1] - (frente ? 0 : r * 0.08), pun[2] + (frente ? r * 0.1 : 0.02), b);
+        return b;
+      });
+      p.pernas = [-1, 1].map(function (lado, i) {
+        var b = new T.Group(); b.position.set(lado * r * 0.3, r * 1.32, 0); b.name = 'pernas' + i; g.add(b);
+        membro(b, matEsc, 0, 0, 0, 0, -r * 0.6, r * 0.02, r * 0.19); membro(b, matEsc, 0, -r * 0.6, r * 0.02, 0, -r * 1.1, 0, r * 0.16);
+        peca(G.esfera, M.escuro, r * 0.19, r * 0.11, r * 0.3, 0, -r * 1.22, r * 0.1, b);
+        return b;
+      });
       alt = r * 3.9;
-    } else if (tipo.forma === 'lobo') {
-      peca(G.caixa, mat, r * 0.9, r * 0.8, r * 1.8, 0, r * 1.2, 0, g);
-      peca(G.caixa, mat, r * 0.75, r * 0.7, r * 0.8, 0, r * 1.65, r * 1.15, g);
-      peca(G.caixa, M.escuro, r * 0.32, r * 0.25, r * 0.4, 0, r * 1.5, r * 1.65, g);
+    } else if (tipo.forma === 'lobo') { // lobo, rato, javali, urso (e o lobo ajudante)
+      var go = tipo.raboCurto ? 1.2 : 1;
+      capsula(g, mat, r * 0.45 * go, r * 1.9, 0, r * 1.2, -r * 0.05).rotation.x = Math.PI / 2;
+      peca(G.esfera, mat, r * 0.5 * go, r * 0.5 * go, r * 0.48 * go, 0, r * 1.28, r * 0.5, g); // peito
+      membro(g, mat, 0, r * 1.36, r * 0.62, 0, r * 1.62, r * 0.98, r * 0.24 * go); // pescoço
+      peca(G.esfera, mat, r * 0.4 * go, r * 0.37 * go, r * 0.44 * go, 0, r * 1.7, r * 1.08, g);
+      var ponta = r * (tipo.raboCurto ? 1.54 : 1.66);
+      membro(g, tipo.dentes ? matEsc : mat, 0, r * 1.6, r * 1.3, 0, r * 1.55, ponta, r * (tipo.dentes ? 0.21 : 0.16)); // focinho
+      if (tipo.dentes) { var disco = peca(G.cilindro, M.rosa, r * 0.17, r * 0.06, r * 0.14, 0, r * 1.55, ponta + r * 0.16, g); disco.rotation.x = Math.PI / 2; }
+      else peca(G.esfera, M.preto, r * 0.075, r * 0.06, r * 0.06, 0, r * 1.6, ponta + r * 0.14, g);
       [-1, 1].forEach(function (l) {
-        if (tipo.orelhasRedondas) peca(G.esfera, mat, r * 0.18, r * 0.18, r * 0.08, l * r * 0.3, r * 2.05, r * 1.0, g);
-        else peca(G.cone, mat, r * 0.15, r * 0.35, r * 0.15, l * r * 0.24, r * 2.15, r * 1.05, g);
+        if (tipo.orelhasRedondas) peca(G.esfera, mat, r * 0.17 * go, r * 0.17 * go, r * 0.07, l * r * 0.27 * go, r * 2.02, r * 1.0, g);
+        else { var orl = peca(G.cone, mat, r * 0.14, r * 0.36, r * 0.1, l * r * 0.22, r * 2.08, r * 1.02, g); orl.rotation.z = -l * 0.25; }
         if (tipo.dentes) peca(G.cone, M.osso, r * 0.07, r * 0.35, r * 0.07, l * r * 0.2, r * 1.5, r * 1.85, g).rotation.x = Math.PI / 2.4;
       });
-      olhos(g, r * 1.8, r * 1.56, r * 0.8, olhoBrilho);
-      var rabo = tipo.raboCurto ? peca(G.esfera, mat, r * 0.16, r * 0.16, r * 0.16, 0, r * 1.45, -r * 0.92, g) : tipo.raboFino ? peca(G.cilindro, M.rosa, r * 0.06, r * 1.6, r * 0.06, 0, r * 1.1, -r * 1.6, g) : peca(G.caixa, mat, r * 0.2, r * 0.2, r * 0.8, 0, r * 1.5, -r * 1.2, g);
-      rabo.rotation.x = tipo.raboFino ? -1.2 : -0.5;
-      p.pernas = [[-1, 1], [1, -1], [-1, -1], [1, 1]].map(function (l) { var b = new T.Group(); b.position.set(l[0] * r * 0.3, r * 0.8, l[1] * r * 0.6); g.add(b); peca(G.caixa, mat, r * 0.25, r * 0.8, r * 0.25, 0, -r * 0.4, 0, b); return b; });
+      olhos(g, r * 1.8, r * (1.08 + 0.37 * go), r * 0.75, olhoBrilho);
+      if (tipo.raboCurto) peca(G.esfera, mat, r * 0.18, r * 0.18, r * 0.18, 0, r * 1.45, -r * 1.02, g);
+      else if (tipo.raboFino) { var rf = peca(G.cilindro, M.rosa, r * 0.05, r * 1.6, r * 0.05, 0, r * 1.1, -r * 1.6, g); rf.rotation.x = -1.2; }
+      else if (tipo.dentes) { var rc = new T.Mesh(new T.TorusGeometry(r * 0.1, r * 0.03, 6, 12, Math.PI * 1.5), matEsc); rc.position.set(0, r * 1.4, -r * 1.02); rc.rotation.y = Math.PI / 2; g.add(rc); }
+      else { var rp = peca(G.cone, mat, r * 0.17, r * 0.9, r * 0.17, 0, r * 1.15, -r * 1.3, g); rp.rotation.x = -2.25; }
+      p.pernas = [[-1, 1], [-1, -1], [1, -1], [1, 1]].map(function (l, i) { // passo de trote: as pernas em diagonal andam juntas
+        var b = new T.Group(); b.position.set(l[0] * r * 0.27 * go, r * 0.98, l[1] * r * 0.55); b.name = 'pernas' + i; g.add(b);
+        membro(b, mat, 0, 0, 0, 0, -r * 0.45, r * 0.03, r * 0.12 * go); membro(b, mat, 0, -r * 0.45, r * 0.03, 0, -r * 0.84, -r * 0.02, r * 0.1 * go);
+        peca(G.esfera, matEsc, r * 0.13 * go, r * 0.08, r * 0.17 * go, 0, -r * 0.9, r * 0.04, b);
+        return b;
+      });
       alt = r * 2.3;
     }
     if (chefe) { // coroa dourada do chefão
@@ -667,14 +930,28 @@
       alt += r * 0.4;
     }
     // sombra redonda (quando as sombras de verdade estão desligadas para os bichos)
-    var sombra = new T.Mesh(geoSombra, matSombra); sombra.scale.set(r * 1.15, 1, r * 1.15); sombra.position.y = 0.03; sombra.renderOrder = 1; sombra.userData.semSombra = true; g.add(sombra);
-    var aura = null;
+    var sombra = new T.Mesh(geoSombra, matSombra); sombra.scale.set(r * 1.15, 1, r * 1.15); sombra.position.y = 0.03; sombra.renderOrder = 1; sombra.userData.semSombra = true; sombra.name = 'sombra'; g.add(sombra);
     if (chefe) { // anel roxo girando no chão em volta do chefão
-      aura = new T.Group(); aura.scale.setScalar(r * 1.25); g.add(aura);
-      var anelChao = new T.Mesh(geoAnel, matAura); anelChao.position.y = 0.05; anelChao.userData.semSombra = true; aura.add(anelChao);
-      var parede = new T.Mesh(geoParedeLuz, matParedeRoxa); parede.userData.semSombra = true; aura.add(parede);
+      var aura = new T.Group(); aura.scale.setScalar(r * 1.25); aura.name = 'aura'; g.add(aura);
+      var anelChao = new T.Mesh(geoAnel, matAura); anelChao.position.y = 0.05; anelChao.userData.semSombra = true; anelChao.userData.solto = true; aura.add(anelChao);
+      var parede = new T.Mesh(geoParedeLuz, matParedeRoxa); parede.userData.semSombra = true; parede.userData.solto = true; aura.add(parede);
     }
-    return { grupo: g, partes: p, mat: mat, alt: alt, r: r, sombra: sombra, aura: aura };
+    fundir(g);
+    return { grupo: g, partes: p, mat: mat, alt: alt, r: r };
+  }
+  // cada monstro novo é uma cópia do molde do seu tipo (com o próprio material, para piscar sozinho)
+  var moldes = {};
+  function fazerMonstro(tipo, dourado, chefe) {
+    var k = (tipo.id || tipo.nome) + (dourado ? ':d' : '') + (chefe ? ':c' : '');
+    var m = moldes[k] || (moldes[k] = construirMonstro(tipo, dourado, chefe));
+    var g = m.grupo.clone(true), mat = m.mat.clone();
+    mat.onBeforeCompile = m.mat.onBeforeCompile; mat.customProgramCacheKey = m.mat.customProgramCacheKey;
+    g.traverse(function (o) { if (o.isMesh && o.material === m.mat) o.material = mat; });
+    var p = {};
+    if (m.partes.vooY !== undefined) p.vooY = m.partes.vooY;
+    ['corpo', 'voo', 'lingua', 'cauda'].forEach(function (n) { if (m.partes[n]) p[n] = g.getObjectByName(n); });
+    ['asas', 'pernas', 'bracos', 'segs'].forEach(function (n) { if (m.partes[n]) p[n] = m.partes[n].map(function (_, i) { return g.getObjectByName(n + i); }); });
+    return { grupo: g, partes: p, mat: mat, alt: m.alt, r: m.r, sombra: g.getObjectByName('sombra'), aura: g.getObjectByName('aura') };
   }
   var geoAnel = new T.RingGeometry(0.82, 1.12, 48); geoAnel.rotateX(-Math.PI / 2);
   var matAura = new T.MeshBasicMaterial({ color: 0xa21caf, transparent: true, opacity: 0.8, depthWrite: false, side: T.DoubleSide, toneMapped: false });
@@ -693,7 +970,7 @@
   function animarMonstro(m, t) {
     var p = m.modelo.partes, f = Math.sin(t * 7 + m.fase);
     if (m.tipo.forma === 'geleca') { p.corpo.scale.y = m.r * (0.75 + f * 0.1); p.corpo.scale.x = p.corpo.scale.z = m.r * (1 - f * 0.06); }
-    if (p.asas) p.asas.forEach(function (a) { a.rotation.z = a.userData.lado * Math.sin(t * 14 + m.fase) * 0.6; });
+    if (p.asas) p.asas.forEach(function (a) { a.rotation.z = a.userData.lado * (0.32 + Math.sin(t * 14 + m.fase) * 0.55); }); // asas em "V", batendo
     if (p.voo) p.voo.position.y = p.vooY + Math.sin(t * 3 + m.fase) * 0.2;
     if (p.segs) p.segs.forEach(function (sg, i) { if (i) sg.position.x = Math.sin(t * 6 + m.fase - i * 0.9) * m.r * 0.4; });
     if (p.lingua) p.lingua.visible = Math.sin(t * 9 + m.fase) > 0.3;
@@ -730,12 +1007,22 @@
     var s = new T.Sprite(new T.SpriteMaterial({ map: texPonto, color: cor, depthWrite: false, transparent: true, opacity: 0.4, toneMapped: false }));
     s.scale.set(sx, sy, 1); s.position.set(x, y, 0.02); pai.add(s); return s;
   }
+  function laminaExtrudada(larg, comp, ponta, esp) { // lâmina com fio chanfrado
+    var s = new T.Shape(); s.moveTo(-larg, 0); s.lineTo(larg, 0); s.lineTo(larg, comp); s.lineTo(0, comp + ponta); s.lineTo(-larg, comp); s.lineTo(-larg, 0);
+    var g = new T.ExtrudeGeometry(s, { depth: esp, bevelEnabled: true, bevelThickness: esp * 0.9, bevelSize: larg * 0.32, bevelSegments: 1 }); g.translate(0, 0, -esp / 2); return g;
+  }
+  var geoLamina = laminaExtrudada(0.022, 0.46, 0.11, 0.003), geoPontaLanca = (function () {
+    var s = new T.Shape(); s.moveTo(0, 0); s.quadraticCurveTo(0.06, 0.07, 0, 0.26); s.quadraticCurveTo(-0.06, 0.07, 0, 0);
+    var g = new T.ExtrudeGeometry(s, { depth: 0.004, bevelEnabled: true, bevelThickness: 0.006, bevelSize: 0.008, bevelSegments: 1 }); g.translate(0, 0, -0.002); return g;
+  })();
+  var geoAnelCabo = new T.TorusGeometry(1, 0.25, 5, 12), geoCil10 = new T.CylinderGeometry(1, 1, 1, 10);
+  function caboEnrolado(g, y0, y1, raio) { peca(G.cilindro, M.couro, raio, y1 - y0, raio, 0, (y0 + y1) / 2, 0, g); for (var y = y0 + 0.02; y < y1; y += 0.035) peca(geoAnelCabo, M.couro, raio, raio, raio * 1.15, 0, y, 0, g).rotation.x = Math.PI / 2; }
   function montarArmaNaMao() {
     [braco, mao].forEach(function (g) { while (g.children.length) g.remove(g.children[0]); });
     var a = arma(), arm = armadura(), g = new T.Group();
     flechaNoArco = null; armaBrilha = null;
     // braço com a manga na cor da armadura, punho e mão
-    var manga = arm.metal ? new T.MeshStandardMaterial({ color: arm.cor, metalness: 0.5, roughness: 0.55, envMap: envMapa, envMapIntensity: 0.5 }) : toon(arm.cor);
+    var manga = arm.metal ? texturizar(new T.MeshStandardMaterial({ color: arm.cor, metalness: 0.5, roughness: 0.55, envMap: envMapa, envMapIntensity: 0.5 }), 'metal', 2, 2, 0.3) : texturizar(toon(arm.cor), 'tecido', 3, 3, 0.5);
     peca(new T.CylinderGeometry(0.85, 1, 1, 14), manga, 0.034, 0.4, 0.034, 0.02, 0.03, -0.19, braco).rotation.x = -Math.PI / 2 + 0.15;
     peca(G.cilindro, arm.metal ? M.ferroEscuro : M.couro, 0.037, 0.05, 0.037, 0.02, 0.055, -0.36, braco).rotation.x = -Math.PI / 2 + 0.15;
     peca(G.esfera, M.pele, 0.038, 0.036, 0.046, 0.02, 0.06, -0.41, braco);
@@ -750,16 +1037,16 @@
       var madeira = a.id === 'espada-madeira';
       var lamina = madeira ? facetado(0xc99a62) : (a.brilha ? brilhante(a.cor, 1.5) : M.ferro);
       var enfeite = madeira ? M.madeira : M.ouro;
-      peca(G.cilindro, M.couro, 0.021, 0.17, 0.021, 0, 0, 0, g);
+      caboEnrolado(g, -0.08, 0.08, 0.02);
       peca(G.esfera, enfeite, 0.032, 0.032, 0.032, 0, -0.1, 0, g);
-      peca(G.caixa, enfeite, 0.19, 0.032, 0.046, 0, 0.1, 0, g);
-      peca(G.caixa, lamina, 0.052, 0.5, 0.014, 0, 0.365, 0, g);
-      peca(G4, lamina, 0.026, 0.11, 0.007, 0, 0.67, 0, g);
-      if (!madeira && !a.brilha) peca(G.caixa, M.ferroEscuro, 0.011, 0.4, 0.016, 0, 0.34, 0, g);
+      peca(geoCil10, enfeite, 0.02, 0.18, 0.024, 0, 0.1, 0, g).rotation.z = Math.PI / 2; // guarda
+      peca(G.esfera, enfeite, 0.026, 0.026, 0.026, -0.095, 0.1, 0, g); peca(G.esfera, enfeite, 0.026, 0.026, 0.026, 0.095, 0.1, 0, g);
+      peca(geoLamina, lamina, 1, 1, 1, 0, 0.115, 0, g);
+      if (!madeira && !a.brilha) peca(G.caixa, M.ferroEscuro, 0.008, 0.36, 0.013, 0, 0.33, 0, g); // sulco no meio da lâmina
       if (a.brilha) armaBrilha = { sprite: brilhoSprite(a.cor, 0.16, 0.7, 0, 0.4, g), mat: lamina };
       if (a.distancia) { estilo = 'tiro'; rot = [-1.05, 0, 0.12]; }
     } else if (a.modelo === 'machado') {
-      peca(G.cilindro, M.madeira, 0.024, 0.66, 0.024, 0, 0.21, 0, g);
+      peca(G.cilindro, M.madeira, 0.024, 0.66, 0.024, 0, 0.21, 0, g); caboEnrolado(g, -0.1, 0.05, 0.026);
       var forma = new T.Shape(); forma.moveTo(0, -0.05); forma.lineTo(0.07, -0.088); forma.quadraticCurveTo(0.21, 0, 0.07, 0.088); forma.lineTo(0, 0.05); forma.lineTo(0, -0.05);
       var geoMach = new T.ExtrudeGeometry(forma, { depth: 0.02, bevelEnabled: true, bevelThickness: 0.006, bevelSize: 0.006, bevelSegments: 1 }); geoMach.translate(0, 0, -0.01);
       var cab = new T.Mesh(geoMach, M.ferro); cab.position.set(-0.012, 0.47, 0); cab.rotation.y = Math.PI; g.add(cab); // o fio fica para o lado do golpe
@@ -771,33 +1058,33 @@
       var corpo = new T.Mesh(new T.TorusGeometry(R, 0.014, 6, 30, comp), M.madeiraClara); corpo.rotation.z = ini; arcoG.add(corpo);
       peca(G.cilindro, toon(0xf5f0e0), 0.0025, hs * 2, 0.0025, xs, 0, 0, arcoG);
       peca(G.cilindro, M.couro, 0.02, 0.09, 0.02, -R, 0, 0, arcoG);
-      flechaNoArco = new T.Group(); arcoG.add(flechaNoArco);
-      var x0 = xs + 0.02, x1 = -R - 0.17, meio = (x0 + x1) / 2;
+      flechaNoArco = new T.Group(); flechaNoArco.position.y = 0.035; arcoG.add(flechaNoArco);
+      var x0 = xs + 0.02, x1 = -R - 0.25, meio = (x0 + x1) / 2;
       peca(G.cilindro, M.madeiraClara, 0.009, x0 - x1, 0.009, meio, 0, 0, flechaNoArco).rotation.z = Math.PI / 2;
       peca(G4, M.ferro, 0.022, 0.075, 0.008, x1 - 0.025, 0, 0, flechaNoArco).rotation.z = Math.PI / 2;
       peca(G.caixa, toon(0xe8463c), 0.06, 0.03, 0.002, x0 - 0.04, 0.012, 0, flechaNoArco);
       peca(G.caixa, toon(0xe8463c), 0.06, 0.03, 0.002, x0 - 0.04, -0.012, 0, flechaNoArco);
     } else if (a.modelo === 'lanca') {
       estilo = 'estocada'; rot = [-1.02, 0, 0.18];
-      peca(G.cilindro, M.madeiraClara, 0.026, 1.0, 0.026, 0, 0.22, 0, g);
-      peca(G.cilindro, M.ouro, 0.024, 0.035, 0.024, 0, 0.72, 0, g);
-      peca(G4, M.ferro, 0.055, 0.26, 0.016, 0, 0.86, 0, g);
+      peca(G.cilindro, M.madeiraClara, 0.026, 1.0, 0.026, 0, 0.22, 0, g); caboEnrolado(g, -0.08, 0.08, 0.028);
+      peca(G.cilindro, M.ouro, 0.03, 0.05, 0.03, 0, 0.72, 0, g);
+      peca(geoPontaLanca, M.ferro, 1, 1, 1, 0, 0.74, 0, g);
     } else if (a.modelo === 'varinha') {
       estilo = 'tiro'; rot = [-1.0, 0, 0.12];
-      peca(new T.CylinderGeometry(0.8, 1, 1, 10), M.madeira, 0.015, 0.42, 0.015, 0, 0.12, 0, g);
+      peca(new T.CylinderGeometry(0.8, 1, 1, 10), M.madeira, 0.015, 0.42, 0.015, 0, 0.12, 0, g); caboEnrolado(g, -0.06, 0.05, 0.017);
       peca(G.cilindro, M.ouro, 0.019, 0.03, 0.019, 0, 0.3, 0, g);
       var cristal = brilhante(a.cor, 1.6);
       peca(G.octa, cristal, 0.04, 0.075, 0.04, 0, 0.4, 0, g);
       armaBrilha = { sprite: brilhoSprite(a.cor, 0.28, 0.28, 0, 0.4, g), mat: cristal };
     } else if (a.modelo === 'martelo') {
-      peca(G.cilindro, M.madeira, 0.026, 0.62, 0.026, 0, 0.19, 0, g);
-      peca(G.cilindro, M.couro, 0.03, 0.16, 0.03, 0, -0.02, 0, g);
-      var cabeca = a.brilha ? metal(a.cor, 0.3, 0x4a3000) : M.ferro;
-      peca(G.caixa, cabeca, 0.27, 0.15, 0.15, 0, 0.5, 0, g);
+      peca(G.cilindro, M.madeira, 0.026, 0.62, 0.026, 0, 0.19, 0, g); caboEnrolado(g, -0.1, 0.06, 0.03);
+      var cabeca = a.brilha ? texturizar(metal(a.cor, 0.3, 0x4a3000), 'metal', 1, 1, 0.25) : M.ferro;
+      peca(geoBloco, cabeca, 0.27, 0.15, 0.15, 0, 0.5, 0, g);
       peca(G.caixa, M.ferroEscuro, 0.285, 0.03, 0.16, 0, 0.45, 0, g);
       peca(G.caixa, M.ferroEscuro, 0.285, 0.03, 0.16, 0, 0.55, 0, g);
       if (a.brilha) { var raio = brilhante(0xfff3a0, 2); peca(G.octa, raio, 0.03, 0.05, 0.03, -0.145, 0.5, 0, g); peca(G.octa, raio, 0.03, 0.05, 0.03, 0.145, 0.5, 0, g); armaBrilha = { sprite: brilhoSprite(0xffe066, 0.45, 0.3, 0, 0.5, g), mat: raio }; }
     }
+    fundir(g);
     mao.rotation.set(rot[0], rot[1], retrato && estilo !== 'arco' ? rot[2] * 0.35 : rot[2]);
     mao.userData.estilo = estilo; mao.userData.distancia = !!a.distancia;
   }
@@ -925,40 +1212,47 @@
   }
 
   // ---------- Defesas no campo ----------
+  var geoBloco = (function () { // cubo com os cantos chanfrados
+    var a = 0.44, s = new T.Shape(); s.moveTo(-a, -a); s.lineTo(a, -a); s.lineTo(a, a); s.lineTo(-a, a); s.lineTo(-a, -a);
+    var g = new T.ExtrudeGeometry(s, { depth: 0.88, bevelEnabled: true, bevelThickness: 0.06, bevelSize: 0.06, bevelSegments: 2 }); g.translate(0, 0, -0.44);
+    var uv = g.attributes.uv; for (var i = 0; i < uv.count; i++) uv.setXY(i, uv.getX(i) + 0.5, uv.getY(i) + 0.5);
+    return g;
+  })();
   function fazerDefesa(def) {
     var g = new T.Group(), mat, cabeca = null, alturaTiro = 1.5, d = new T.Object3D(), cor = new T.Color();
+    var tabua = texturizar(realceCenario(facetado(0x7a5230)), 'madeira', 2, 1, 0.7);
     function blocos(geo, material, lista) { // vários pedaços iguais num desenho só
       var m = new T.InstancedMesh(geo, material, lista.length);
       lista.forEach(function (b, i) { d.position.set(b[0], b[1], b[2]); d.rotation.set(0, b[6] || 0, b[7] || 0); d.scale.set(b[3], b[4], b[5]); d.updateMatrix(); m.setMatrixAt(i, d.matrix); cor.setHSL(0, 0, b[8] || 1); m.setColorAt(i, cor); });
       g.add(m); return m;
     }
     if (def.id === 'muro-madeira') {
-      mat = facetado(0xa77445);
+      mat = texturizar(realceCenario(facetado(0xb88352)), 'casca', 1, 2, 0.9);
       var troncos = [], pontas = [];
       for (var i = 0; i < 7; i++) { var x = -1.35 + i * 0.45, h = 1.42 + ((i * 37) % 5) * 0.06; troncos.push([x, h / 2, 0, 0.21, h, 0.21, i, 0, 0.85 + (i % 3) * 0.08]); pontas.push([x, h + 0.16, 0, 0.21, 0.32, 0.21, i, 0, 0.85 + (i % 3) * 0.08]); }
-      blocos(G.cilindro, mat, troncos); blocos(G.cone, mat, pontas);
-      blocos(G.caixa, M.madeira, [[0, 0.45, 0.22, 3.05, 0.13, 0.09], [0, 1.05, 0.22, 3.05, 0.13, 0.09], [0, 0.45, -0.22, 3.05, 0.13, 0.09], [0, 1.05, -0.22, 3.05, 0.13, 0.09]]);
+      blocos(new T.CylinderGeometry(1, 1, 1, 10), mat, troncos); blocos(new T.ConeGeometry(1, 1, 10), mat, pontas);
+      blocos(G.caixa, tabua, [[0, 0.45, 0.22, 3.05, 0.13, 0.09], [0, 1.05, 0.22, 3.05, 0.13, 0.09], [0, 0.45, -0.22, 3.05, 0.13, 0.09], [0, 1.05, -0.22, 3.05, 0.13, 0.09]]);
     } else if (def.id === 'muro-pedra') {
-      mat = facetado(0xb3b7ba);
+      mat = texturizar(realceCenario(facetado(0xc2c5c8)), 'pedra', 1, 1, 1.0);
       var pedras = [], bordas = [[-1.5, -1, -0.5, 0, 0.5, 1, 1.5], [-1.5, -1.25, -0.75, -0.25, 0.25, 0.75, 1.25, 1.5]];
       for (var f = 0; f < 4; f++) { var e = bordas[f % 2]; for (var k = 0; k < e.length - 1; k++) { var w = e[k + 1] - e[k] - 0.03, hh = hash2(f * 7 + k, 3); pedras.push([(e[k] + e[k + 1]) / 2, 0.19 + f * 0.37, (hh - 0.5) * 0.04, w, 0.34, 0.6 - hh * 0.05, 0, 0, 0.78 + hh * 0.24]); } }
       [-1.25, 0, 1.25].forEach(function (x, i) { pedras.push([x, 1.66, 0, 0.46, 0.34, 0.6, 0, 0, 0.8 + i * 0.08]); });
-      blocos(G.caixa, mat, pedras);
+      blocos(geoBloco, mat, pedras);
     } else if (def.id === 'torre-flechas') {
-      mat = facetado(0xa77445); alturaTiro = 2.36;
+      mat = texturizar(realceCenario(facetado(0xb88352)), 'madeira', 1, 3, 0.7); alturaTiro = 2.36;
       var pernas = []; [[-1, -1], [1, -1], [-1, 1], [1, 1]].forEach(function (l) { pernas.push([l[0] * 0.42, 0.95, l[1] * 0.42, 0.11, 1.9, 0.11, 0, 0, 0.9]); });
       blocos(G.caixa, mat, pernas);
-      peca(G.caixa, M.madeira, 1.1, 0.12, 1.1, 0, 1.85, 0, g);
+      peca(G.caixa, tabua, 1.1, 0.12, 1.1, 0, 1.85, 0, g);
       [[0, 2.02, 0.52, 1.1, 0.24, 0.06], [0, 2.02, -0.52, 1.1, 0.24, 0.06], [0.52, 2.02, 0, 0.06, 0.24, 1.1], [-0.52, 2.02, 0, 0.06, 0.24, 1.1]].forEach(function (b) { peca(G.caixa, mat, b[3], b[4], b[5], b[0], b[1], b[2], g); });
       peca(G.caixa, M.madeira, 0.9, 0.08, 0.08, 0, 1.0, 0.43, g).rotation.z = 0.7; peca(G.caixa, M.madeira, 0.9, 0.08, 0.08, 0, 1.0, -0.43, g).rotation.z = -0.7;
-      var teto = peca(G.cone, facetado(0xb5452f), 0.95, 0.6, 0.95, 0, 2.95, 0, g); teto.rotation.y = Math.PI / 4;
+      var teto = peca(new T.ConeGeometry(1, 1, 4, 3), texturizar(realceCenario(facetado(0xc0502f)), 'madeira', 4, 2, 0.8), 0.95, 0.6, 0.95, 0, 2.95, 0, g); teto.rotation.y = Math.PI / 4;
       [[-1, -1], [1, -1], [-1, 1], [1, 1]].forEach(function (l) { peca(G.cilindro, M.madeira, 0.035, 0.75, 0.035, l[0] * 0.48, 2.3, l[1] * 0.48, g); });
       cabeca = new T.Group(); cabeca.position.y = 2.34; g.add(cabeca); // a besta gira para o monstro (fica acima da grade)
       peca(G.caixa, M.madeira, 0.1, 0.1, 0.6, 0, 0, 0.1, cabeca);
       var arcoT = new T.Mesh(new T.TorusGeometry(0.28, 0.02, 5, 14, Math.PI * 0.8), M.madeiraClara); arcoT.rotation.set(Math.PI / 2, 0, Math.PI * 0.1); arcoT.position.z = 0.32; cabeca.add(arcoT);
       peca(G4, M.ferro, 0.03, 0.12, 0.01, 0, 0.06, 0.45, cabeca).rotation.x = Math.PI / 2;
     } else if (def.id === 'torre-gelo') {
-      mat = facetado(0x9fb6c8); alturaTiro = 2.0;
+      mat = texturizar(realceCenario(facetado(0xaec2d2)), 'pedra', 1, 1, 0.9); alturaTiro = 2.0;
       peca(new T.CylinderGeometry(0.42, 0.55, 1, 6), mat, 1, 1.5, 1, 0, 0.75, 0, g);
       peca(new T.CylinderGeometry(0.55, 0.4, 1, 6), mat, 1, 0.22, 1, 0, 1.6, 0, g);
       peca(G.cilindro, toon(0xf4fbff), 0.5, 0.06, 0.5, 0, 1.73, 0, g);
@@ -966,14 +1260,16 @@
       var cristal = brilhante(0x7dd3fc, 1.4); peca(G.octa, cristal, 0.26, 0.42, 0.26, 0, 0, 0, cabeca);
       var bs = new T.Sprite(new T.SpriteMaterial({ map: texPonto, color: 0x38a8ff, depthWrite: false, transparent: true, opacity: 0.55, toneMapped: false })); bs.scale.set(1.2, 1.2, 1); cabeca.add(bs);
     } else { // canhão
-      mat = facetado(0x8a5a33); alturaTiro = 1.05;
-      peca(G.caixa, mat, 0.8, 0.35, 1.0, 0, 0.5, 0, g);
+      mat = texturizar(realceCenario(facetado(0x9a6a3e)), 'madeira', 2, 1, 0.7); alturaTiro = 1.05;
+      peca(geoBloco, mat, 0.8, 0.35, 1.0, 0, 0.5, 0, g);
       [[-0.45, 0.35], [0.45, 0.35], [-0.45, -0.35], [0.45, -0.35]].forEach(function (r) { var roda = peca(G.cilindro, M.madeira, 0.3, 0.1, 0.3, r[0], 0.3, r[1], g); roda.rotation.z = Math.PI / 2; var aro = peca(G.cilindro, M.ferroEscuro, 0.31, 0.06, 0.31, r[0] * 1.06, 0.3, r[1], g); aro.rotation.z = Math.PI / 2; });
       cabeca = new T.Group(); cabeca.position.y = 0.9; g.add(cabeca);
-      var cano = peca(new T.CylinderGeometry(0.15, 0.21, 1, 12), M.ferroEscuro, 1, 1.15, 1, 0, 0.08, 0.25, cabeca); cano.rotation.x = Math.PI / 2 - 0.18;
+      var cano = peca(new T.CylinderGeometry(0.15, 0.21, 1, 16), M.ferroEscuro, 1, 1.15, 1, 0, 0.08, 0.25, cabeca); cano.rotation.x = Math.PI / 2 - 0.18;
+      [0.0, 0.4].forEach(function (zf) { peca(G.cilindro, M.ferroEscuro, 0.225 - zf * 0.07, 0.05, 0.225 - zf * 0.07, 0, 0.08 - zf * 0.07, zf - 0.05, cabeca).rotation.x = Math.PI / 2 - 0.18; }); // aros do cano
       peca(G.cilindro, M.ouro, 0.18, 0.06, 0.18, 0, 0.17, 0.78, cabeca).rotation.x = Math.PI / 2 - 0.18;
       peca(G.esfera, M.ferroEscuro, 0.2, 0.2, 0.2, 0, 0, -0.33, cabeca);
     }
+    fundir(g);
     g.traverse(function (o) { if (o.isMesh) { o.castShadow = true; o.receiveShadow = true; } });
     return { grupo: g, mat: mat, cabeca: cabeca, alturaTiro: alturaTiro };
   }
