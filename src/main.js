@@ -37,22 +37,23 @@
   // vel em metros por segundo, r = tamanho
   var TIPOS = [
     // um tipo novo aparece a cada 2 níveis
-    { nome: 'Geleca', cor: 0x5fd35f, vel: 1.7, r: 0.7, hp: 1, dano: 1, forma: 'geleca' },
-    { nome: 'Aranha', cor: 0x3f3f46, vel: 2.6, r: 0.55, hp: 0.8, dano: 0.9, forma: 'aranha' },
-    { nome: 'Morcego', cor: 0x8b5cf6, vel: 3.0, r: 0.45, hp: 0.7, dano: 0.8, forma: 'morcego' },
-    { nome: 'Cogumelo', cor: 0xdc2626, vel: 1.5, r: 0.65, hp: 1.2, dano: 1, forma: 'cogumelo' },
-    { nome: 'Esqueleto', cor: 0xe5e7eb, vel: 2.1, r: 0.5, hp: 1.1, dano: 1.1, forma: 'humano' },
-    { nome: 'Abelha gigante', cor: 0xfacc15, vel: 3.2, r: 0.45, hp: 0.8, dano: 1, forma: 'morcego', listras: true },
-    { nome: 'Zumbi', cor: 0x6b8f71, vel: 1.6, r: 0.55, hp: 1.4, dano: 1.2, forma: 'humano' },
-    { nome: 'Lobo mau', cor: 0x4b5563, vel: 3.4, r: 0.55, hp: 1.1, dano: 1.2, forma: 'lobo' },
-    { nome: 'Orc', cor: 0x65a30d, vel: 2.0, r: 0.65, hp: 1.5, dano: 1.3, forma: 'humano', dentes: true },
-    { nome: 'Fantasma', cor: 0xe0f2fe, vel: 2.4, r: 0.6, hp: 0.9, dano: 1.1, forma: 'fantasma' },
-    { nome: 'Yeti', cor: 0xf1f5f9, vel: 1.8, r: 0.9, hp: 2.0, dano: 1.4, forma: 'golem' },
-    { nome: 'Golem', cor: 0x78716c, vel: 1.3, r: 1.0, hp: 2.4, dano: 1.6, forma: 'golem' },
+    { nome: 'Rato gigante', cor: 0x8d6e63, vel: 2.4, r: 0.45, hp: 0.8, dano: 0.9, forma: 'lobo', orelhasRedondas: true, raboFino: true },
+    { nome: 'Aranha', cor: 0x3f3f46, vel: 2.6, r: 0.55, hp: 0.9, dano: 1, forma: 'aranha', olhos: 'vermelho' },
+    { nome: 'Cobra', cor: 0x65a30d, vel: 2.2, r: 0.45, hp: 1, dano: 1.1, forma: 'cobra', olhos: 'amarelo' },
+    { nome: 'Morcego vampiro', cor: 0x4c0519, vel: 3.1, r: 0.45, hp: 0.8, dano: 1, forma: 'morcego', olhos: 'vermelho', presas: true },
+    { nome: 'Lobo', cor: 0x6b7280, vel: 3.4, r: 0.55, hp: 1.1, dano: 1.2, forma: 'lobo', olhos: 'amarelo' },
+    { nome: 'Javali', cor: 0x78350f, vel: 2.8, r: 0.6, hp: 1.4, dano: 1.3, forma: 'lobo', dentes: true, orelhasRedondas: true },
+    { nome: 'Zumbi', cor: 0x6b8f71, vel: 1.6, r: 0.55, hp: 1.5, dano: 1.2, forma: 'humano' },
+    { nome: 'Urso', cor: 0x5d4037, vel: 2.2, r: 0.95, hp: 2.2, dano: 1.5, forma: 'lobo', orelhasRedondas: true },
+    { nome: 'Vampiro', cor: 0x1e1b4b, vel: 2.6, r: 0.6, hp: 1.6, dano: 1.5, forma: 'humano', pele: true, capa: true, presas: true, olhos: 'vermelho' },
+    { nome: 'Lobisomem', cor: 0x52525b, vel: 3.0, r: 0.7, hp: 1.9, dano: 1.6, forma: 'humano', lobisomem: true, olhos: 'amarelo' },
+    { nome: 'Fantasma', cor: 0xe0f2fe, vel: 2.4, r: 0.6, hp: 1.2, dano: 1.3, forma: 'fantasma' },
+    { nome: 'Escorpião gigante', cor: 0xc2410c, vel: 2.5, r: 0.7, hp: 2, dano: 1.6, forma: 'aranha', cauda: true },
+    { nome: 'Yeti', cor: 0xf1f5f9, vel: 1.8, r: 0.95, hp: 2.4, dano: 1.6, forma: 'golem' },
     { nome: 'Ciclope', cor: 0xa16207, vel: 1.7, r: 0.95, hp: 2.6, dano: 1.7, forma: 'humano', umOlho: true },
-    { nome: 'Dragãozinho', cor: 0xef4444, vel: 2.4, r: 0.75, hp: 1.8, dano: 1.5, forma: 'dragao' },
+    { nome: 'Dragãozinho', cor: 0xef4444, vel: 2.4, r: 0.75, hp: 2, dano: 1.7, forma: 'dragao', olhos: 'amarelo' },
     { nome: 'Golem de lava', cor: 0xea580c, brilho: 0x7c2d12, vel: 1.4, r: 1.05, hp: 2.8, dano: 1.9, forma: 'golem' },
-    { nome: 'Demônio', cor: 0x9f1239, vel: 2.6, r: 0.7, hp: 2, dano: 1.8, forma: 'humano', chifres: true }
+    { nome: 'Demônio', cor: 0x9f1239, vel: 2.6, r: 0.7, hp: 2.4, dano: 2, forma: 'humano', chifres: true, olhos: 'amarelo' }
   ];
   var CHEFE_COR = 0x2a0040; // brilho roxo do chefão
   // Defesas: você compra e coloca no campo. Muros seguram os monstros que andam; torres atiram sozinhas.
@@ -80,7 +81,7 @@
   function xpMonstro(n) { return 1 + n; } // metade da experiência de antes
   function xpParaSubir(n) { return Math.round(10 * n * Math.pow(1.08, n - 1)); }
   function vidaBase(n) { return Math.round(70 * Math.pow(1.13, n - 1)); }
-  function maxMonstros() { return Math.min(30, 2 + Math.floor(save.nivel * 1.3)); }
+  function maxMonstros() { return Math.min(36, 2 + save.nivel * 2); } // cada nível: 2 monstros a mais (até 36, para não travar o celular)
 
   // ---------- Progresso salvo (só neste aparelho; nada de dado pessoal) ----------
   var CHAVE = 'cacador-monstros-v1';
@@ -130,7 +131,8 @@
   };
   var M = {
     branco: new T.MeshLambertMaterial({ color: 0xffffff }), preto: new T.MeshBasicMaterial({ color: 0x111111 }),
-    amarelo: new T.MeshBasicMaterial({ color: 0xffd23f }), osso: new T.MeshLambertMaterial({ color: 0xfff7e0 }),
+    amarelo: new T.MeshBasicMaterial({ color: 0xffd23f }), vermelho: new T.MeshBasicMaterial({ color: 0xff2222 }),
+    pele: new T.MeshLambertMaterial({ color: 0xe8dcd0 }), capa: new T.MeshLambertMaterial({ color: 0x7f1d1d }), rosa: new T.MeshLambertMaterial({ color: 0xf9a8d4 }), osso: new T.MeshLambertMaterial({ color: 0xfff7e0 }),
     madeira: new T.MeshLambertMaterial({ color: 0x5b3a1e }), escuro: new T.MeshLambertMaterial({ color: 0x333333 })
   };
   function peca(geo, mat, sx, sy, sz, x, y, z, pai) {
@@ -208,7 +210,7 @@
     var mat = new T.MeshLambertMaterial({ color: dourado ? 0xffd23f : tipo.cor, emissive: chefe ? CHEFE_COR : (dourado ? 0x553300 : (tipo.brilho || 0x000000)) });
     if (tipo.forma === 'fantasma') { mat.transparent = true; mat.opacity = 0.8; }
     var g = new T.Group(), p = {}, alt = r * 2;
-    var olhoBrilho = (tipo.nome === 'Demônio' || tipo.nome === 'Dragãozinho') ? M.amarelo : M.preto;
+    var olhoBrilho = tipo.olhos === 'vermelho' ? M.vermelho : (tipo.olhos === 'amarelo' ? M.amarelo : M.preto);
     if (tipo.forma === 'geleca') {
       p.corpo = peca(G.esfera, mat, r, r * 0.75, r, 0, r * 0.7, 0, g);
       olhos(g, r * 0.9, r * 0.82, r); alt = r * 1.5;
@@ -231,6 +233,7 @@
           peca(G.cone, mat, r * 0.25, r * 0.5, r * 0.25, r * 0.5, r * 0.95, 0, voo);
         }
         olhos(voo, r * 0.15, r * 0.82, r, olhoBrilho);
+        if (tipo.presas) [-1, 1].forEach(function (l) { peca(G.cone, M.branco, r * 0.09, r * 0.3, r * 0.09, l * r * 0.22, -r * 0.4, r * 0.85, voo).rotation.x = Math.PI; });
       }
       p.asas = [-1, 1].map(function (lado) {
         var piv = new T.Group(); piv.position.set(lado * r * 0.6, 0, 0); voo.add(piv);
@@ -250,6 +253,16 @@
       p.bracos = [-1, 1].map(function (lado) { var b = new T.Group(); b.position.set(lado * r * 1.05, r * 2.0, 0); g.add(b); peca(G.caixa, mat, r * 0.5, r * 1.4, r * 0.5, 0, -r * 0.6, 0, b); return b; });
       p.pernas = [-1, 1].map(function (lado) { var b = new T.Group(); b.position.set(lado * r * 0.45, r * 0.8, 0); g.add(b); peca(G.caixa, mat, r * 0.55, r * 0.8, r * 0.55, 0, -r * 0.4, 0, b); return b; });
       alt = r * 3;
+    } else if (tipo.forma === 'cobra') {
+      p.segs = [];
+      for (var sg = 0; sg < 7; sg++) {
+        var tam = r * (1 - sg * 0.09);
+        p.segs.push(peca(G.esfera, mat, tam, tam * 0.7, tam * 1.1, 0, tam * 0.7, r * 0.8 - sg * r * 1.6, g));
+      }
+      var cabC = p.segs[0]; cabC.scale.set(r * 1.15, r * 0.9, r * 1.3); cabC.position.y = r * 1.1;
+      olhos(g, r * 1.45, r * 1.6, r, olhoBrilho);
+      var lingua = peca(G.caixa, M.vermelho, r * 0.08, r * 0.03, r * 0.6, 0, r * 0.95, r * 2.1, g); p.lingua = lingua;
+      alt = r * 2.0;
     } else if (tipo.forma === 'aranha') {
       peca(G.esfera, mat, r, r * 0.65, r * 1.15, 0, r * 0.75, -r * 0.3, g);
       peca(G.esfera, mat, r * 0.55, r * 0.5, r * 0.55, 0, r * 0.7, r * 0.75, g);
@@ -262,7 +275,13 @@
           p.pernas.push(b);
         }
       });
-      alt = r * 1.4;
+      if (tipo.cauda) {
+        var cauda = new T.Group(); cauda.position.set(0, r * 0.8, -r * 1.2); g.add(cauda); p.cauda = cauda;
+        for (var cs = 0; cs < 5; cs++) { var ac2 = cs / 4 * Math.PI * 0.9; peca(G.esfera, mat, r * 0.22, r * 0.22, r * 0.22, 0, Math.sin(ac2) * r * 1.1, -Math.cos(ac2) * r * 0.6 + r * 0.1, cauda); }
+        peca(G.cone, M.preto, r * 0.12, r * 0.35, r * 0.12, 0, r * 1.0, r * 0.75, cauda).rotation.x = Math.PI * 0.75;
+        [-1, 1].forEach(function (l) { peca(G.caixa, mat, r * 0.3, r * 0.15, r * 0.6, l * r * 0.45, r * 0.6, r * 1.3, g); });
+      }
+      alt = r * (tipo.cauda ? 2.0 : 1.4);
     } else if (tipo.forma === 'cogumelo') {
       var pulo = new T.Group(); pulo.position.y = 0.15; g.add(pulo); p.voo = pulo; p.vooY = 0.15;
       peca(G.cilindro, M.osso, r * 0.45, r * 1.0, r * 0.45, 0, r * 0.5, 0, pulo);
@@ -272,7 +291,14 @@
       alt = r * 1.9;
     } else if (tipo.forma === 'humano') { // esqueleto, zumbi, orc, ciclope, demônio
       peca(G.caixa, mat, r * 1.3, r * 1.5, r * 0.8, 0, r * 2.0, 0, g);
-      peca(G.esfera, mat, r * 0.62, r * 0.62, r * 0.62, 0, r * 3.2, 0, g);
+      peca(G.esfera, tipo.pele ? M.pele : mat, r * 0.62, r * 0.62, r * 0.62, 0, r * 3.2, 0, g);
+      if (tipo.capa) { peca(G.caixa, M.capa, r * 1.5, r * 2.3, r * 0.08, 0, r * 1.75, -r * 0.48, g); peca(G.caixa, M.capa, r * 1.5, r * 0.5, r * 0.6, 0, r * 2.85, -r * 0.2, g); }
+      if (tipo.presas) [-1, 1].forEach(function (l) { peca(G.cone, M.branco, r * 0.06, r * 0.2, r * 0.06, l * r * 0.15, r * 2.95, r * 0.56, g).rotation.x = Math.PI; });
+      if (tipo.lobisomem) {
+        peca(G.caixa, mat, r * 0.4, r * 0.3, r * 0.5, 0, r * 3.05, r * 0.65, g);
+        peca(G.esfera, M.preto, r * 0.09, r * 0.08, r * 0.08, 0, r * 3.15, r * 0.92, g);
+        [-1, 1].forEach(function (l) { peca(G.cone, mat, r * 0.15, r * 0.45, r * 0.15, l * r * 0.32, r * 3.85, 0, g); });
+      }
       if (tipo.umOlho) { // ciclope: um olho grande só
         peca(G.esfera, M.branco, r * 0.3, r * 0.3, r * 0.3, 0, r * 3.3, r * 0.45, g);
         peca(G.esfera, M.preto, r * 0.14, r * 0.14, r * 0.14, 0, r * 3.3, r * 0.72, g);
@@ -286,10 +312,14 @@
       peca(G.caixa, mat, r * 0.9, r * 0.8, r * 1.8, 0, r * 1.2, 0, g);
       peca(G.caixa, mat, r * 0.75, r * 0.7, r * 0.8, 0, r * 1.65, r * 1.15, g);
       peca(G.caixa, M.escuro, r * 0.32, r * 0.25, r * 0.4, 0, r * 1.5, r * 1.65, g);
-      peca(G.cone, mat, r * 0.15, r * 0.35, r * 0.15, -r * 0.24, r * 2.15, r * 1.05, g);
-      peca(G.cone, mat, r * 0.15, r * 0.35, r * 0.15, r * 0.24, r * 2.15, r * 1.05, g);
+      [-1, 1].forEach(function (l) {
+        if (tipo.orelhasRedondas) peca(G.esfera, mat, r * 0.18, r * 0.18, r * 0.08, l * r * 0.3, r * 2.05, r * 1.0, g);
+        else peca(G.cone, mat, r * 0.15, r * 0.35, r * 0.15, l * r * 0.24, r * 2.15, r * 1.05, g);
+        if (tipo.dentes) peca(G.cone, M.osso, r * 0.07, r * 0.35, r * 0.07, l * r * 0.2, r * 1.5, r * 1.85, g).rotation.x = Math.PI / 2.4;
+      });
       olhos(g, r * 1.8, r * 1.56, r * 0.8);
-      var rabo = peca(G.caixa, mat, r * 0.2, r * 0.2, r * 0.8, 0, r * 1.5, -r * 1.2, g); rabo.rotation.x = -0.5;
+      var rabo = tipo.raboFino ? peca(G.cilindro, M.rosa, r * 0.06, r * 1.6, r * 0.06, 0, r * 1.1, -r * 1.6, g) : peca(G.caixa, mat, r * 0.2, r * 0.2, r * 0.8, 0, r * 1.5, -r * 1.2, g);
+      rabo.rotation.x = tipo.raboFino ? -1.2 : -0.5;
       p.pernas = [[-1, 1], [1, -1], [-1, -1], [1, 1]].map(function (l) { var b = new T.Group(); b.position.set(l[0] * r * 0.3, r * 0.8, l[1] * r * 0.6); g.add(b); peca(G.caixa, mat, r * 0.25, r * 0.8, r * 0.25, 0, -r * 0.4, 0, b); return b; });
       alt = r * 2.3;
     }
@@ -310,6 +340,9 @@
     if (m.tipo.forma === 'geleca') { p.corpo.scale.y = m.r * (0.75 + f * 0.1); p.corpo.scale.x = p.corpo.scale.z = m.r * (1 - f * 0.06); }
     if (p.asas) p.asas.forEach(function (a) { a.rotation.z = a.userData.lado * Math.sin(t * 14 + m.fase) * 0.6; });
     if (p.voo) p.voo.position.y = p.vooY + Math.sin(t * 3 + m.fase) * 0.2;
+    if (p.segs) p.segs.forEach(function (sg, i) { if (i) sg.position.x = Math.sin(t * 6 + m.fase - i * 0.9) * m.r * 0.4; });
+    if (p.lingua) p.lingua.visible = Math.sin(t * 9 + m.fase) > 0.3;
+    if (p.cauda) p.cauda.rotation.x = Math.sin(t * 4 + m.fase) * 0.15 + (m.ataque > 0 ? 0.5 : 0);
     if (p.pernas) p.pernas.forEach(function (pe, i) { pe.rotation.x = (i % 2 ? -1 : 1) * f * 0.6; });
     if (p.bracos) { p.bracos[0].rotation.x = -f * 0.5 - (m.ataque > 0 ? 1.5 : 0); p.bracos[1].rotation.x = f * 0.5 - (m.ataque > 0 ? 1.5 : 0); }
   }
@@ -429,6 +462,7 @@
     scene.add(modelo.grupo);
     monstros.push(m);
   }
+  function monstrosNoComeco() { return Math.min(12, 3 + Math.floor(save.nivel / 2)); }
   function horda() {
     var qtd = 5 + Math.floor(save.nivel / 2);
     for (var i = 0; i < qtd; i++) criarMonstro();
@@ -612,7 +646,7 @@
   function comecar() {
     somLigar();
     novoJogador(); limparCampo(); montarArmaNaMao(); proxMonstro = 0;
-    for (var i = 0; i < 3; i++) criarMonstro();
+    for (var i = 0; i < monstrosNoComeco(); i++) criarMonstro();
     sincronizarAjudantes();
     entrar();
     evento('partida_iniciada');
@@ -628,7 +662,7 @@
     atualizarHud(); mostrar('tela-morte');
     evento('partida_terminada', { nivel: save.nivel });
   }
-  function reviver() { somLigar(); novoJogador(); limparCampo(); montarArmaNaMao(); for (var i = 0; i < 3; i++) criarMonstro(); sincronizarAjudantes(); entrar(); }
+  function reviver() { somLigar(); novoJogador(); limparCampo(); montarArmaNaMao(); for (var i = 0; i < monstrosNoComeco(); i++) criarMonstro(); sincronizarAjudantes(); entrar(); }
 
   function tomarPocao() {
     if (estado !== 'jogando' || save.pocoes <= 0) return;
@@ -735,7 +769,7 @@
 
     // Novos monstros (quanto maior o nível, mais monstros)
     proxMonstro -= dt;
-    if (proxMonstro <= 0 && monstros.length < maxMonstros()) { criarMonstro(); proxMonstro = Math.max(0.4, 1.4 - save.nivel * 0.03); }
+    if (proxMonstro <= 0 && monstros.length < maxMonstros()) { criarMonstro(); proxMonstro = Math.max(0.25, 1.2 - save.nivel * 0.04); }
 
     // Tiros
     for (var k = tiros.length - 1; k >= 0; k--) {
