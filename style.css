@@ -58,3 +58,8 @@ h2 { margin: 0; }
 
 .aviso { position: absolute; left: 50%; top: 96px; transform: translateX(-50%); z-index: 4; background: rgba(0,0,0,.75); border: 2px solid #ffd23f; padding: 8px 16px; border-radius: 12px; font-weight: 800; font-size: 18px; pointer-events: none; text-align: center; max-width: 90vw; }
 .aviso[hidden] { display: none; }
+
+/* tela de início: transparente em cima para ver os monstros em 3D girando atrás */
+#tela-inicio { background: linear-gradient(rgba(8, 14, 10, 0.45) 0%, rgba(8, 14, 10, 0) 22%, rgba(8, 14, 10, 0) 50%, rgba(8, 14, 10, 0.85) 82%); justify-content: flex-start; padding-top: max(28px, env(safe-area-inset-top)); padding-bottom: max(28px, env(safe-area-inset-bottom)); }
+#tela-inicio h1 { margin-bottom: auto; }
+#tela-inicio p { text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8); }
