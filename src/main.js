@@ -23,7 +23,7 @@
     { id: 'machado', nome: 'Machado', icone: '🪓', preco: 500, dano: 34, espera: 0.75, alcance: 2.2, cor: 0x90a4ae, modelo: 'machado' },
     { id: 'arco', nome: 'Arco e flecha', icone: '🏹', preco: 1100, dano: 38, espera: 0.6, alcance: 22, distancia: true, cor: 0xa1662f, modelo: 'arco', tiro: 0xfff1c1 },
     { id: 'lanca', nome: 'Lança de prata', icone: '🔱', preco: 2400, dano: 85, espera: 0.6, alcance: 3.2, cor: 0xe0f2fe, modelo: 'lanca' },
-    { id: 'varinha-gelo', nome: 'Varinha de gelo', icone: '❄️', preco: 5500, dano: 115, espera: 0.55, alcance: 24, distancia: true, gelo: true, cor: 0x7dd3fc, modelo: 'varinha', tiro: 0x7dd3fc },
+    { id: 'varinha-gelo', nome: 'Varinha de gelo', icone: '❄️', preco: 5500, dano: 115, espera: 0.55, alcance: 24, distancia: true, gelo: true, cor: 0x7dd3fc, modelo: 'varinha', tiro: 0x3aa0ff },
     { id: 'espada-fogo', nome: 'Espada de fogo', icone: '🔥', preco: 12000, dano: 290, espera: 0.5, alcance: 2.4, cor: 0xff7a1a, modelo: 'espada', brilha: true },
     { id: 'martelo-trovao', nome: 'Martelo do trovão', icone: '⚡', preco: 27000, dano: 580, espera: 0.65, alcance: 2.6, cor: 0xfacc15, modelo: 'martelo', brilha: true },
     { id: 'lamina-estelar', nome: 'Lâmina estelar', icone: '🌟', preco: 65000, dano: 1050, espera: 0.45, alcance: 26, distancia: true, cor: 0xe879f9, modelo: 'espada', brilha: true, tiro: 0xf5d0fe }
@@ -48,7 +48,7 @@
     { nome: 'Lobo', cor: 0x6b7280, vel: 3.4, r: 0.55, hp: 1.1, dano: 1.2, forma: 'lobo', olhos: 'amarelo' },
     { nome: 'Javali', cor: 0x78350f, vel: 2.8, r: 0.6, hp: 1.4, dano: 1.3, forma: 'lobo', dentes: true, orelhasRedondas: true },
     { nome: 'Zumbi', cor: 0x6b8f71, vel: 1.6, r: 0.55, hp: 1.5, dano: 1.2, forma: 'humano' },
-    { nome: 'Urso', cor: 0x5d4037, vel: 2.2, r: 0.95, hp: 2.2, dano: 1.5, forma: 'lobo', orelhasRedondas: true },
+    { nome: 'Urso', cor: 0x5d4037, vel: 2.2, r: 0.95, hp: 2.2, dano: 1.5, forma: 'lobo', orelhasRedondas: true, raboCurto: true },
     { nome: 'Vampiro', cor: 0x1e1b4b, vel: 2.6, r: 0.6, hp: 1.6, dano: 1.5, forma: 'humano', pele: true, capa: true, presas: true, olhos: 'vermelho' },
     { nome: 'Lobisomem', cor: 0x52525b, vel: 3.0, r: 0.7, hp: 1.9, dano: 1.6, forma: 'humano', lobisomem: true, olhos: 'amarelo' },
     { nome: 'Fantasma', cor: 0xe0f2fe, vel: 2.4, r: 0.6, hp: 1.2, dano: 1.3, forma: 'fantasma' },
@@ -65,7 +65,7 @@
     { id: 'muro-madeira', nome: 'Muro de madeira', icone: '🪵', preco: 25, tipo: 'muro', vida: 60, cor: 0x9c6b3c },
     { id: 'muro-pedra', nome: 'Muro de pedra', icone: '🧱', preco: 150, tipo: 'muro', vida: 260, cor: 0x9ca3af },
     { id: 'torre-flechas', nome: 'Torre de flechas', icone: '🗼', preco: 120, tipo: 'torre', vida: 80, dano: 6, espera: 0.8, alcance: 14, cor: 0xa1662f, tiro: 0xfff1c1 },
-    { id: 'torre-gelo', nome: 'Torre de gelo', icone: '🧊', preco: 400, tipo: 'torre', vida: 100, dano: 9, espera: 1.0, alcance: 14, gelo: true, cor: 0x7dd3fc, tiro: 0x7dd3fc },
+    { id: 'torre-gelo', nome: 'Torre de gelo', icone: '🧊', preco: 400, tipo: 'torre', vida: 100, dano: 9, espera: 1.0, alcance: 14, gelo: true, cor: 0x7dd3fc, tiro: 0x3aa0ff },
     { id: 'canhao', nome: 'Canhão', icone: '💣', preco: 900, tipo: 'torre', vida: 160, dano: 40, espera: 1.6, alcance: 17, area: 2.2, cor: 0x374151, tiro: 0x222222 }
   ];
   // Ajudantes: monstros amigos que seguem você e atacam os monstros
@@ -208,6 +208,8 @@
     madeira: facetado(0x6b4423), madeiraClara: facetado(0xa8743f), escuro: toon(0x2f2f35), couro: toon(0x5a3a22),
     ouro: metal(0xffc93c, 0.22), ferro: metal(0xd5dde4, 0.28), ferroEscuro: metal(0x4b5563, 0.45)
   };
+  // pedaço comprido entre dois pontos (pernas dobradas)
+  function segmento(pai, mat, x0, y0, x1, y1, esp) { var m = peca(G.caixa, mat, Math.hypot(x1 - x0, y1 - y0), esp, esp, (x0 + x1) / 2, (y0 + y1) / 2, 0, pai); m.rotation.z = Math.atan2(y1 - y0, x1 - x0); return m; }
   function peca(geo, mat, sx, sy, sz, x, y, z, pai) {
     var m = new T.Mesh(geo, mat); m.scale.set(sx, sy, sz); m.position.set(x, y, z); if (pai) pai.add(m); return m;
   }
@@ -326,7 +328,7 @@
       var a = rnd() * 6.28, d = 45 + rnd() * 120, y = 50 + rnd() * 28, s = 4 + rnd() * 5, n = 4 + Math.floor(rnd() * 4);
       for (var k = 0; k < n; k++) lista.push([Math.cos(a) * d + (k - n / 2) * s * 0.85 + rnd() * 2, y + rnd() * s * 0.35, Math.sin(a) * d + (rnd() - 0.5) * s, s * (0.6 + rnd() * 0.6)]);
     }
-    var m = new T.InstancedMesh(new T.IcosahedronGeometry(1, 2), new T.MeshLambertMaterial({ color: 0xffffff, emissive: 0x8090a8, fog: false }), lista.length), d2 = new T.Object3D();
+    var m = new T.InstancedMesh(new T.IcosahedronGeometry(1, 2), new T.MeshLambertMaterial({ color: 0xffffff, emissive: 0xaab6c8, fog: false }), lista.length), d2 = new T.Object3D();
     lista.forEach(function (c, i) { d2.position.set(c[0], c[1], c[2]); d2.scale.set(c[3] * 1.4, c[3] * 0.62, c[3]); d2.updateMatrix(); m.setMatrixAt(i, d2.matrix); });
     m.frustumCulled = false; grupoNuvens.add(m);
   })();
@@ -519,7 +521,7 @@
   }
   function fazerMonstro(tipo, dourado, chefe) {
     var r = tipo.r * (dourado ? 1.15 : 1) * (chefe ? 1.7 : 1);
-    var mat = toon(dourado ? 0xffd23f : tipo.cor, chefe ? CHEFE_COR : (dourado ? 0x553300 : (tipo.brilho || 0x000000)));
+    var mat = toon(dourado ? 0xf2ae1c : tipo.cor, chefe ? CHEFE_COR : (dourado ? 0x5a3a00 : (tipo.brilho || 0x000000)));
     if (tipo.forma === 'fantasma') { mat.transparent = true; mat.opacity = 0.82; }
     var g = new T.Group(), p = {}, alt = r * 2;
     var olhoBrilho = tipo.olhos === 'vermelho' ? M.vermelho : (tipo.olhos === 'amarelo' ? M.amarelo : M.preto);
@@ -533,7 +535,9 @@
         peca(G.esfera, mat, r * 0.55, r * 0.5, r * 0.6, 0, r * 0.45, r * 1.0, voo);
         peca(G.cone, M.osso, r * 0.12, r * 0.4, r * 0.12, -r * 0.25, r * 0.95, r * 0.9, voo);
         peca(G.cone, M.osso, r * 0.12, r * 0.4, r * 0.12, r * 0.25, r * 0.95, r * 0.9, voo);
-        var olhosD = new T.Group(); olhosD.position.set(0, r * 0.55, r * 1.25); voo.add(olhosD); olhos(olhosD, 0, 0, r * 0.8, olhoBrilho);
+        var olhosD = new T.Group(); olhosD.position.set(0, r * 0.55, r * 1.47); voo.add(olhosD); olhos(olhosD, 0, 0, r * 0.8, olhoBrilho);
+        var raboD = peca(G.cone, mat, r * 0.28, r * 1.1, r * 0.28, 0, -r * 0.05, -r * 1.55, voo); raboD.rotation.x = -Math.PI / 2;
+        peca(G4, mat, r * 0.2, r * 0.25, r * 0.06, 0, -r * 0.05, -r * 2.15, voo).rotation.x = -Math.PI / 2;
       } else {
         peca(G.esfera, mat, r, r, r, 0, 0, 0, voo);
         if (tipo.listras) { // abelha: listras pretas e ferrão
@@ -572,28 +576,47 @@
         p.segs.push(peca(G.esfera, mat, tam, tam * 0.7, tam * 1.1, 0, tam * 0.7, r * 0.8 - sg * r * 1.6, g));
       }
       var cabC = p.segs[0]; cabC.scale.set(r * 1.15, r * 0.9, r * 1.3); cabC.position.y = r * 1.1;
-      olhos(g, r * 1.45, r * 1.6, r, olhoBrilho);
+      olhos(g, r * 1.5, r * 1.82, r, olhoBrilho);
       var lingua = peca(G.caixa, M.vermelho, r * 0.08, r * 0.03, r * 0.6, 0, r * 0.95, r * 2.1, g); p.lingua = lingua;
       alt = r * 2.0;
-    } else if (tipo.forma === 'aranha') {
-      peca(G.esfera, mat, r, r * 0.65, r * 1.15, 0, r * 0.75, -r * 0.3, g);
-      peca(G.esfera, mat, r * 0.55, r * 0.5, r * 0.55, 0, r * 0.7, r * 0.75, g);
-      olhos(g, r * 0.85, r * 1.2, r * 0.7, new T.MeshBasicMaterial({ color: 0xff2222 }));
+    } else if (tipo.forma === 'aranha') { // aranha e escorpião
+      var esc = !!tipo.cauda, yc = esc ? r * 0.55 : r * 0.75;
+      if (esc) {
+        peca(G.esfera, mat, r * 0.72, r * 0.4, r * 1.25, 0, yc, -r * 0.2, g);
+        peca(G.esfera, mat, r * 0.5, r * 0.34, r * 0.5, 0, yc, r * 0.95, g);
+        olhos(g, yc + r * 0.18, r * 1.32, r * 0.62, olhoBrilho);
+      } else {
+        peca(G.esfera, mat, r, r * 0.65, r * 1.15, 0, yc, -r * 0.3, g);
+        peca(G.esfera, mat, r * 0.55, r * 0.5, r * 0.55, 0, r * 0.7, r * 0.75, g);
+        olhos(g, r * 0.85, r * 1.2, r * 0.7, olhoBrilho);
+      }
       p.pernas = [];
-      [-1, 1].forEach(function (lado) {
+      [-1, 1].forEach(function (lado) { // pernas dobradas: sobem até o joelho e descem até o chão
         for (var i = 0; i < 4; i++) {
-          var b = new T.Group(); b.position.set(lado * r * 0.45, r * 0.75, (i - 1.5) * r * 0.38); b.rotation.z = lado * 0.5; g.add(b);
-          peca(G.caixa, mat, r * 1.3, r * 0.1, r * 0.1, lado * r * 0.6, -r * 0.25, 0, b).rotation.z = -lado * 0.6;
+          var b = new T.Group(); b.position.set(lado * r * (esc ? 0.5 : 0.45), yc, (i - 1.5) * r * (esc ? 0.4 : 0.38) - (esc ? r * 0.2 : 0)); b.rotation.y = -lado * (i - 1.5) * 0.3; g.add(b);
+          var L1 = r * (esc ? 0.5 : 0.72), a = esc ? 0.45 : 0.75, kx = lado * L1 * Math.cos(a), ky = L1 * Math.sin(a), fx = kx + lado * r * (esc ? 0.32 : 0.42), fy = -yc + r * 0.04;
+          segmento(b, mat, 0, 0, kx, ky, r * 0.1); segmento(b, mat, kx, ky, fx, fy, r * 0.085);
           p.pernas.push(b);
         }
       });
-      if (tipo.cauda) {
-        var cauda = new T.Group(); cauda.position.set(0, r * 0.8, -r * 1.2); g.add(cauda); p.cauda = cauda;
-        for (var cs = 0; cs < 5; cs++) { var ac2 = cs / 4 * Math.PI * 0.9; peca(G.esfera, mat, r * 0.22, r * 0.22, r * 0.22, 0, Math.sin(ac2) * r * 1.1, -Math.cos(ac2) * r * 0.6 + r * 0.1, cauda); }
-        peca(G.cone, M.preto, r * 0.12, r * 0.35, r * 0.12, 0, r * 1.0, r * 0.75, cauda).rotation.x = Math.PI * 0.75;
-        [-1, 1].forEach(function (l) { peca(G.caixa, mat, r * 0.3, r * 0.15, r * 0.6, l * r * 0.45, r * 0.6, r * 1.3, g); });
+      if (esc) {
+        // cauda: bolinhas encostadas que vão para trás, sobem e curvam para a frente, com o ferrão na ponta
+        var cauda = new T.Group(); cauda.position.set(0, yc, -r * 1.25); g.add(cauda); p.cauda = cauda;
+        var fim = null;
+        for (var cs = 0; cs <= 10; cs++) {
+          var t2 = cs / 10, cz = -r * 0.6 * Math.sin(Math.PI * t2) + r * 1.05 * t2 * t2, cy = r * 1.4 * Math.sin(Math.PI * t2 / 2), rr = r * (0.26 - t2 * 0.1);
+          peca(G.esfera, mat, rr, rr, rr, 0, cy, cz, cauda); fim = [cy, cz];
+        }
+        var ferrao = peca(G.cone, M.escuro, r * 0.09, r * 0.34, r * 0.09, 0, fim[0] - r * 0.08, fim[1] + r * 0.15, cauda); ferrao.rotation.x = Math.PI * 0.68;
+        // pinças: braço, a mão e as duas pontas abertas
+        [-1, 1].forEach(function (l) {
+          var bx = l * r * 0.38, bz = r * 0.85, cx = l * r * 0.72, cz2 = r * 1.6;
+          var braco = peca(G.caixa, mat, r * 0.15, r * 0.15, Math.hypot(cx - bx, cz2 - bz), (bx + cx) / 2, yc, (bz + cz2) / 2, g); braco.rotation.y = Math.atan2(cx - bx, cz2 - bz);
+          peca(G.esfera, mat, r * 0.22, r * 0.17, r * 0.26, cx, yc, cz2, g);
+          [-1, 1].forEach(function (k) { var dente = peca(G.cone, mat, r * 0.085, r * 0.4, r * 0.085, cx + k * r * 0.09, yc, cz2 + r * 0.32, g); dente.rotation.order = 'YXZ'; dente.rotation.set(Math.PI / 2, k * 0.38, 0); });
+        });
       }
-      alt = r * (tipo.cauda ? 2.0 : 1.4);
+      alt = r * (esc ? 2.0 : 1.4);
     } else if (tipo.forma === 'cogumelo') {
       var pulo = new T.Group(); pulo.position.y = 0.15; g.add(pulo); p.voo = pulo; p.vooY = 0.15;
       peca(G.cilindro, M.osso, r * 0.45, r * 1.0, r * 0.45, 0, r * 0.5, 0, pulo);
@@ -630,8 +653,8 @@
         else peca(G.cone, mat, r * 0.15, r * 0.35, r * 0.15, l * r * 0.24, r * 2.15, r * 1.05, g);
         if (tipo.dentes) peca(G.cone, M.osso, r * 0.07, r * 0.35, r * 0.07, l * r * 0.2, r * 1.5, r * 1.85, g).rotation.x = Math.PI / 2.4;
       });
-      olhos(g, r * 1.8, r * 1.56, r * 0.8);
-      var rabo = tipo.raboFino ? peca(G.cilindro, M.rosa, r * 0.06, r * 1.6, r * 0.06, 0, r * 1.1, -r * 1.6, g) : peca(G.caixa, mat, r * 0.2, r * 0.2, r * 0.8, 0, r * 1.5, -r * 1.2, g);
+      olhos(g, r * 1.8, r * 1.56, r * 0.8, olhoBrilho);
+      var rabo = tipo.raboCurto ? peca(G.esfera, mat, r * 0.16, r * 0.16, r * 0.16, 0, r * 1.45, -r * 0.92, g) : tipo.raboFino ? peca(G.cilindro, M.rosa, r * 0.06, r * 1.6, r * 0.06, 0, r * 1.1, -r * 1.6, g) : peca(G.caixa, mat, r * 0.2, r * 0.2, r * 0.8, 0, r * 1.5, -r * 1.2, g);
       rabo.rotation.x = tipo.raboFino ? -1.2 : -0.5;
       p.pernas = [[-1, 1], [1, -1], [-1, -1], [1, 1]].map(function (l) { var b = new T.Group(); b.position.set(l[0] * r * 0.3, r * 0.8, l[1] * r * 0.6); g.add(b); peca(G.caixa, mat, r * 0.25, r * 0.8, r * 0.25, 0, -r * 0.4, 0, b); return b; });
       alt = r * 2.3;
@@ -654,13 +677,13 @@
     return { grupo: g, partes: p, mat: mat, alt: alt, r: r, sombra: sombra, aura: aura };
   }
   var geoAnel = new T.RingGeometry(0.82, 1.12, 48); geoAnel.rotateX(-Math.PI / 2);
-  var matAura = new T.MeshBasicMaterial({ color: 0xd946ef, transparent: true, opacity: 0.55, blending: T.AdditiveBlending, depthWrite: false, side: T.DoubleSide });
+  var matAura = new T.MeshBasicMaterial({ color: 0xa21caf, transparent: true, opacity: 0.8, depthWrite: false, side: T.DoubleSide, toneMapped: false });
   var matAmigo = new T.MeshBasicMaterial({ color: 0x4ade80, transparent: true, opacity: 0.5, depthWrite: false, side: T.DoubleSide });
   // parede de luz baixinha (some para cima): marca o chefão (roxa) e os ajudantes (verde) por cima da grama
   var texSobe = (function () { var c = document.createElement('canvas'); c.width = 4; c.height = 64; var g = c.getContext('2d'); var gr = g.createLinearGradient(0, 0, 0, 64); gr.addColorStop(0, 'rgba(255,255,255,0)'); gr.addColorStop(1, 'rgba(255,255,255,1)'); g.fillStyle = gr; g.fillRect(0, 0, 4, 64); return new T.CanvasTexture(c); })();
   var geoParedeLuz = new T.CylinderGeometry(1, 1, 0.7, 40, 1, true); geoParedeLuz.translate(0, 0.35, 0);
-  var matParedeRoxa = new T.MeshBasicMaterial({ color: 0xd946ef, map: texSobe, transparent: true, opacity: 0.6, blending: T.AdditiveBlending, depthWrite: false, side: T.DoubleSide });
-  var matParedeVerde = new T.MeshBasicMaterial({ color: 0x4ade80, map: texSobe, transparent: true, opacity: 0.45, blending: T.AdditiveBlending, depthWrite: false, side: T.DoubleSide });
+  var matParedeRoxa = new T.MeshBasicMaterial({ color: 0xb21fd0, map: texSobe, transparent: true, opacity: 0.55, depthWrite: false, side: T.DoubleSide, toneMapped: false });
+  var matParedeVerde = new T.MeshBasicMaterial({ color: 0x22c55e, map: texSobe, transparent: true, opacity: 0.4, depthWrite: false, side: T.DoubleSide, toneMapped: false });
   // sombra de verdade só no gráfico alto; nos outros, a sombra redonda embaixo
   function sombraDoModelo(modelo) {
     var real = qual().sombra === 'movel';
@@ -700,11 +723,11 @@
     var m = new T.Mesh(g, new T.MeshBasicMaterial({ vertexColors: true, transparent: true, opacity: 0, blending: T.AdditiveBlending, depthWrite: false, side: T.DoubleSide, toneMapped: false }));
     m.position.set(0.24, -0.34, -0.72); camMao.add(m); return m; // o centro da meia-lua fica no ombro, como o caminho da espada
   })();
-  var flechaNoArco = null, armaBrilha = null;
+  var flechaNoArco = null, armaBrilha = null, maoRetrato = null;
   var G4 = new T.ConeGeometry(1, 1, 4); // ponta de 4 lados (lâmina e lança)
   function suave(x) { return x * x * (3 - 2 * x); }
   function brilhoSprite(cor, sx, sy, x, y, pai) {
-    var s = new T.Sprite(new T.SpriteMaterial({ map: texPonto, color: cor, blending: T.AdditiveBlending, depthWrite: false, transparent: true, opacity: 0.55 }));
+    var s = new T.Sprite(new T.SpriteMaterial({ map: texPonto, color: cor, depthWrite: false, transparent: true, opacity: 0.4, toneMapped: false }));
     s.scale.set(sx, sy, 1); s.position.set(x, y, 0.02); pai.add(s); return s;
   }
   function montarArmaNaMao() {
@@ -716,8 +739,8 @@
     peca(new T.CylinderGeometry(0.85, 1, 1, 14), manga, 0.034, 0.4, 0.034, 0.02, 0.03, -0.19, braco).rotation.x = -Math.PI / 2 + 0.15;
     peca(G.cilindro, arm.metal ? M.ferroEscuro : M.couro, 0.037, 0.05, 0.037, 0.02, 0.055, -0.36, braco).rotation.x = -Math.PI / 2 + 0.15;
     peca(G.esfera, M.pele, 0.038, 0.036, 0.046, 0.02, 0.06, -0.41, braco);
-    braco.visible = a.modelo !== 'arco';
-    mao.position.set(0.02, 0.06, -0.41); mao.scale.setScalar(0.66); mao.add(g);
+    var retrato = innerWidth < innerHeight; maoRetrato = retrato;
+    mao.position.set(0.02, 0.06, -0.41); mao.scale.setScalar(retrato ? 0.54 : 0.66); mao.add(g);
     var estilo = 'golpe', rot = [-0.42, 0, 0.24];
     if (a.modelo === 'pau') {
       peca(G.cilindro, M.madeira, 0.02, 0.36, 0.02, 0, 0.06, 0, g);
@@ -742,9 +765,9 @@
       var cab = new T.Mesh(geoMach, M.ferro); cab.position.set(-0.012, 0.47, 0); cab.rotation.y = Math.PI; g.add(cab); // o fio fica para o lado do golpe
       peca(G.caixa, M.ferroEscuro, 0.055, 0.11, 0.042, 0, 0.47, 0, g);
     } else if (a.modelo === 'arco') {
-      estilo = 'arco'; rot = [0.04, 0.55, 0.2];
+      estilo = 'arco'; rot = [0.04, 0, 0.12];
       var R = 0.32, ini = Math.PI * 0.56, comp = Math.PI * 0.88, xs = R * Math.cos(ini), hs = R * Math.sin(ini);
-      var arcoG = new T.Group(); arcoG.rotation.y = -Math.PI / 2; g.add(arcoG); // a curva fica para a frente e a corda do seu lado
+      var arcoG = new T.Group(); arcoG.rotation.y = -Math.PI / 2; arcoG.position.z = R; g.add(arcoG); // a curva fica para a frente, a corda do seu lado e o cabo na mão
       var corpo = new T.Mesh(new T.TorusGeometry(R, 0.014, 6, 30, comp), M.madeiraClara); corpo.rotation.z = ini; arcoG.add(corpo);
       peca(G.cilindro, toon(0xf5f0e0), 0.0025, hs * 2, 0.0025, xs, 0, 0, arcoG);
       peca(G.cilindro, M.couro, 0.02, 0.09, 0.02, -R, 0, 0, arcoG);
@@ -754,7 +777,6 @@
       peca(G4, M.ferro, 0.022, 0.075, 0.008, x1 - 0.025, 0, 0, flechaNoArco).rotation.z = Math.PI / 2;
       peca(G.caixa, toon(0xe8463c), 0.06, 0.03, 0.002, x0 - 0.04, 0.012, 0, flechaNoArco);
       peca(G.caixa, toon(0xe8463c), 0.06, 0.03, 0.002, x0 - 0.04, -0.012, 0, flechaNoArco);
-      mao.position.set(-0.42, 0.24, -0.3);
     } else if (a.modelo === 'lanca') {
       estilo = 'estocada'; rot = [-1.02, 0, 0.18];
       peca(G.cilindro, M.madeiraClara, 0.026, 1.0, 0.026, 0, 0.22, 0, g);
@@ -776,7 +798,7 @@
       peca(G.caixa, M.ferroEscuro, 0.285, 0.03, 0.16, 0, 0.55, 0, g);
       if (a.brilha) { var raio = brilhante(0xfff3a0, 2); peca(G.octa, raio, 0.03, 0.05, 0.03, -0.145, 0.5, 0, g); peca(G.octa, raio, 0.03, 0.05, 0.03, 0.145, 0.5, 0, g); armaBrilha = { sprite: brilhoSprite(0xffe066, 0.45, 0.3, 0, 0.5, g), mat: raio }; }
     }
-    mao.rotation.set(rot[0], rot[1], rot[2]);
+    mao.rotation.set(rot[0], rot[1], retrato && estilo !== 'arco' ? rot[2] * 0.35 : rot[2]);
     mao.userData.estilo = estilo; mao.userData.distancia = !!a.distancia;
   }
 
@@ -801,6 +823,8 @@
     // a arma fica sempre dentro da tela, mesmo no celular em pé
     var meiaLargura = 0.6 * Math.tan(camera.fov * Math.PI / 360) * camera.aspect;
     maoBase.x = Math.min(0.3, meiaLargura * 0.62);
+    maoBase.y = W < H ? -0.44 : -0.36;
+    if (jog && maoRetrato !== null && maoRetrato !== (W < H)) montarArmaNaMao();
     hud.width = Math.round(W * dpr2); hud.height = Math.round(H * dpr2);
   }
   addEventListener('resize', ajustar);
@@ -921,7 +945,7 @@
       [-1.25, 0, 1.25].forEach(function (x, i) { pedras.push([x, 1.66, 0, 0.46, 0.34, 0.6, 0, 0, 0.8 + i * 0.08]); });
       blocos(G.caixa, mat, pedras);
     } else if (def.id === 'torre-flechas') {
-      mat = facetado(0xa77445); alturaTiro = 2.15;
+      mat = facetado(0xa77445); alturaTiro = 2.36;
       var pernas = []; [[-1, -1], [1, -1], [-1, 1], [1, 1]].forEach(function (l) { pernas.push([l[0] * 0.42, 0.95, l[1] * 0.42, 0.11, 1.9, 0.11, 0, 0, 0.9]); });
       blocos(G.caixa, mat, pernas);
       peca(G.caixa, M.madeira, 1.1, 0.12, 1.1, 0, 1.85, 0, g);
@@ -929,7 +953,7 @@
       peca(G.caixa, M.madeira, 0.9, 0.08, 0.08, 0, 1.0, 0.43, g).rotation.z = 0.7; peca(G.caixa, M.madeira, 0.9, 0.08, 0.08, 0, 1.0, -0.43, g).rotation.z = -0.7;
       var teto = peca(G.cone, facetado(0xb5452f), 0.95, 0.6, 0.95, 0, 2.95, 0, g); teto.rotation.y = Math.PI / 4;
       [[-1, -1], [1, -1], [-1, 1], [1, 1]].forEach(function (l) { peca(G.cilindro, M.madeira, 0.035, 0.75, 0.035, l[0] * 0.48, 2.3, l[1] * 0.48, g); });
-      cabeca = new T.Group(); cabeca.position.y = 2.1; g.add(cabeca); // a besta gira para o monstro
+      cabeca = new T.Group(); cabeca.position.y = 2.34; g.add(cabeca); // a besta gira para o monstro (fica acima da grade)
       peca(G.caixa, M.madeira, 0.1, 0.1, 0.6, 0, 0, 0.1, cabeca);
       var arcoT = new T.Mesh(new T.TorusGeometry(0.28, 0.02, 5, 14, Math.PI * 0.8), M.madeiraClara); arcoT.rotation.set(Math.PI / 2, 0, Math.PI * 0.1); arcoT.position.z = 0.32; cabeca.add(arcoT);
       peca(G4, M.ferro, 0.03, 0.12, 0.01, 0, 0.06, 0.45, cabeca).rotation.x = Math.PI / 2;
@@ -940,7 +964,7 @@
       peca(G.cilindro, toon(0xf4fbff), 0.5, 0.06, 0.5, 0, 1.73, 0, g);
       cabeca = new T.Group(); cabeca.position.y = 2.15; g.add(cabeca);
       var cristal = brilhante(0x7dd3fc, 1.4); peca(G.octa, cristal, 0.26, 0.42, 0.26, 0, 0, 0, cabeca);
-      var bs = new T.Sprite(spriteMat(0x7dd3fc)); bs.scale.set(1.3, 1.3, 1); bs.material.opacity = 0.7; cabeca.add(bs);
+      var bs = new T.Sprite(new T.SpriteMaterial({ map: texPonto, color: 0x38a8ff, depthWrite: false, transparent: true, opacity: 0.55, toneMapped: false })); bs.scale.set(1.2, 1.2, 1); cabeca.add(bs);
     } else { // canhão
       mat = facetado(0x8a5a33); alturaTiro = 1.05;
       peca(G.caixa, mat, 0.8, 0.35, 1.0, 0, 0.5, 0, g);
@@ -1137,6 +1161,7 @@
       var origem = new T.Vector3(jog.x, 1.45, jog.z).addScaledVector(frente, 0.6), dir;
       if (alvo) dir = new T.Vector3(alvo.x, alvo.modelo.alt * 0.55, alvo.z).sub(origem).normalize();
       else dir = frente.clone();
+      if (a.modelo === 'arco') { origem.x -= Math.cos(jog.yaw) * 0.2; origem.z += Math.sin(jog.yaw) * 0.2; origem.y -= 0.03; } // a flecha sai do arco, à esquerda
       disparar(a.modelo === 'arco' ? 'flecha' : 'magia', a.tiro, origem, dir, 32, danoArma(), a.gelo, 0);
       if (a.modelo !== 'arco') faiscas(origem.x, origem.y, origem.z, a.tiro, 6, 1.5);
       bip(a.gelo ? 1000 : 700, 0.07, 'triangle', 0.04);
@@ -1159,12 +1184,12 @@
   var geoPontaF = new T.ConeGeometry(0.032, 0.11, 6); geoPontaF.rotateX(Math.PI / 2); geoPontaF.translate(0, 0, 0.4);
   var geoPena = new T.BoxGeometry(0.004, 0.06, 0.13); geoPena.translate(0, 0, -0.29);
   var matPena = toon(0xe8463c), matNucleo = {}, spriteMats = {};
-  function spriteMat(cor) { if (!spriteMats[cor]) spriteMats[cor] = new T.SpriteMaterial({ map: texPonto, color: cor, blending: T.AdditiveBlending, depthWrite: false, transparent: true }); return spriteMats[cor]; }
+  function spriteMat(cor) { if (!spriteMats[cor]) spriteMats[cor] = new T.SpriteMaterial({ map: texPonto, color: cor, depthWrite: false, transparent: true, opacity: 0.85, toneMapped: false }); return spriteMats[cor]; }
   function fazerTiro(tipo, cor) {
     var g = new T.Group();
     if (tipo === 'flecha') { g.add(new T.Mesh(geoHaste, M.madeiraClara)); g.add(new T.Mesh(geoPontaF, M.ferro)); var p1 = new T.Mesh(geoPena, matPena); g.add(p1); var p2 = p1.clone(); p2.rotation.z = Math.PI / 2; g.add(p2); }
     else if (tipo === 'bala') peca(G.esfera, M.ferroEscuro, 0.17, 0.17, 0.17, 0, 0, 0, g);
-    else { if (!matNucleo[cor]) matNucleo[cor] = new T.MeshBasicMaterial({ color: 0xffffff }); peca(G.esfera, matNucleo[cor], 0.07, 0.07, 0.07, 0, 0, 0, g); var s = new T.Sprite(spriteMat(cor)); s.scale.set(0.75, 0.75, 1); g.add(s); }
+    else { if (!matNucleo[cor]) matNucleo[cor] = new T.MeshBasicMaterial({ color: cor, toneMapped: false }); peca(G.esfera, matNucleo[cor], 0.07, 0.07, 0.07, 0, 0, 0, g); var s = new T.Sprite(spriteMat(cor)); s.scale.set(0.75, 0.75, 1); g.add(s); }
     return g;
   }
   function disparar(tipo, cor, origem, dir, vel, dano, gelo, area) {
@@ -1188,7 +1213,7 @@
     else if (estado === 'inicio' || estado === 'confirmar') { // a câmera gira devagar em volta dos monstros da vitrine
       var ang = relogio * 0.06;
       camera.position.set(Math.sin(ang) * 6.4, 1.9, Math.cos(ang) * 6.4);
-      camera.rotation.set(-0.15, ang, 0);
+      camera.rotation.set(-0.22, ang, 0);
       ombro.visible = false;
       vitrine.forEach(function (v) { v.modelo.grupo.rotation.y = Math.atan2(camera.position.x - v.x, camera.position.z - v.z); animarMonstro(v, relogio); });
     }
@@ -1216,12 +1241,13 @@
       if (est === 'golpe') {
         var subir = suave(Math.min(1, pg / 0.28)), descer = suave(Math.min(1, Math.max(0, (pg - 0.28) / 0.3))), voltar = suave(Math.max(0, (pg - 0.62) / 0.38)), k = 1 - voltar;
         rx = (0.5 * subir - 1.65 * descer) * k; rz = (-0.5 * subir + 1.2 * descer) * k; ry = 0.3 * descer * k; py = 0.04 * subir * k;
-        if (pg > 0.3 && pg < 0.7) op = Math.sin((pg - 0.3) / 0.4 * Math.PI) * 0.8;
+        if (pg > 0.3 && pg < 0.72) op = Math.sin((pg - 0.3) / 0.42 * Math.PI) * 0.85;
+        rastro.geometry.setDrawRange(0, Math.floor(Math.min(1, Math.max(0, (pg - 0.28) / 0.3)) * 32) * 6);
       } else if (est === 'estocada') { var e = Math.sin(pg * Math.PI); pz = -0.24 * e; py = 0.02 * e; }
       else { var r = Math.sin(pg * Math.PI); pz = 0.06 * r; rx = 0.16 * r; }
     }
     var andar = jog.andando ? jog.passo : 0;
-    ombro.position.set(maoBase.x + px + (jog.andando ? Math.cos(andar * 0.5) * 0.01 : 0), maoBase.y + py + (jog.andando ? Math.abs(Math.sin(andar)) * 0.016 : 0), maoBase.z + pz);
+    ombro.position.set((est === 'arco' ? -maoBase.x * 0.75 : maoBase.x) + px + (jog.andando ? Math.cos(andar * 0.5) * 0.01 : 0), maoBase.y + py + (est === 'arco' ? 0.13 : 0) + (jog.andando ? Math.abs(Math.sin(andar)) * 0.016 : 0), maoBase.z + pz);
     ombro.rotation.set(rx, ry, rz);
     rastro.material.opacity = op;
     if (flechaNoArco) flechaNoArco.visible = jog.espera < arma().espera * 0.5; // a flecha nova aparece logo depois do tiro
@@ -1235,7 +1261,7 @@
   function visualMonstro(mo, dt) {
     // pisca de branco quando apanha; azul quando está lento (gelo)
     if (mo.bate > 0) { mo.bate -= dt; mo.modelo.mat.emissive.setHex(0xffffff); }
-    else mo.modelo.mat.emissive.setHex(mo.lento > 0 ? 0x1e4d6b : (mo.chefe ? CHEFE_COR : (mo.dourado ? 0x553300 : (mo.tipo.brilho || 0x000000))));
+    else mo.modelo.mat.emissive.setHex(mo.lento > 0 ? 0x1e4d6b : (mo.chefe ? CHEFE_COR : (mo.dourado ? 0x5a3a00 : (mo.tipo.brilho || 0x000000))));
     if (mo.dourado && Math.random() < dt * 8) brilhoSubindo(mo.x, mo.modelo.alt * 0.4, mo.z, 0xffe27a, 1, mo.r);
     if (mo.chefe && mo.modelo.aura) {
       mo.modelo.aura.rotation.y += dt * 1.6; var pa = mo.r * (1.25 + Math.sin(relogio * 4) * 0.08); mo.modelo.aura.scale.set(pa, 1, pa);
@@ -1800,7 +1826,7 @@
     }
     function primeiraPessoa(graficos) {
       preparar(graficos, 9);
-      parado('Lobo', -1.3, -4.4); parado('Vampiro', 0.9, -6.4); parado('Urso', 3.6, -8.6); parado('Aranha', -3.4, -7.4); parado('Morcego vampiro', -1.6, -8.4);
+      parado('Lobo', -1.3, -4.4); parado('Vampiro', 0.9, -6.4); parado('Urso', 2.6, -7.6); parado('Aranha', -3.4, -7.4); parado('Morcego vampiro', -1.6, -8.4);
       var amigo = criarAjudante(acha(AJUDANTES, 'lobo'), 0); amigo.x = -2.3; amigo.z = -2.2; amigo.parado = true; amigos.push(amigo);
       amigo.modelo.grupo.rotation.y = Math.PI;
       novaDefesa(acha(DEFESAS, 'torre-flechas'), 4.5, -4, 0);
@@ -1845,6 +1871,12 @@
       'armas-1': function () { preparar('alto', 9); },
       'armas-2': function () { preparar('alto', 9); },
       'golpe': function () { preparar('alto', 9); parado('Lobo', 0.15, -2.2); },
+      'ceu': function () { // olhando para o lado do sol
+        preparar('alto', 9); semHud();
+        var h = Math.hypot(DIR_SOL.x, DIR_SOL.z), el = 0.62;
+        camLivre = [0, 1.8, 3, DIR_SOL.x / h * Math.cos(el) * 40, 1.8 + Math.sin(el) * 40, 3 + DIR_SOL.z / h * Math.cos(el) * 40];
+      },
+      'flecha-de-lado': function () { preparar('alto', 9); semHud(); save.arma = 'arco'; montarArmaNaMao(); parado('Javali', 0, -9); camLivre = [3.3, 1.5, -4.4, -0.8, 1.3, -4.8]; },
       'tiro-arco': function () { preparar('alto', 9); save.arma = 'arco'; montarArmaNaMao(); parado('Javali', 0.6, -9); },
       'magia': function () { preparar('alto', 9); save.arma = 'varinha-gelo'; montarArmaNaMao(); parado('Zumbi', -0.6, -8); },
       'moedas': function () { preparar('alto', 9); parado('Lobo', 0, -3.2); },
