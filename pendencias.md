@@ -12,57 +12,28 @@ O que já passou pelo revisor 3D está no [`revisoes-3d.md`](revisoes-3d.md).
 
 ### Abertas
 
-#### R-004 · Escorpião: as pinças ainda não aparecem na foto
+#### R-004 · Escorpião: cada pinça ainda parece ter uma ponta só
 - **Gravidade:** menor (era "importante" na rodada 1 da revisão geral; a maior parte foi resolvida)
-- **Desde:** 4afa7d1, 26/11/2026 (revisão geral, rodada 1). Conferido de novo em dc789e4, 26/11/2026 (rodada 2), em 5cdf61b, 26/11/2026 (mudança de texturas, formas e luz, rodada 1), e em 73fc144, 27/11/2026 (mesma mudança, rodada 2, a última).
-- **Cena e quadro:** monstros-2 (escorpião gigante).
-- **Já resolvido:** na rodada 2, a aranha ganhou as 8 pernas dobradas até o chão e o escorpião passou a parecer escorpião (corpo achatado, pernas até o chão, cauda que sobe e curva para a frente). Em 5cdf61b: as bolinhas da cauda ficam encostadas até a ponta (sem vãos), o ferrão ficou maior e amarelo-claro e dá para ver no alto da cauda, e as placas das costas aparecem.
-- **O que ainda está errado e o que deveria ser:** as pinças com duas pontas **continuam não conferidas**. Em 73fc144 o escorpião ganhou um `olhar` próprio (0,5), mas ele continua aparecendo quase de lado: ele é o último da fila, bem à direita, e a câmera fica no meio, então a perspectiva soma mais uns 40 graus. As duas pontas de cada pinça ficam uma atrás da outra (parece uma ponta só). Deveria: o escorpião virado de verdade para a câmera (de frente ou em 3/4), para dar para ver as duas pontas abertas.
-- **Onde mexer:** `src/main.js`, `iniciarFotos`, `galeria`: hoje `olhar: t.cauda ? 0.5 : ...`. Para quem está na ponta direita, virar para a câmera é um número **negativo**: a câmera fica mais ou menos na direção -0,7 a partir do escorpião. Algo como `t.cauda ? -0.35 : ...` (ou calcular o ângulo até a câmera, `Math.atan2(0 - x, camZ - z)`, e somar uns 0,35). O desenho das pinças (`construirMonstro`, parte da `'aranha'` com `esc`) parece certo no código.
+- **Desde:** 4afa7d1, 26/11/2026 (revisão geral, rodada 1). Conferido de novo em dc789e4, 26/11/2026 (rodada 2), em 5cdf61b, 26/11/2026 (mudança de texturas, formas e luz, rodada 1), em 73fc144, 27/11/2026 (mesma mudança, rodada 2, a última), e em ed0190a, 27/11/2026 (conferência das pendências, junto com a rodada 2 dos movimentos).
+- **Cena e quadro:** monstros-2 (escorpião gigante); ataques-2, quadros 1 a 4 (escorpião, mais de perto).
+- **Já resolvido:** na rodada 2, a aranha ganhou as 8 pernas dobradas até o chão e o escorpião passou a parecer escorpião (corpo achatado, pernas até o chão, cauda que sobe e curva para a frente). Em 5cdf61b: as bolinhas da cauda ficam encostadas até a ponta (sem vãos), o ferrão ficou maior e amarelo-claro e dá para ver no alto da cauda, e as placas das costas aparecem. Em ed0190a: na galeria, o escorpião ficou **virado para a câmera** (em 3/4), com os dois olhos, as **duas pinças à mostra na frente** e a cauda com o ferrão. A parte da foto está resolvida.
+- **O que ainda está errado e o que deveria ser:** agora que dá para ver bem, cada pinça aparece como uma bolinha com **uma ponta escura só**, também de perto (ataques-2). As duas pontas ficam tão juntas e finas que se misturam, e a pinça lembra mais um ferrão do que uma pinça aberta. Deveria: as duas pontas de cada pinça separadas, formando um "V" aberto, como uma tesourinha.
+- **Onde mexer:** `src/main.js`, `construirMonstro`, parte da `'aranha'` com `esc`, as pinças ("pinças: braço, a mão e as duas pontas abertas"). Hoje as pontas ficam a `k * r * 0.09` do meio, abrem `k * 0.38` e têm grossura `r * 0.085`. Algo como `k * r * 0.15`, abertura `k * 0.6` e grossura `r * 0.11` deve separar as duas pontas.
 
-#### R-008 · Fotos: a explosão laranja do canhão quase não aparece
+#### R-014 · Fotos de movimento: a cobra ainda passa por baixo do vizinho no desfile
+- **Gravidade:** menor (só nas fotos; não muda o jogo)
+- **Desde:** 73fc144, 27/11/2026 (mudança de movimentos dos bichos, rodada 1). Conferido de novo em ed0190a, 27/11/2026 (rodada 2, a última).
+- **Cena e quadro:** andar-outros, quadros 1 a 5 (cobra e escorpião); andar-cima, quadros 1 a 5 (geleca e cobra); ataques-2 (nomes embaixo).
+- **Já resolvido:** em ed0190a, a cena nova `andar-cima` mostra a **geleca pulando** (sobe nos quadros 1, 3 e 5 e cai amassada e mais larga nos quadros 2 e 4), a **onda da cobra** vista de cima (veja a R-015), as **pernas do golem de lava** dando os passos, o trote do urso e o zumbi balançando. A cena nova `ataques-2` mostra o **escorpião jogando a cauda para a frente** (quadros 2 a 4), o **morcego descendo**, o **dragãozinho avançando** e o **fantasma crescendo** (susto); depois todos voltam.
+- **O que ainda está errado e o que deveria ser:** (1) a cobra continua **mais comprida do que o espaço que ganha**: em `andar-outros`, o rabo dela passa por baixo da cabeça, das pinças e das pernas da frente do escorpião (as bolinhas verdes aparecem embaixo dele); em `andar-cima`, o rabo passa por baixo da geleca e sai do outro lado (quadro 5). Deveria: um vão de grama entre o rabo da cobra e o bicho de trás. (2) Em `ataques-2`, os nomes "Escorpião gigante" e "Morcego vampiro" ficam um em cima do outro. (3) Detalhe: a cena `andar-cima` é vista **de lado e de cima**, e não "de frente" como diz a descrição; para a onda da cobra e a geleca, isso bastou, mas a ginga do urso e o balanço do zumbi aparecem só de leve.
+- **Onde mexer:** `src/main.js`, `iniciarFotos`, `desfile`: hoje `trasDe` dá `t.r * 4.8` para a cobra, mas o corpo dela vai uns 10 "tamanhos" para trás (11 bolinhas a cada `r * 1.05`, em `construirMonstro`, parte da `'cobra'`). Trocar por uns `t.r * 10.5`, e dar à frente do escorpião um pouco mais por causa das pinças (`frenteDe`: `t.cauda ? t.r * 2.3 : t.r * 1.7`). A câmera se afasta sozinha, porque usa o `total`. Em `'ataques-2'`, afastar mais os bichos (`-4.2 + i * 2.8` para algo como `-5 + i * 3.3`) ou subir o nome do morcego. Para a descrição, trocar "de frente e de cima" por "de lado e de cima" no `tests/fotos-3d.cjs`.
+
+#### R-015 · Cobra: o "S" ao serpentear é muito leve
 - **Gravidade:** menor
-- **Desde:** 4afa7d1, 26/11/2026 (revisão geral, rodada 1). Conferido de novo em dc789e4, 26/11/2026 (rodada 2), em 5cdf61b, 26/11/2026 (mudança de texturas, formas e luz, rodada 1), e em 73fc144, 27/11/2026 (mesma mudança, rodada 2, a última).
-- **Cena e quadro:** torres, quadros 1 a 5.
-- **Já resolvido:** na rodada 2, a cena `ceu` mostrou o degradê do céu, as nuvens e as montanhas; a cena `flecha-de-lado` mostrou a flecha voando deitada, com a ponta de ferro na frente e as penas vermelhas atrás; na cena `torres`, a bala de canhão aparece saindo do cano, com o clarão e a fumaça. Em 5cdf61b: a **bola do sol** aparece inteira na foto `ceu`. Em 73fc144: na cena `flecha-de-lado` o **javali aparece inteiro**, e no quadro 5, quando a flecha chega, ele pisca de branco e solta faísca no focinho; na cena `torres`, com a câmera do outro lado, o lugar do impacto agora aparece (a nuvem de fumaça cinza em volta do zumbi, quadros 2 a 5).
-- **O que ainda está errado e o que deveria ser:** a parte **laranja** da explosão do canhão quase não se vê: só uns pontinhos amarelos, pequenos, no quadro 2. De longe, a explosão parece só fumaça. Deveria: um clarão laranja que dê para ver, pelo menos num quadro.
-- **Onde mexer:** se for só a foto: `tests/fotos-3d.cjs`, cena `torres`, `espera` um pouco menor (0,5) e `passo` menor (0,05), para pegar o começo da explosão. Se for o jogo (o mais provável, porque as faíscas somem rápido e são pequenas de longe): `src/main.js`, parte "canhão: explode e acerta todos em volta" (`faiscas(px, tp.y, pz, 0xffa53c, 26, 6)`): faíscas maiores, ou acrescentar um brilho laranja grande que cresce e some em uns 0,2 s (com `fxBrilho.emitir`).
-
-#### R-010 · Ciclope ainda com anéis escuros na pele
-- **Gravidade:** menor
-- **Desde:** 5cdf61b, 26/11/2026 (mudança de texturas, formas e luz, rodada 1). Conferido de novo em 73fc144, 27/11/2026 (rodada 2, a última).
-- **Cena e quadro:** monstros-3 (ciclope); andar-pernas (ciclope, quadros 1 a 5).
-- **Já resolvido:** em 73fc144, o escorpião ficou com a **casca lisa**, com as placas das costas à mostra, sem pelo (só as bolinhas da cauda, bem de perto, ainda parecem um pouco fofas; não precisa mudar).
-- **O que ainda está errado e o que deveria ser:** no ciclope as manchas ficaram mais claras, mas de perto ainda aparecem **anéis escuros** no corpo e na cabeça, que lembram as rosetas de uma onça. Deveria: pele quase lisa, com manchas bem de leve ou nenhuma.
-- **Onde mexer:** `src/main.js`, `texturaDoTipo` e a linha do `forcaRel` em `construirMonstro`. Causa provável: o anel vem do relevo (o "mapa de relevo" das manchas redondas), que, com a luz em degraus do material desenho, vira uma borda escura em volta de cada mancha. Para o ciclope (`tipo.umOlho`), tirar o relevo (passar `0` como força em `texturizar`) ou não usar textura (`return null`).
-
-#### R-011 · Dragãozinho visto de lado: a asa vira uma "vela" fina e alta
-- **Gravidade:** menor
-- **Desde:** 73fc144, 27/11/2026 (mudança de texturas, formas e luz, rodada 2, a última; achado na cena nova `voar`).
-- **Cena e quadro:** voar, quadros 1 a 5 (dragãozinho).
-- **O que está errado e o que deveria ser:** com a correção da R-009, a asa ficou em pé, virada para a frente, e de frente ficou ótima. Mas vista bem de lado, a mesma asa aparece quase de quina: nos quadros 1 e 2 é uma tira vermelha fina e alta, que sai pelo alto da foto (parece um mastro com bandeira); nos quadros 3 a 5 é um palito com uma bolinha vermelha na ponta (a ponta do osso), como uma antena. De lado, aparece menos da metade da asa de antes. Em 3/4 (o dragão amigo, na cena ajudantes) está bom. Deveria: a asa dar para ver também de lado, que é como se vê o dragão amigo voando ao seu lado ou um dragão fazendo a curva.
-- **Onde mexer:** `src/main.js`, `construirMonstro`, parte do `'morcego'`/`'dragao'`: `incl.rotation.x = 0.45` (quanto a asa inclina para a frente). Uma inclinação maior, perto de 0,75 a 0,8 (uns 45 graus), deixa a asa à mostra de frente **e** de lado. Na foto `voar`, afastar um pouco a câmera ou subir a mira (`desfile`, `camLivre`), para a ponta da asa do dragão caber no quadro.
-
-#### R-012 · Zumbi e lobisomem: o pé nunca pisa na frente do corpo
-- **Gravidade:** importante
-- **Desde:** 73fc144, 27/11/2026 (mudança de movimentos dos bichos, rodada 1).
-- **Cena e quadro:** andar-pernas, quadros 1 a 5 (zumbi e lobisomem).
-- **O que está errado e o que deveria ser:** vistos de lado, o pé que vai para a frente para no máximo embaixo do quadril, e o outro vai bem para trás (no lobisomem, o pé de trás chega a subir quase na altura do joelho). Os pés nunca pisam à frente do corpo: parece que eles caem para a frente arrastando as pernas para trás, em vez de dar o passo. No vampiro, no demônio, no ciclope e no yeti o passo está certo (um pé na frente, outro atrás). Deveria: o zumbi e o lobisomem continuarem inclinados para a frente, mas com o pé da frente pisando um pouco à frente do corpo.
-- **Onde mexer:** `src/main.js`, `animarMonstro`, parte de duas pernas: `pe.rotation.x = -Math.sin(ph) * ampP * arrasta * w + lean;`. As pernas ficam dentro do `balanco`, que já inclina o corpo inteiro com `bal.rotation.x = lean`. Somar `+ lean` na perna joga a perna **ainda mais** para trás (fica o dobro: no lobisomem, uns 32 graus para trás em média; no zumbi, uns 17). Trocar por `- lean` (aí a perna fica em pé com o corpo inclinado, que é o que o comentário do código pretende). Nos outros o `lean` é bem pequeno, por isso não aparece.
-
-#### R-013 · Zumbi: no ataque, levanta os braços para o alto
-- **Gravidade:** menor
-- **Desde:** 73fc144, 27/11/2026 (mudança de movimentos dos bichos, rodada 1).
-- **Cena e quadro:** ataques, quadros 2 a 4 (zumbi).
-- **O que está errado e o que deveria ser:** no ataque, o zumbi gira os dois braços até ficarem em pé, acima da cabeça (parece "mãos ao alto"), em vez de avançar com os braços esticados para a frente, para agarrar. Deveria: os braços continuarem para a frente (no máximo subindo um pouco e descendo) e o corpo avançar.
-- **Onde mexer:** `src/main.js`, `animarMonstro`, parte de duas pernas: `b.rotation.x = Math.sin(ph) * ampB * w - at * 1.7 + ...`. Os braços do zumbi já são feitos esticados para a frente, e o ataque soma mais 1,7 (uns 97 graus) para cima, igual aos outros. Para o zumbi (`zumbi`), usar um giro pequeno (algo perto de `- at * 0.4`) e deixar o avanço do corpo (`bal.position.z`) fazer o bote.
-
-#### R-014 · Fotos de movimento: o que não deu para conferir (ajustar as cenas)
-- **Gravidade:** menor
-- **Desde:** 73fc144, 27/11/2026 (mudança de movimentos dos bichos, rodada 1).
-- **Cena e quadro:** andar-outros, quadros 1 a 5; andar-patas e andar-pernas (urso e zumbi); não há cena para a geleca e para alguns ataques.
-- **O que está errado e o que deveria ser:** não conferido: (1) a **cobra serpenteando**: o "S" é de um lado para o outro, no chão, e vista de lado a cobra parece reta nos 5 quadros; além disso, a cabeça e as pinças do escorpião ficam por cima do rabo da cobra (um bicho encostado no outro); (2) os **passos duros do golem de lava**: as pernas dele ficam escondidas na grama (o balanço do corpo aparece); (3) a **ginga do urso** e o **cambalear do zumbi** são de um lado para o outro e, de lado, quase não aparecem; (4) não há foto da **geleca andando aos pulos**, nem do **escorpião atacando com a cauda**, nem do ataque do morcego, do dragão e do fantasma. Deveria: um desfile visto de frente, um pouco do alto (em 3/4), para ver o "S" da cobra e a ginga; mais espaço entre a cobra e o escorpião; a geleca no desfile; o escorpião na cena `ataques`.
-- **Onde mexer:** `src/main.js`, `iniciarFotos`: em `desfile`, dar mais espaço para os bichos compridos (cobra e escorpião) e criar uma versão com a câmera mais alta ou de frente; em `'ataques'`, incluir o escorpião (e, se couber, o morcego); e a cena nova também em `tests/fotos-3d.cjs`.
+- **Desde:** ed0190a, 27/11/2026 (mudança de movimentos dos bichos, rodada 2, a última; achado na cena nova `andar-cima`).
+- **Cena e quadro:** andar-cima, quadros 1 a 5 (cobra).
+- **O que está errado e o que deveria ser:** vista de cima, a cobra faz só uma **ondinha bem leve**, que muda de um quadro para o outro (então o movimento existe), mas o corpo parece quase reto: o corpo sai da linha reta só cerca de 1/20 do comprimento da cobra para cada lado. Deveria: um "S" que dê para ver de longe, com o corpo indo bem para um lado e para o outro.
+- **Onde mexer:** `src/main.js`, `animarMonstro`, parte da `'cobra'`: `sg.position.x = Math.sin(c - i * 0.75) * r * 0.5 * ...`. Algo como `r * 0.9` a `r * 1.0` (o dobro) e uma onda um pouco mais comprida (`i * 0.6`), conferindo na foto `andar-cima` que as bolinhas continuam encostadas umas nas outras.
 
 ### Resolvidas
 
@@ -100,3 +71,28 @@ O que já passou pelo revisor 3D está no [`revisoes-3d.md`](revisoes-3d.md).
 - **Gravidade:** importante
 - **Desde:** 5cdf61b, 26/11/2026 (mudança de texturas, formas e luz, rodada 1)
 - **Resolvida em:** 73fc144, 27/11/2026 (mesma mudança, rodada 2, a última). Conferido em monstros-1, primeira-pessoa, celular e graficos-baixo (o morcego, de frente, mostra as duas asas escuras abertas em "V", com o recorte em ondas e o osso na borda de cima), em inicio e monstros-3 (o dragãozinho tem duas asas vermelhas grandes em "V", com a borda ondulada, e não parece mais ter antenas), em ajudantes (o dragão amigo, em 3/4, mostra a asa inteira) e em voar (as asas batem para cima e para baixo). Visto bem de lado, o dragão ganhou outra recomendação (R-011).
+
+#### R-008 · Fotos: a explosão laranja do canhão quase não aparecia
+- **Gravidade:** menor
+- **Desde:** 4afa7d1, 26/11/2026 (revisão geral, rodada 1)
+- **Resolvida em:** ed0190a, 27/11/2026 (conferência das pendências, junto com a rodada 2 dos movimentos). Conferido em torres: nos quadros 1 a 3 aparece um **clarão amarelo-alaranjado** em volta do zumbi atingido, que cresce e some, e no quadro 4 fica só a fumaça cinza. Antes já tinham sido conferidos o céu (`ceu`), a flecha de lado (`flecha-de-lado`, com o javali piscando) e a bala de canhão saindo do cano.
+
+#### R-010 · Ciclope tinha anéis escuros na pele
+- **Gravidade:** menor
+- **Desde:** 5cdf61b, 26/11/2026 (mudança de texturas, formas e luz, rodada 1)
+- **Resolvida em:** ed0190a, 27/11/2026 (conferência das pendências). Conferido em monstros-3 e andar-pernas: o ciclope tem a **pele lisa**, laranja, sem manchas nem anéis. O escorpião já tinha ficado com a casca lisa em 73fc144.
+
+#### R-011 · Dragãozinho visto de lado: a asa virava uma "vela" fina e alta
+- **Gravidade:** menor
+- **Desde:** 73fc144, 27/11/2026 (mudança de texturas, formas e luz, rodada 2, a última)
+- **Resolvida em:** ed0190a, 27/11/2026 (conferência das pendências). Conferido em voar: nos quadros 1 e 2 a asa aparece de lado como uma vela larga, inclinada para a frente, com a borda em ondas, e cabe inteira na foto; nos quadros 4 e 5, com a asa embaixo, ela aparece por cima do corpo. Só no quadro 3, no meio da batida, ela fica de quina por um instante, o que é normal. De frente continua boa (inicio, monstros-3) e o dragão amigo, em 3/4, continua com a asa inteira (ajudantes).
+
+#### R-012 · Zumbi e lobisomem: o pé nunca pisava na frente do corpo
+- **Gravidade:** importante
+- **Desde:** 73fc144, 27/11/2026 (mudança de movimentos dos bichos, rodada 1)
+- **Resolvida em:** ed0190a, 27/11/2026 (rodada 2, a última). Conferido em andar-pernas, comparando com fotos da versão antiga: o lobisomem continua curvado, mas agora as pernas ficam em pé, com um pé à frente do quadril e o outro atrás (antes os dois ficavam para trás e o de trás subia até o joelho); o zumbi ficou mais em pé, com os passos curtos embaixo do corpo e um pé passando à frente. Vampiro, demônio e ciclope continuam certos.
+
+#### R-013 · Zumbi levantava os braços para o alto no ataque
+- **Gravidade:** menor
+- **Desde:** 73fc144, 27/11/2026 (mudança de movimentos dos bichos, rodada 1)
+- **Resolvida em:** ed0190a, 27/11/2026 (rodada 2, a última). Conferido em ataques, quadros 2 a 4, comparando com a versão antiga: os braços continuam esticados para a frente, subindo só um pouco, e o corpo avança para agarrar (antes eles subiam até ficar acima da cabeça).

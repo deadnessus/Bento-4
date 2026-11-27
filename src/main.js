@@ -1736,7 +1736,8 @@
             var px = tp.x, pz = tp.z;
             monstros.slice().forEach(function (m3) { if (Math.hypot(m3.x - px, m3.z - pz) < tr.area + m3.r) ferir(m3, tr.dano, false, null); });
             faiscas(px, tp.y, pz, 0xffa53c, 26, 6); fumaca(px, tp.y, pz, 0x6b6b6b, 10, 1.6, 0.8);
-            corTmp.setHex(0xff8a1e); for (var cl = 0; cl < 4; cl++) fxBrilho.emitir(px + (Math.random() - 0.5) * 0.6, tp.y + (Math.random() - 0.5) * 0.4, pz + (Math.random() - 0.5) * 0.6, 0, 0.6, 0, 0.32, 0.9, 2.8, corTmp, 1, 0); // clarão bip(90, 0.25, 'sawtooth', 0.07);
+            corTmp.setHex(0xff8a1e); for (var cl = 0; cl < 4; cl++) fxBrilho.emitir(px + (Math.random() - 0.5) * 0.6, tp.y + (Math.random() - 0.5) * 0.4, pz + (Math.random() - 0.5) * 0.6, 0, 0.6, 0, 0.32, 0.9, 2.8, corTmp, 1, 0); // clarão
+            bip(90, 0.25, 'sawtooth', 0.07);
             if (Math.hypot(px - jog.x, pz - jog.z) < 10) tremor = Math.max(tremor, 0.05);
           } else {
             faiscas(tp.x, tp.y, tp.z, tr.tipo === 'flecha' ? 0xfff1c4 : tr.cor, tr.tipo === 'flecha' ? 6 : 12, tr.tipo === 'flecha' ? 3 : 4.5);
