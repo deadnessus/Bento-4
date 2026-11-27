@@ -36,7 +36,7 @@ const SCENES = [
   { k: 'tiro-arco', tipo: 'acao', antes: 'atacar', espera: 0, passo: 0.07, d: 'Tiro de arco num javali a uns 9 m: a flecha (haste de madeira, ponta de ferro, penas vermelhas) sai do arco (à esquerda, na mão esquerda) apontando para o javali, voa reto e, quando chega, solta faíscas; o arco fica sem flecha e depois aparece uma nova.' },
   { k: 'magia', tipo: 'acao', antes: 'atacar', espera: 0, passo: 0.07, d: 'Tiro da varinha de gelo num zumbi a uns 8 m: uma bola azul brilhante com rastro de brilho voa até ele; no impacto, faíscas azuis e fumacinha clara, e o zumbi fica azulado (lento).' },
   { k: 'moedas', tipo: 'acao', antes: 'derrotar', espera: 0, passo: 0.12, d: 'Um lobo é derrotado na frente: pedacinhos cinza e uma nuvem de poeira branca; moedas douradas pulam para cima e depois voam até a câmera.' },
-  { k: 'torres', tipo: 'acao', espera: 0.3, passo: 0.09, d: 'Visto de fora: torre de flechas, torre de gelo e canhão atirando nos monstros que vêm de longe (lobo, javali, zumbi, rato e urso), com um muro de madeira na frente. As torres viram para o monstro. Flechas, bolas de gelo e balas de canhão (com fumaça) voando; faíscas onde acertam; explosão laranja do canhão.' },
+  { k: 'torres', tipo: 'acao', espera: 0.6, passo: 0.09, d: 'Visto de fora: torre de flechas, torre de gelo e canhão atirando nos monstros que vêm de longe (lobo, javali, zumbi, rato e urso), com um muro de madeira na frente. As torres viram para o monstro. Flechas, bolas de gelo e balas de canhão (com fumaça) voando; faíscas onde acertam; explosão laranja do canhão.' },
 ];
 
 function versao() {

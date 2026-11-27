@@ -279,7 +279,7 @@
         emendado(t, cx, cy, function (x, y) { var gr = g.createRadialGradient(x, y - 3, 1, x, y, 10); gr.addColorStop(0, '#ffffff'); gr.addColorStop(0.7, '#dcdcdc'); gr.addColorStop(1, '#8e8e8e'); g.fillStyle = gr; g.beginPath(); g.arc(x, y, 9.5, 0, Math.PI); g.lineTo(x - 9.5, y - 5); g.arc(x, y - 5, 9.5, Math.PI, 0); g.fill(); });
       }
     } },
-    manchas: { tam: 128, forca: 1.0, fn: function (g, t) { g.fillStyle = '#f0f0f0'; g.fillRect(0, 0, t, t); manchasRedondas(g, t, 50, ['#cfcfcf', '#ffffff', '#dadada'], 5, 18, 0.55); riscos(g, t, 600, ['#d4d4d4', '#ffffff'], 1, 2, 0, 6.28, 1, 0.5); } },
+    manchas: { tam: 128, forca: 0.8, fn: function (g, t) { g.fillStyle = '#f2f2f2'; g.fillRect(0, 0, t, t); manchasRedondas(g, t, 40, ['#e0e0e0', '#ffffff', '#e8e8e8'], 6, 18, 0.4); riscos(g, t, 400, ['#e2e2e2', '#ffffff'], 1, 2, 0, 6.28, 1, 0.35); } },
     pedra: { tam: 256, forca: 3.2, fn: function (g, t) { g.fillStyle = '#c4c4c4'; g.fillRect(0, 0, t, t); manchasRedondas(g, t, 140, ['#a4a4a4', '#e2e2e2', '#b8b8b8', '#d6d6d6'], 8, 32, 0.7); riscos(g, t, 2400, ['#9a9a9a', '#ececec'], 1, 2, 0, 6.28, 1.2, 0.6); rachaduras(g, t, 16, '#707070', 1.6); } },
     lava: { tam: 256, forca: 2.4, fn: function (g, t) { g.fillStyle = '#4a342c'; g.fillRect(0, 0, t, t); manchasRedondas(g, t, 120, ['#2c201c', '#5e463c', '#3a2a24'], 8, 30, 0.8); rachaduras(g, t, 26, '#ff9a1a', 3.2, '#ff6a00'); rachaduras(g, t, 10, '#ffe27a', 1.4); } },
     casca: { tam: 128, forca: 3.0, fn: function (g, t) {
@@ -681,7 +681,7 @@
   var geoAsa = (function () {
     var s = new T.Shape(); s.moveTo(0, 0.14); s.quadraticCurveTo(0.5, 0.48, 1.0, 0.34);
     s.quadraticCurveTo(0.9, 0.06, 0.8, -0.04); s.quadraticCurveTo(0.68, 0.08, 0.56, -0.12); s.quadraticCurveTo(0.43, 0.02, 0.31, -0.17); s.quadraticCurveTo(0.17, -0.02, 0, -0.1); s.lineTo(0, 0.14);
-    var g = new T.ShapeGeometry(s, 10); g.rotateX(Math.PI / 2); return g;
+    return new T.ShapeGeometry(s, 10); // a asa fica em pé (dá para ver de frente)
   })();
   // pedra com cantos tortos (golem)
   var geoRocha = (function () {
@@ -693,6 +693,7 @@
   var geoCapa = new T.CylinderGeometry(0.62, 1.0, 1, 18, 1, true, Math.PI / 2 + 0.25, Math.PI - 0.5);
   var geoGola = new T.CylinderGeometry(1.0, 0.62, 1, 14, 1, true, Math.PI / 2, Math.PI);
   function texturaDoTipo(tipo) {
+    if (tipo.forma === 'aranha' && tipo.cauda) return ['manchas', 2, 2]; // escorpião: casca lisa
     if (tipo.forma === 'lobo' || tipo.forma === 'morcego' || tipo.forma === 'aranha' || tipo.forma === 'yeti' || tipo.lobisomem) return ['pelo', 3, 3];
     if (tipo.forma === 'cobra' || tipo.forma === 'dragao') return ['escamas', 5, 3];
     if (tipo.forma === 'golem') return tipo.brilho ? ['lava', 2, 2] : ['pedra', 2, 2];
@@ -772,8 +773,9 @@
       }
       p.asas = [-1, 1].map(function (lado, i) {
         var piv = new T.Group(); piv.position.set(lado * r * (tipo.forma === 'dragao' ? 0.35 : 0.6), tipo.forma === 'dragao' ? r * 0.25 : 0, 0); piv.name = 'asas' + i; voo.add(piv);
-        var asa = new T.Mesh(geoAsa, mat); asa.scale.set(lado * r * tamAsa, 1, r * tamAsa * 0.75); asa.userData.solto = true; piv.add(asa);
-        membro(piv, matEsc, 0, 0, r * tamAsa * 0.1, lado * r * tamAsa, 0, r * tamAsa * 0.25, r * 0.05).userData.solto = true; // osso da asa
+        var incl = new T.Group(); incl.rotation.x = 0.45; piv.add(incl); // inclinada para a frente: aparece de frente e de cima
+        var asa = new T.Mesh(geoAsa, mat); asa.scale.set(lado * r * tamAsa, r * tamAsa * 0.75, 1); asa.userData.solto = true; incl.add(asa);
+        membro(incl, matEsc, 0, r * tamAsa * 0.75 * 0.14, 0, lado * r * tamAsa, r * tamAsa * 0.75 * 0.34, 0, r * 0.05).userData.solto = true; // osso da asa, na borda de cima
         piv.userData.lado = lado; return piv;
       });
       alt = voo.position.y + r;
@@ -2114,7 +2116,7 @@
       var largura = fileira(TIPOS.slice(de, ate), function (t, x, z, medir) {
         if (medir) return t.r;
         var compridos = t.forma === 'cobra' || t.forma === 'aranha' || t.forma === 'lobo';
-        var m = parado(t.nome, x, z, { olhar: compridos ? 1.0 : 0.4 });
+        var m = parado(t.nome, x, z, { olhar: t.cauda ? 0.5 : (compridos ? 1.0 : 0.4) });
         rotulos.push([x, -0.1, z + m.r + 0.45, t.nome]);
         return m.r;
       });
@@ -2172,7 +2174,7 @@
         var h = Math.hypot(DIR_SOL.x, DIR_SOL.z), el = 0.62;
         camLivre = [0, 1.8, 3, DIR_SOL.x / h * Math.cos(el) * 40, 1.8 + Math.sin(el) * 40, 3 + DIR_SOL.z / h * Math.cos(el) * 40];
       },
-      'flecha-de-lado': function () { preparar('alto', 9); semHud(); save.arma = 'arco'; montarArmaNaMao(); parado('Javali', 0, -9); camLivre = [3.3, 1.5, -4.4, -0.8, 1.3, -4.8]; },
+      'flecha-de-lado': function () { preparar('alto', 9); semHud(); save.arma = 'arco'; montarArmaNaMao(); parado('Javali', 0, -9); camLivre = [3.0, 1.5, -5.0, -0.8, 1.3, -6.2]; },
       'tiro-arco': function () { preparar('alto', 9); save.arma = 'arco'; montarArmaNaMao(); parado('Javali', 0.6, -9); },
       'magia': function () { preparar('alto', 9); save.arma = 'varinha-gelo'; montarArmaNaMao(); parado('Zumbi', -0.6, -8); },
       'moedas': function () { preparar('alto', 9); parado('Lobo', 0, -3.2); },
@@ -2181,7 +2183,7 @@
         novaDefesa(acha(DEFESAS, 'torre-flechas'), -3, -2, 0); novaDefesa(acha(DEFESAS, 'torre-gelo'), 2.5, -1.5, 0); novaDefesa(acha(DEFESAS, 'canhao'), -0.2, -3.6, 0);
         novaDefesa(acha(DEFESAS, 'muro-madeira'), 0, -6.5, 0);
         ['Lobo', 'Javali', 'Zumbi', 'Rato gigante', 'Urso'].forEach(function (n, i) { var m = ja(novoMonstro(tipoPorNome(n), -6 + i * 3, -14 - (i % 2) * 2, 9, false, false)); m.vida = m.max = 1e9; });
-        jog.x = 0; jog.z = 4; camLivre = [-4.2, 3.4, 3.6, 0.3, 1.0, -6.5];
+        jog.x = 0; jog.z = 4; camLivre = [4.2, 3.6, 3.4, -0.6, 1.0, -8];
       }
     };
     window.__cacador = {
