@@ -802,8 +802,21 @@
       peca(G.esfera, matCara, r * 0.36, r * 0.32, r * 0.2, 0, r * 2.7, r * 0.45, g);
       olhos(g, r * 2.8, r * 0.58, r * 0.62);
       peca(G.esfera, M.preto, r * 0.12, r * 0.05, r * 0.05, 0, r * 2.56, r * 0.62, g);
-      p.bracos = [-1, 1].map(function (lado, i) { var b = new T.Group(); b.position.set(lado * r * 0.8, r * 2.3, 0); b.name = 'bracos' + i; g.add(b); membro(b, mat, 0, 0, 0, lado * r * 0.14, -r * 0.75, r * 0.05, r * 0.24); membro(b, mat, lado * r * 0.14, -r * 0.75, r * 0.05, lado * r * 0.2, -r * 1.35, r * 0.14, r * 0.22); peca(G.esfera, matCara, r * 0.24, r * 0.2, r * 0.26, lado * r * 0.2, -r * 1.52, r * 0.18, b); return b; });
-      p.pernas = [-1, 1].map(function (lado, i) { var b = new T.Group(); b.position.set(lado * r * 0.38, r * 0.95, 0); b.name = 'pernas' + i; g.add(b); membro(b, mat, 0, 0, 0, 0, -r * 0.55, 0, r * 0.27); peca(G.esfera, matCara, r * 0.3, r * 0.15, r * 0.42, 0, -r * 0.85, r * 0.1, b); return b; });
+      p.cotovelos = []; p.joelhos = [];
+      p.bracos = [-1, 1].map(function (lado, i) {
+        var b = new T.Group(); b.position.set(lado * r * 0.8, r * 2.3, 0); b.name = 'bracos' + i; g.add(b);
+        membro(b, mat, 0, 0, 0, lado * r * 0.14, -r * 0.75, r * 0.05, r * 0.24);
+        var co = new T.Group(); co.position.set(lado * r * 0.14, -r * 0.75, r * 0.05); co.name = 'cotovelos' + i; b.add(co); p.cotovelos.push(co);
+        membro(co, mat, 0, 0, 0, lado * r * 0.06, -r * 0.6, r * 0.09, r * 0.22); peca(G.esfera, matCara, r * 0.24, r * 0.2, r * 0.26, lado * r * 0.06, -r * 0.77, r * 0.13, co);
+        return b;
+      });
+      p.pernas = [-1, 1].map(function (lado, i) {
+        var b = new T.Group(); b.position.set(lado * r * 0.38, r * 0.95, 0); b.name = 'pernas' + i; g.add(b);
+        membro(b, mat, 0, 0, 0, 0, -r * 0.42, r * 0.02, r * 0.27);
+        var jo = new T.Group(); jo.position.set(0, -r * 0.42, r * 0.02); jo.name = 'joelhos' + i; b.add(jo); p.joelhos.push(jo);
+        membro(jo, mat, 0, 0, 0, 0, -r * 0.2, 0, r * 0.22); peca(G.esfera, matCara, r * 0.3, r * 0.15, r * 0.42, 0, -r * 0.43, r * 0.08, jo);
+        return b;
+      });
       alt = r * 3.25;
     } else if (tipo.forma === 'cobra') {
       p.segs = [];
@@ -835,6 +848,7 @@
           var b = new T.Group(); b.position.set(lado * r * (esc ? 0.5 : 0.45), yc, (i - 1.5) * r * (esc ? 0.4 : 0.38) - (esc ? r * 0.2 : 0)); b.rotation.y = -lado * (i - 1.5) * 0.3; b.name = 'pernas' + p.pernas.length; g.add(b);
           var L1 = r * (esc ? 0.5 : 0.72), a = esc ? 0.45 : 0.75, kx = lado * L1 * Math.cos(a), ky = L1 * Math.sin(a), fx = kx + lado * r * (esc ? 0.32 : 0.42), fy = -yc + r * 0.04;
           segmento(b, mat, 0, 0, kx, ky, r * 0.12); segmento(b, matEsc, kx, ky, fx, fy, r * 0.1);
+          b.userData.lado = lado; b.userData.baseY = b.rotation.y; b.userData.grupoA = (lado < 0) === (i % 2 === 0);
           p.pernas.push(b);
         }
       });
@@ -882,17 +896,22 @@
       if (tipo.dentes) { peca(G.cone, M.osso, r * 0.08, r * 0.25, r * 0.08, -r * 0.2, r * 3.0, r * 0.55, g); peca(G.cone, M.osso, r * 0.08, r * 0.25, r * 0.08, r * 0.2, r * 3.0, r * 0.55, g); }
       if (tipo.chifres) [-1, 1].forEach(function (l) { var ch = peca(G.cone, M.escuro, r * 0.14, r * 0.55, r * 0.14, l * r * 0.36, r * 3.85, 0, g); ch.rotation.z = -l * 0.35; });
       var frente = tipo.bracosFrente; // o zumbi anda com os braços esticados para a frente
+      p.cotovelos = []; p.joelhos = [];
       p.bracos = [-1, 1].map(function (lado, i) {
         var b = new T.Group(); b.position.set(lado * r * 0.8, r * 2.62, 0); b.name = 'bracos' + i; g.add(b);
         var cot = frente ? [lado * r * 0.04, -r * 0.3, r * 0.55] : [lado * r * 0.06, -r * 0.62, r * 0.02], pun = frente ? [lado * r * 0.06, -r * 0.38, r * 1.08] : [lado * r * 0.09, -r * 1.12, r * 0.08];
-        membro(b, mat, 0, 0, 0, cot[0], cot[1], cot[2], r * 0.15); membro(b, mat, cot[0], cot[1], cot[2], pun[0], pun[1], pun[2], r * 0.13);
-        peca(G.esfera, pele, r * 0.16, r * 0.16, r * 0.17, pun[0], pun[1] - (frente ? 0 : r * 0.08), pun[2] + (frente ? r * 0.1 : 0.02), b);
+        membro(b, mat, 0, 0, 0, cot[0], cot[1], cot[2], r * 0.15);
+        var co = new T.Group(); co.position.set(cot[0], cot[1], cot[2]); co.name = 'cotovelos' + i; b.add(co); p.cotovelos.push(co);
+        membro(co, mat, 0, 0, 0, pun[0] - cot[0], pun[1] - cot[1], pun[2] - cot[2], r * 0.13);
+        peca(G.esfera, pele, r * 0.16, r * 0.16, r * 0.17, pun[0] - cot[0], pun[1] - (frente ? 0 : r * 0.08) - cot[1], pun[2] + (frente ? r * 0.1 : 0.02) - cot[2], co);
         return b;
       });
       p.pernas = [-1, 1].map(function (lado, i) {
         var b = new T.Group(); b.position.set(lado * r * 0.3, r * 1.32, 0); b.name = 'pernas' + i; g.add(b);
-        membro(b, matEsc, 0, 0, 0, 0, -r * 0.6, r * 0.02, r * 0.19); membro(b, matEsc, 0, -r * 0.6, r * 0.02, 0, -r * 1.1, 0, r * 0.16);
-        peca(G.esfera, M.escuro, r * 0.19, r * 0.11, r * 0.3, 0, -r * 1.22, r * 0.1, b);
+        membro(b, matEsc, 0, 0, 0, 0, -r * 0.6, r * 0.02, r * 0.19);
+        var jo = new T.Group(); jo.position.set(0, -r * 0.6, r * 0.02); jo.name = 'joelhos' + i; b.add(jo); p.joelhos.push(jo);
+        membro(jo, matEsc, 0, 0, 0, 0, -r * 0.5, -r * 0.02, r * 0.16);
+        peca(G.esfera, M.escuro, r * 0.19, r * 0.11, r * 0.3, 0, -r * 0.62, r * 0.08, jo);
         return b;
       });
       alt = r * 3.9;
@@ -912,14 +931,18 @@
         if (tipo.dentes) peca(G.cone, M.osso, r * 0.07, r * 0.35, r * 0.07, l * r * 0.2, r * 1.5, r * 1.85, g).rotation.x = Math.PI / 2.4;
       });
       olhos(g, r * 1.8, r * (1.08 + 0.37 * go), r * 0.75, olhoBrilho);
-      if (tipo.raboCurto) peca(G.esfera, mat, r * 0.18, r * 0.18, r * 0.18, 0, r * 1.45, -r * 1.02, g);
-      else if (tipo.raboFino) { var rf = peca(G.cilindro, M.rosa, r * 0.05, r * 1.6, r * 0.05, 0, r * 1.1, -r * 1.6, g); rf.rotation.x = -1.2; }
-      else if (tipo.dentes) { var rc = new T.Mesh(new T.TorusGeometry(r * 0.1, r * 0.03, 6, 12, Math.PI * 1.5), matEsc); rc.position.set(0, r * 1.4, -r * 1.02); rc.rotation.y = Math.PI / 2; g.add(rc); }
-      else { var rp = peca(G.cone, mat, r * 0.17, r * 0.9, r * 0.17, 0, r * 1.15, -r * 1.3, g); rp.rotation.x = -2.25; }
-      p.pernas = [[-1, 1], [-1, -1], [1, -1], [1, 1]].map(function (l, i) { // passo de trote: as pernas em diagonal andam juntas
-        var b = new T.Group(); b.position.set(l[0] * r * 0.27 * go, r * 0.98, l[1] * r * 0.55); b.name = 'pernas' + i; g.add(b);
-        membro(b, mat, 0, 0, 0, 0, -r * 0.45, r * 0.03, r * 0.12 * go); membro(b, mat, 0, -r * 0.45, r * 0.03, 0, -r * 0.84, -r * 0.02, r * 0.1 * go);
-        peca(G.esfera, matEsc, r * 0.13 * go, r * 0.08, r * 0.17 * go, 0, -r * 0.9, r * 0.04, b);
+      var rabo = new T.Group(); rabo.position.set(0, r * 1.35, -r * 0.95); rabo.name = 'rabo'; g.add(rabo); p.rabo = rabo;
+      if (tipo.raboCurto) peca(G.esfera, mat, r * 0.18, r * 0.18, r * 0.18, 0, r * 0.1, -r * 0.07, rabo);
+      else if (tipo.raboFino) { var rf = peca(G.cilindro, M.rosa, r * 0.05, r * 1.6, r * 0.05, 0, -r * 0.25, -r * 0.65, rabo); rf.rotation.x = -1.2; }
+      else if (tipo.dentes) { var rc = new T.Mesh(new T.TorusGeometry(r * 0.1, r * 0.03, 6, 12, Math.PI * 1.5), matEsc); rc.position.set(0, r * 0.05, -r * 0.07); rc.rotation.y = Math.PI / 2; rabo.add(rc); }
+      else { var rp = peca(G.cone, mat, r * 0.17, r * 0.9, r * 0.17, 0, -r * 0.2, -r * 0.35, rabo); rp.rotation.x = -2.25; }
+      p.joelhos = [];
+      p.pernas = [[-1, 1], [-1, -1], [1, -1], [1, 1]].map(function (l, i) { // frente-esq., trás-esq., trás-dir., frente-dir.
+        var b = new T.Group(); b.position.set(l[0] * r * 0.27 * go, r * 0.98, l[1] * r * 0.55); b.name = 'pernas' + i; b.userData.frente = l[1] > 0; g.add(b);
+        membro(b, mat, 0, 0, 0, 0, -r * 0.45, r * 0.03, r * 0.12 * go);
+        var jo = new T.Group(); jo.position.set(0, -r * 0.45, r * 0.03); jo.name = 'joelhos' + i; b.add(jo); p.joelhos.push(jo);
+        membro(jo, mat, 0, 0, 0, 0, -r * 0.39, -r * 0.05, r * 0.1 * go);
+        peca(G.esfera, matEsc, r * 0.13 * go, r * 0.08, r * 0.17 * go, 0, -r * 0.45, r * 0.01, jo);
         return b;
       });
       alt = r * 2.3;
@@ -938,6 +961,9 @@
       var anelChao = new T.Mesh(geoAnel, matAura); anelChao.position.y = 0.05; anelChao.userData.semSombra = true; anelChao.userData.solto = true; aura.add(anelChao);
       var parede = new T.Mesh(geoParedeLuz, matParedeRoxa); parede.userData.semSombra = true; parede.userData.solto = true; aura.add(parede);
     }
+    var balanco = new T.Group(); balanco.name = 'balanco';
+    g.children.slice().forEach(function (o) { if (o.name !== 'sombra' && o.name !== 'aura') { g.remove(o); balanco.add(o); } });
+    g.add(balanco); p.balanco = balanco;
     fundir(g);
     return { grupo: g, partes: p, mat: mat, alt: alt, r: r };
   }
@@ -951,8 +977,8 @@
     g.traverse(function (o) { if (o.isMesh && o.material === m.mat) o.material = mat; });
     var p = {};
     if (m.partes.vooY !== undefined) p.vooY = m.partes.vooY;
-    ['corpo', 'voo', 'lingua', 'cauda'].forEach(function (n) { if (m.partes[n]) p[n] = g.getObjectByName(n); });
-    ['asas', 'pernas', 'bracos', 'segs'].forEach(function (n) { if (m.partes[n]) p[n] = m.partes[n].map(function (_, i) { return g.getObjectByName(n + i); }); });
+    ['corpo', 'voo', 'lingua', 'cauda', 'balanco', 'rabo'].forEach(function (n) { if (m.partes[n]) p[n] = g.getObjectByName(n); });
+    ['asas', 'pernas', 'bracos', 'segs', 'joelhos', 'cotovelos'].forEach(function (n) { if (m.partes[n]) p[n] = m.partes[n].map(function (_, i) { return g.getObjectByName(n + i); }); });
     return { grupo: g, partes: p, mat: mat, alt: m.alt, r: m.r, sombra: g.getObjectByName('sombra'), aura: g.getObjectByName('aura') };
   }
   var geoAnel = new T.RingGeometry(0.82, 1.12, 48); geoAnel.rotateX(-Math.PI / 2);
@@ -969,16 +995,92 @@
     modelo.grupo.traverse(function (o) { if (o.isMesh && !o.userData.semSombra) o.castShadow = real; });
     if (modelo.sombra) modelo.sombra.visible = !real;
   }
-  function animarMonstro(m, t) {
-    var p = m.modelo.partes, f = Math.sin(t * 7 + m.fase);
-    if (m.tipo.forma === 'geleca') { p.corpo.scale.y = m.r * (0.75 + f * 0.1); p.corpo.scale.x = p.corpo.scale.z = m.r * (1 - f * 0.06); }
-    if (p.asas) p.asas.forEach(function (a) { a.rotation.z = a.userData.lado * (0.32 + Math.sin(t * 14 + m.fase) * 0.55); }); // asas em "V", batendo
-    if (p.voo) p.voo.position.y = p.vooY + Math.sin(t * 3 + m.fase) * 0.2;
-    if (p.segs) p.segs.forEach(function (sg, i) { if (i) sg.position.x = Math.sin(t * 6 + m.fase - i * 0.9) * m.r * 0.4; });
-    if (p.lingua) p.lingua.visible = Math.sin(t * 9 + m.fase) > 0.3;
-    if (p.cauda) p.cauda.rotation.x = Math.sin(t * 4 + m.fase) * 0.15 + (m.ataque > 0 ? 0.5 : 0);
-    if (p.pernas) p.pernas.forEach(function (pe, i) { pe.rotation.x = (i % 2 ? -1 : 1) * f * 0.6; });
-    if (p.bracos) { p.bracos[0].rotation.x = -f * 0.5 - (m.ataque > 0 ? 1.5 : 0); p.bracos[1].rotation.x = f * 0.5 - (m.ataque > 0 ? 1.5 : 0); }
+  // Cada bicho anda do seu jeito. A passada acompanha a velocidade de verdade (as patas não "patinam"),
+  // e quando ele para, as pernas voltam ao lugar e ele fica só respirando.
+  var PASSADA = { lobo: 2.3, humano: 2.6, golem: 2.0, yeti: 2.4, aranha: 1.3, cobra: 3.0, geleca: 1.6, cogumelo: 1.6 }; // comprimento de um ciclo, em "tamanhos" do bicho
+  function virarPara(atual, alvo, max) { var d = alvo - atual; d = Math.atan2(Math.sin(d), Math.cos(d)); return atual + Math.max(-max, Math.min(max, d)); }
+  function animarMonstro(m, t, dt) {
+    dt = dt || 0;
+    var p = m.modelo.partes, forma = m.tipo.forma, r = m.r, bal = p.balanco;
+    var v = m.velAtual || 0, vTipo = m.tipo.vel || 2;
+    m.anda = (m.anda || 0) + (Math.min(1, v / (vTipo * 0.35)) - (m.anda || 0)) * Math.min(1, dt * 6);
+    if (m.ciclo === undefined) m.ciclo = m.fase;
+    m.ciclo += v * dt / ((PASSADA[forma] || 2) * r) * Math.PI * 2;
+    var w = m.anda, c = m.ciclo, resp = Math.sin(t * 2.1 + m.fase);
+    var at = m.ataque > 0 ? Math.sin((1 - m.ataque / 0.25) * Math.PI) : 0; // 0 → 1 → 0 durante o ataque
+    if (bal) { bal.position.set(0, 0, 0); bal.rotation.set(0, 0, 0); }
+    if (forma === 'lobo') { // quatro patas: trote (diagonais juntas) ou galope (o lobo, que é rápido)
+      var galope = v > 3.0, off = galope ? [0, 0.55, 0.65, 0.1] : [0, 0.5, 0, 0.5], amp = galope ? 0.75 : 0.5;
+      p.pernas.forEach(function (pe, i) {
+        var ph = c + off[i] * Math.PI * 2;
+        pe.rotation.x = -Math.sin(ph) * amp * w; // para a frente e para trás
+        if (p.joelhos) p.joelhos[i].rotation.x = Math.max(0, Math.cos(ph)) * (pe.userData.frente ? 0.9 : 1.15) * w; // dobra a pata quando ela vai para a frente
+      });
+      bal.position.y = (galope ? Math.abs(Math.sin(c)) * 0.12 : (Math.cos(c * 2) * 0.5 + 0.5) * 0.04) * r * w + resp * 0.012 * r * (1 - w);
+      bal.rotation.x = (galope ? Math.sin(c) * 0.14 : 0) * w + at * 0.3; // no galope o corpo vai para a frente e para trás; no bote abaixa a cabeça
+      bal.rotation.z = (m.tipo.raboCurto ? Math.sin(c) * 0.07 : 0) * w; // o urso anda gingando
+      bal.position.z = at * 0.4 * r; // bote
+      if (p.rabo) { p.rabo.rotation.y = Math.sin(t * (w > 0.3 ? 9 : 3) + m.fase) * (m.tipo.raboFino ? 0.35 : 0.25); p.rabo.rotation.x = Math.sin(c) * 0.15 * w; }
+    } else if (forma === 'humano' || forma === 'yeti') { // duas pernas: braço e perna opostos vão juntos
+      var zumbi = m.tipo.bracosFrente, curvado = m.tipo.lobisomem, pesado = m.tipo.umOlho || forma === 'yeti';
+      var lean = curvado ? 0.28 : (zumbi ? 0.15 : 0.04 * w);
+      var ampP = zumbi ? 0.32 : (curvado ? 0.62 : (pesado ? 0.42 : 0.5)), ampB = zumbi ? 0 : (curvado ? 0.7 : (m.tipo.capa ? 0.22 : (forma === 'yeti' ? 0.55 : 0.45)));
+      p.pernas.forEach(function (pe, i) {
+        var ph = c + i * Math.PI, arrasta = zumbi && i === 1 ? 0.45 : 1; // o zumbi arrasta a perna direita
+        pe.rotation.x = -Math.sin(ph) * ampP * arrasta * w + lean; // "+ lean": a perna fica em pé mesmo com o corpo inclinado
+        if (p.joelhos) p.joelhos[i].rotation.x = (Math.max(0, Math.cos(ph)) * arrasta + 0.06) * w + (curvado ? 0.25 : 0);
+      });
+      p.bracos.forEach(function (b, i) {
+        var ph = c + i * Math.PI;
+        b.rotation.x = Math.sin(ph) * ampB * w - at * 1.7 + (zumbi ? Math.sin(t * 1.6 + i) * 0.06 : resp * 0.03);
+        b.rotation.z = (i === 0 ? -1 : 1) * (0.06 + (curvado ? 0.1 : 0));
+        if (p.cotovelos) p.cotovelos[i].rotation.x = zumbi ? -at * 0.3 : -(0.2 + Math.max(0, -Math.sin(ph)) * 0.35) * w - 0.15 * (1 - w) - at * 0.4;
+      });
+      bal.position.y = (Math.cos(c * 2) * 0.5 + 0.5) * (pesado ? 0.09 : 0.05) * r * w;
+      bal.rotation.x = lean + (zumbi ? at * 0.2 : 0);
+      bal.rotation.z = Math.sin(c) * (zumbi ? 0.12 : (pesado ? 0.07 : 0.03)) * w; // o zumbi cambaleia; o ciclope e o yeti balançam pesado
+      bal.rotation.y = Math.sin(c) * 0.08 * w;
+      bal.position.z = at * (zumbi ? 0.3 : 0.15) * r;
+    } else if (forma === 'golem') { // pedra pesada: passos duros, balança de um lado para o outro, golpe com os dois braços
+      p.pernas.forEach(function (pe, i) { pe.rotation.x = -Math.sin(c + i * Math.PI) * 0.4 * w; });
+      p.bracos.forEach(function (b, i) { b.rotation.x = Math.sin(c + i * Math.PI) * 0.35 * w - at * 2.2 + resp * 0.03; });
+      bal.position.y = Math.abs(Math.cos(c)) * 0.06 * r * w;
+      bal.rotation.z = Math.sin(c) * 0.1 * w; bal.rotation.x = at * 0.15;
+    } else if (forma === 'aranha') { // 4 pernas sobem e vão para a frente enquanto as outras 4 ficam no chão
+      p.pernas.forEach(function (pe) {
+        var u = pe.userData, ph = c + (u.grupoA ? 0 : Math.PI);
+        pe.rotation.y = u.baseY - u.lado * Math.sin(ph) * 0.32 * w;
+        pe.rotation.z = u.lado * Math.max(0, Math.cos(ph)) * 0.35 * w;
+      });
+      bal.position.y = Math.abs(Math.sin(c * 2)) * 0.03 * r * w + resp * 0.01 * r;
+      bal.rotation.x = -at * 0.45; // empina a frente para atacar
+      if (p.cauda) { p.cauda.rotation.x = Math.sin(t * 3 + m.fase) * 0.1 + at * 0.9; p.cauda.rotation.y = Math.sin(c * 0.5) * 0.15 * w; }
+    } else if (forma === 'cobra') { // serpenteia: o "S" passa da cabeça para o rabo, acompanhando o caminho
+      p.segs.forEach(function (sg, i) { if (i) sg.position.x = Math.sin(c - i * 0.75) * r * 0.5 * Math.min(1, i / 3) * (0.35 + 0.65 * w); });
+      bal.position.z = at * 0.6 * r; bal.rotation.x = -at * 0.2; // bote
+      p.lingua.visible = Math.sin(t * 9 + m.fase) > 0.3;
+    } else if (forma === 'morcego') { // asas rápidas, sobe e desce a cada batida e voa em zigue-zague
+      var bat = t * 15 + m.fase;
+      p.asas.forEach(function (a) { a.rotation.z = a.userData.lado * (0.3 + Math.sin(bat) * 0.6); });
+      p.voo.position.y = p.vooY + Math.sin(bat - 1.2) * 0.1 - at * 0.6 + Math.sin(t * 1.3 + m.fase) * 0.15;
+      p.voo.position.x = Math.sin(t * 2.2 + m.fase) * 0.45 * r + Math.sin(t * 5.1 + m.fase) * 0.12 * r;
+      p.voo.rotation.z = Math.cos(t * 2.2 + m.fase) * 0.25; // inclina nas curvas
+    } else if (forma === 'dragao') { // asas lentas e fortes; de vez em quando plana com as asas abertas
+      var plana = Math.max(0, Math.sin(t * 0.6 + m.fase)), bd = t * 6.5 + m.fase, ampA = 0.15 + 0.5 * (1 - plana);
+      p.asas.forEach(function (a) { a.rotation.z = a.userData.lado * (0.25 + Math.sin(bd) * ampA); });
+      p.voo.position.y = p.vooY + Math.sin(bd - 1.4) * 0.12 * (1 - plana) + Math.sin(t * 0.9 + m.fase) * 0.2;
+      p.voo.position.z = at * 0.5 * r;
+      p.voo.rotation.x = Math.sin(bd - 1.4) * 0.05 * (1 - plana) - at * 0.25; p.voo.rotation.z = Math.sin(t * 0.8 + m.fase) * 0.1;
+    } else if (forma === 'fantasma') { // flutua devagar, balançando; cresce um pouco quando dá o susto
+      p.voo.position.y = p.vooY + Math.sin(t * 1.6 + m.fase) * 0.18;
+      p.voo.position.x = Math.sin(t * 0.9 + m.fase) * 0.3 * r;
+      p.voo.rotation.z = Math.sin(t * 1.3 + m.fase) * 0.12; p.voo.rotation.x = 0.14 * w + Math.sin(t * 1.1 + m.fase) * 0.04;
+      p.voo.scale.setScalar(1 + at * 0.25);
+    } else if (forma === 'geleca') { // anda pulando: amassa ao cair e estica ao subir
+      var pulo = Math.abs(Math.sin(c)), am = (1 - pulo) * w;
+      bal.position.y = pulo * 0.35 * r * w;
+      p.corpo.scale.set(r * (1 + am * 0.14 + resp * 0.02), r * (0.75 - am * 0.14 + resp * 0.02), r * (1 + am * 0.14));
+    } else if (forma === 'cogumelo' && p.voo) p.voo.position.y = p.vooY + Math.abs(Math.sin(c)) * 0.2 * r;
   }
 
   // ---------- Arma na mão (desenhada por cima do mundo, para não entrar nas árvores nem nos monstros) ----------
@@ -1513,7 +1615,7 @@
       camera.position.set(Math.sin(ang) * 6.4, 1.9, Math.cos(ang) * 6.4);
       camera.rotation.set(-0.22, ang, 0);
       ombro.visible = false;
-      vitrine.forEach(function (v) { v.modelo.grupo.rotation.y = Math.atan2(camera.position.x - v.x, camera.position.z - v.z); animarMonstro(v, relogio); });
+      vitrine.forEach(function (v) { v.modelo.grupo.rotation.y = Math.atan2(camera.position.x - v.x, camera.position.z - v.z); animarMonstro(v, relogio, dt); });
     }
     if (estado !== 'pausa' && estado !== 'loja' && estado !== 'morto') {
       fxBrilho.atualizar(dt); fxFumaca.atualizar(dt); atualizarMoedas(dt);
@@ -1673,7 +1775,7 @@
         if (a.morto <= 0) { a.morto = 0; a.vida = a.max; var vg = vagaAmigo(a.ordem); a.x = vg.x; a.z = vg.z; scene.add(a.modelo.grupo); avisar(a.def.nome + ' voltou!'); }
         return;
       }
-      if (a.parado) { a.modelo.grupo.position.set(a.x, 0, a.z); animarMonstro(a, relogio); return; }
+      if (a.parado) { a.velAtual = 0; a.modelo.grupo.position.set(a.x, 0, a.z); animarMonstro(a, relogio, dt); return; }
       var alvo = null, bd = 1e9;
       monstros.forEach(function (m) {
         if (m.nasce < 1 || Math.hypot(m.x - jog.x, m.z - jog.z) > 15) return;
@@ -1685,16 +1787,18 @@
       if (Math.hypot(jog.x - a.x, jog.z - a.z) > 25) { var vl = vagaAmigo(a.ordem); a.x = vl.x; a.z = vl.z; }
       var ax = tx - a.x, az = tz - a.z, ad = Math.hypot(ax, az) || 1;
       var andou = ad > parar;
-      if (andou) { var passoA = Math.min(ad - parar, a.def.vel * dt); a.x += ax / ad * passoA; a.z += az / ad * passoA; }
+      var vAlvoA = andou ? Math.min(a.def.vel, (ad - parar) / Math.max(dt, 0.001)) : 0;
+      a.velAtual = (a.velAtual || 0) + Math.max(-dt * 10, Math.min(dt * 8, vAlvoA - (a.velAtual || 0)));
+      if (andou) { var passoA = Math.min(ad - parar, a.velAtual * dt); a.x += ax / ad * passoA; a.z += az / ad * passoA; }
       if (!a.voa) { soltarDeObstaculos(a, a.r * 0.8); empurrarDefesas(a, a.r * 0.8); }
       var px = a.x - jog.x, pz = a.z - jog.z, pd = Math.hypot(px, pz) || 1, longe = a.r + 0.9; // não entra na sua frente colado na câmera
       if (pd < longe) { a.x = jog.x + px / pd * longe; a.z = jog.z + pz / pd * longe; }
       a.modelo.grupo.position.set(a.x, 0, a.z);
-      if (alvo || andou) a.modelo.grupo.rotation.y = Math.atan2(alvo ? alvo.x - a.x : ax, alvo ? alvo.z - a.z : az);
+      if (alvo || andou) { var angA = Math.atan2(alvo ? alvo.x - a.x : ax, alvo ? alvo.z - a.z : az); a.ang = virarPara(a.ang === undefined ? angA : a.ang, angA, dt * 6); a.modelo.grupo.rotation.y = a.ang; }
       a.vida = Math.min(a.max, a.vida + a.max * 0.02 * dt);
       if (a.ataque > 0) a.ataque -= dt;
       if (a.bate > 0) { a.bate -= dt; a.modelo.mat.emissive.setHex(0xff0000); } else a.modelo.mat.emissive.setHex(0x000000);
-      animarMonstro(a, relogio);
+      animarMonstro(a, relogio, dt);
       a.espera -= dt;
       if (alvo && bd <= a.def.alcance + alvo.r && a.espera <= 0) {
         a.espera = a.def.espera; a.ataque = 0.25;
@@ -1712,7 +1816,7 @@
       var mo = monstros[q];
       if (mo.nasce < 1) { mo.nasce = Math.min(1, mo.nasce + dt * 2); mo.modelo.grupo.scale.setScalar(Math.max(0.01, suave(mo.nasce) * (1 + Math.sin(mo.nasce * Math.PI) * 0.18))); }
       visualMonstro(mo, dt);
-      if (mo.parado) { mo.modelo.grupo.position.set(mo.x, 0, mo.z); if (mo.olhar !== undefined) mo.modelo.grupo.rotation.y = mo.olhar; animarMonstro(mo, relogio); continue; }
+      if (mo.parado) { if (mo.ataque > 0) mo.ataque -= dt; mo.velAtual = mo.desfile ? mo.vel : 0; /* no desfile das fotos ele anda no lugar, como numa esteira */ mo.modelo.grupo.position.set(mo.x, 0, mo.z); if (mo.olhar !== undefined) mo.modelo.grupo.rotation.y = mo.olhar; animarMonstro(mo, relogio, dt); continue; }
       var voa = mo.tipo.forma === 'fantasma' || mo.tipo.forma === 'morcego' || mo.tipo.forma === 'dragao';
       var distJog = Math.hypot(jog.x - mo.x, jog.z - mo.z) || 1;
       var alvoM = null, alvoX = jog.x, alvoZ = jog.z, dist = distJog, alcanceAlvo = mo.r + 1.0;
@@ -1722,10 +1826,12 @@
         if (da < dist) { dist = da; alvoM = am; alvoX = am.x; alvoZ = am.z; alcanceAlvo = mo.r + am.r + 0.6; }
       }
       var ex = alvoX - mo.x, ez = alvoZ - mo.z; dist = dist || 1;
-      var v = mo.vel * (mo.lento > 0 ? 0.45 : 1);
+      var vAlvo = dist > alcanceAlvo - 0.3 ? mo.vel * (mo.lento > 0 ? 0.45 : 1) : 0;
+      mo.velAtual = (mo.velAtual || 0) + Math.max(-dt * 8, Math.min(dt * 5, vAlvo - (mo.velAtual || 0))); // acelera e freia aos poucos
+      var v = mo.velAtual;
       if (mo.lento > 0) mo.lento -= dt;
       if (mo.ataque > 0) mo.ataque -= dt;
-      if (dist > alcanceAlvo - 0.3) { mo.x += ex / dist * v * dt; mo.z += ez / dist * v * dt; }
+      if (dist > alcanceAlvo - 0.3 && v > 0.01) { mo.x += ex / dist * v * dt; mo.z += ez / dist * v * dt; }
       for (var o = q + 1; o < monstros.length; o++) {
         var ou = monstros[o], sx = ou.x - mo.x, sz = ou.z - mo.z, sd = Math.hypot(sx, sz) || 1, min = mo.r + ou.r;
         if (sd < min) { var emp = (min - sd) / 2; mo.x -= sx / sd * emp; mo.z -= sz / sd * emp; ou.x += sx / sd * emp; ou.z += sz / sd * emp; }
@@ -1733,8 +1839,9 @@
       var tocou = null;
       if (!voa) { soltarDeObstaculos(mo, mo.r * 0.8); tocou = empurrarDefesas(mo, mo.r * 0.8); } // os que voam passam por cima dos muros
       mo.modelo.grupo.position.set(mo.x, 0, mo.z);
-      mo.modelo.grupo.rotation.y = Math.atan2(ex, ez);
-      animarMonstro(mo, relogio);
+      mo.ang = virarPara(mo.ang === undefined ? Math.atan2(ex, ez) : mo.ang, Math.atan2(ex, ez), dt * (voa ? 3 : 5)); // vira aos poucos
+      mo.modelo.grupo.rotation.y = mo.ang;
+      animarMonstro(mo, relogio, dt);
       mo.espera -= dt;
       if (mo.espera <= 0 && mo.nasce >= 1) {
         if (dist < alcanceAlvo) {
@@ -2122,6 +2229,20 @@
       });
       camLivre = [0, 1.7, -2.5 + Math.max(4.2, largura * 0.42 + 1.8), 0, 0.85, -2.5];
     }
+    // bichos andando para a direita, vistos de lado, com o nome embaixo
+    function desfile(nomes) {
+      preparar('alto', 30); semHud();
+      // espaço para cada bicho conforme o tamanho dele (visto de lado, o comprimento é mais ou menos 4 vezes o "tamanho")
+      var tipos = nomes.map(tipoPorNome), xs = [], total = 0;
+      tipos.forEach(function (t, i) { if (i) total += (tipos[i - 1].r + t.r) * 2.1 + 0.5; xs.push(total); });
+      var alto = Math.max.apply(null, tipos.map(function (t) { return t.r; }));
+      nomes.forEach(function (n, i) {
+        var x = xs[i] - total / 2, m = parado(n, x, -2.5, { olhar: Math.PI / 2 }); m.desfile = true; m.velAtual = m.vel; m.anda = 1;
+        rotulos.push([x, -0.1, -2.5 + m.r + 0.6, n]);
+      });
+      var dist = Math.max(3.6, total * 0.42 + 1.4);
+      camLivre = [0, 1.1 + alto * 0.5, -2.5 + dist, 0, 0.6 + alto * 0.7, -2.5];
+    }
     function primeiraPessoa(graficos) {
       preparar(graficos, 9);
       parado('Lobo', -1.3, -4.4); parado('Vampiro', 0.9, -6.4); parado('Urso', 2.6, -7.6); parado('Aranha', -3.4, -7.4); parado('Morcego vampiro', -1.6, -8.4);
@@ -2175,6 +2296,15 @@
         camLivre = [0, 1.8, 3, DIR_SOL.x / h * Math.cos(el) * 40, 1.8 + Math.sin(el) * 40, 3 + DIR_SOL.z / h * Math.cos(el) * 40];
       },
       'flecha-de-lado': function () { preparar('alto', 9); semHud(); save.arma = 'arco'; montarArmaNaMao(); parado('Javali', 0, -9); camLivre = [3.0, 1.5, -5.0, -0.8, 1.3, -6.2]; },
+      'andar-patas': function () { desfile(['Rato gigante', 'Lobo', 'Javali', 'Urso']); },
+      'andar-pernas': function () { desfile(['Zumbi', 'Vampiro', 'Lobisomem', 'Ciclope', 'Demônio']); },
+      'andar-outros': function () { desfile(['Aranha', 'Escorpião gigante', 'Cobra', 'Golem de lava', 'Yeti']); },
+      'voar': function () { desfile(['Morcego vampiro', 'Dragãozinho', 'Fantasma']); },
+      'ataques': function () {
+        preparar('alto', 30); semHud();
+        ['Lobo', 'Zumbi', 'Golem de lava', 'Cobra', 'Aranha'].forEach(function (n, i) { var x = -5.2 + i * 2.6, m = parado(n, x, -2.5, { olhar: 0.9 }); rotulos.push([x, -0.1, -2.5 + m.r + 0.5, n]); });
+        camLivre = [0, 2.3, 6.4, 0, 1.0, -2.5];
+      },
       'tiro-arco': function () { preparar('alto', 9); save.arma = 'arco'; montarArmaNaMao(); parado('Javali', 0.6, -9); },
       'magia': function () { preparar('alto', 9); save.arma = 'varinha-gelo'; montarArmaNaMao(); parado('Zumbi', -0.6, -8); },
       'moedas': function () { preparar('alto', 9); parado('Lobo', 0, -3.2); },
@@ -2196,6 +2326,7 @@
       passo: function (seg) { var n = Math.max(1, Math.round(seg * 60)); for (var i = 0; i < n; i++) logica(seg / n); desenhar(); return true; },
       arma: function (id) { save.arma = id; montarArmaNaMao(); jog.golpe = 0; jog.espera = 0; logica(1 / 60); desenhar(); return true; },
       atacar: function () { jog.espera = 0; atacar(); return true; },
+      atacarTodos: function () { monstros.forEach(function (m) { m.ataque = 0.25; }); return true; },
       derrotar: function () { if (monstros[0]) { monstros[0].vida = 1; matar(monstros[0]); } return true; },
       info: function () { return { chamadas: renderer.info.render.calls, triangulos: renderer.info.render.triangles, graficos: save.graficos, monstros: monstros.length }; }
     };
